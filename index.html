@@ -3,245 +3,300 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-  <title>I.E. Daniel Alcides Carrión</title>
+<title>I.E. Daniel Alcides Carrión</title>
 
-  <style>
+<style>
 
-    * {
-      box-sizing: border-box;
-    }
+* {
+box-sizing: border-box;
+}
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      background: #4a86e8;
-    }
+html, body {
 
-    .pantalla {
-      width: 100%;
-      height: 100vh;
+margin: 0;
+padding: 0;
 
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+width: 100%;
+height: 100%;
 
-      padding: 20px;
-      text-align: center;
-    }
+overflow: hidden;
 
-    .titulo {
-      color: white;
-      font-size: 42px;
-      font-weight: bold;
-      margin-bottom: 45px;
-    }
+font-family: Arial, sans-serif;
 
-    .dni-label {
-      color: white;
-      font-size: 32px;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
+background: #4a86e8;
 
-    #dni {
+}
 
-      width: 350px;
-      max-width: 90vw;
+.pantalla {
 
-      height: 70px;
+width: 100%;
+height: 100vh;
 
-      border: 5px solid white;
-      border-radius: 12px;
+display: flex;
+flex-direction: column;
 
-      background: white;
-      color: #222;
+align-items: center;
+justify-content: center;
 
-      font-size: 38px;
-      font-weight: bold;
+padding: 20px;
 
-      text-align: center;
+text-align: center;
 
-      outline: none;
-    }
+}
 
-    #dni:focus {
+.titulo {
 
-      border-color: #ffd966;
+color: white;
 
-      box-shadow:
-        0 0 20px #ffd966;
-    }
+font-size: 42px;
 
-    #resultado {
+font-weight: bold;
 
-      width: 90%;
-      max-width: 850px;
+margin-bottom: 45px;
 
-      margin-top: 35px;
+}
 
-      color: white;
+.dni-label {
 
-      display: none;
-    }
+color: white;
 
-    .nombre {
+font-size: 32px;
 
-      font-size: 32px;
-      font-weight: bold;
+font-weight: bold;
 
-      margin-bottom: 20px;
-    }
+margin-bottom: 15px;
 
-    .datos {
+}
 
-      display: flex;
+#dni {
 
-      justify-content: space-between;
+width: 350px;
 
-      font-size: 25px;
-      font-weight: bold;
+max-width: 90vw;
 
-      margin: 10px 0;
-    }
+height: 70px;
 
-    .mensaje {
+border: 5px solid white;
 
-      width: 100%;
+border-radius: 12px;
 
-      margin-top: 25px;
+background: white;
 
-      padding: 18px;
+color: #222;
 
-      border-radius: 5px;
+font-size: 38px;
 
-      color: white;
+font-weight: bold;
 
-      font-size: 30px;
-      font-weight: bold;
-    }
+text-align: center;
 
-    .encontrado {
-      background: #00a651;
-    }
+outline: none;
 
-    .error {
-      background: #555;
-    }
+}
 
-    .cargando {
+#dni:focus {
 
-      color: white;
+border-color: #ffd966;
 
-      font-size: 25px;
-      font-weight: bold;
+box-shadow: 0 0 20px #ffd966;
 
-      margin-top: 25px;
-    }
+}
 
-    @media (max-width: 700px) {
+#resultado {
 
-      .titulo {
-        font-size: 28px;
-        margin-bottom: 30px;
-      }
+width: 90%;
 
-      .dni-label {
-        font-size: 26px;
-      }
+max-width: 850px;
 
-      #dni {
+margin-top: 35px;
 
-        width: 300px;
-        height: 65px;
+color: white;
 
-        font-size: 32px;
-      }
+display: none;
 
-      .nombre {
-        font-size: 25px;
-      }
+}
 
-      .datos {
-        font-size: 20px;
-      }
+.nombre {
 
-      .mensaje {
-        font-size: 22px;
-      }
+font-size: 32px;
 
-    }
+font-weight: bold;
 
-  </style>
+margin-bottom: 20px;
+
+}
+
+.datos {
+
+display: flex;
+
+justify-content: space-between;
+
+font-size: 25px;
+
+font-weight: bold;
+
+margin: 10px 0;
+
+}
+
+.mensaje {
+
+width: 100%;
+
+margin-top: 25px;
+
+padding: 18px;
+
+border-radius: 5px;
+
+color: white;
+
+font-size: 30px;
+
+font-weight: bold;
+
+}
+
+.encontrado {
+
+background: #00a651;
+
+}
+
+.error {
+
+background: #555;
+
+}
+
+.cargando {
+
+color: white;
+
+font-size: 25px;
+
+font-weight: bold;
+
+margin-top: 25px;
+
+}
+
+@media (max-width: 700px) {
+
+.titulo {
+
+font-size: 28px;
+
+margin-bottom: 30px;
+
+}
+
+.dni-label {
+
+font-size: 26px;
+
+}
+
+#dni {
+
+width: 300px;
+
+height: 65px;
+
+font-size: 32px;
+
+}
+
+.nombre {
+
+font-size: 25px;
+
+}
+
+.datos {
+
+font-size: 20px;
+
+}
+
+.mensaje {
+
+font-size: 22px;
+
+}
+
+}
+
+</style>
 
 </head>
 
 
 <body>
 
-  <div class="pantalla">
+<div class="pantalla">
 
-    <div id="inicio">
+<div id="inicio">
 
-      <div class="titulo">
-        I.E. DANIEL ALCIDES CARRIÓN
-      </div>
+<div class="titulo">
 
-      <div class="dni-label">
-        DNI
-      </div>
+I.E. DANIEL ALCIDES CARRIÓN
 
-      <input
-        id="dni"
-        type="tel"
-        inputmode="numeric"
-        maxlength="8"
-        autocomplete="off"
-        autofocus
-        placeholder="Ingrese DNI"
-      >
+</div>
 
-      <div
-        id="cargando"
-        class="cargando">
-      </div>
+<div class="dni-label">
 
-    </div>
+DNI
+
+</div>
+
+<input
+id="dni"
+type="tel"
+inputmode="numeric"
+maxlength="8"
+autocomplete="off"
+autofocus
+placeholder="Ingrese DNI"
+>
+
+<div
+id="cargando"
+class="cargando">
+</div>
+
+</div>
 
 
-    <div id="resultado">
+<div id="resultado">
 
-      <div
-        id="nombre"
-        class="nombre">
-      </div>
+<div
+id="nombre"
+class="nombre">
+</div>
 
-      <div class="datos">
+<div class="datos">
 
-        <span id="grado"></span>
+<span id="grado"></span>
 
-        <span id="seccion"></span>
+<span id="seccion"></span>
 
-      </div>
+</div>
 
-      <div
-        id="mensaje"
-        class="mensaje">
-      </div>
+<div
+id="mensaje"
+class="mensaje">
+</div>
 
-    </div>
+</div>
 
-  </div>
+</div>
 
 
 <script>
@@ -287,271 +342,311 @@ document.getElementById("mensaje");
 
 
 /* =====================================================
-   CONTROL PARA EVITAR CONSULTAS REPETIDAS
-   ===================================================== */
-
-let ultimaConsulta = "";
-
-let consultando = false;
-
-
-/* =====================================================
-   BUSCAR AUTOMÁTICAMENTE AL COMPLETAR LOS 8 DÍGITOS
+   DETECTAR ENTER
    ===================================================== */
 
 dniInput.addEventListener(
-  "input",
-  function() {
+"keydown",
+function(event) {
 
-    /* Dejar solamente números */
+if (event.key === "Enter") {
 
-    this.value =
-      this.value.replace(/\D/g, "");
+event.preventDefault();
 
+const dni =
+dniInput.value.trim();
 
-    const dni =
-      this.value.trim();
+if (dni.length === 8) {
 
+buscarEstudiante(dni);
 
-    /* Solo consultar cuando tenga exactamente 8 dígitos */
+}
 
-    if (
-      dni.length === 8 &&
-      dni !== ultimaConsulta &&
-      !consultando
-    ) {
+}
 
-      ultimaConsulta = dni;
-
-      buscarEstudiante(dni);
-
-    }
-
-  }
-);
+});
 
 
 /* =====================================================
-   TAMBIÉN PERMITIR ENTER
-   ===================================================== */
-
-dniInput.addEventListener(
-  "keydown",
-  function(event) {
-
-    if (event.key === "Enter") {
-
-      event.preventDefault();
-
-      const dni =
-        dniInput.value.trim();
-
-
-      if (
-        dni.length === 8 &&
-        !consultando
-      ) {
-
-        ultimaConsulta = dni;
-
-        buscarEstudiante(dni);
-
-      }
-
-    }
-
-  }
-);
-
-
-/* =====================================================
-   BUSCAR ESTUDIANTE EN SUPABASE
+   BUSCAR ESTUDIANTE
    ===================================================== */
 
 async function buscarEstudiante(dni) {
 
-  consultando = true;
+cargando.innerText =
+"Consultando...";
 
-  cargando.innerText =
-    "Consultando...";
+try {
 
+const respuesta =
+await fetch(
 
-  const inicioTiempo =
-    performance.now();
+SUPABASE_URL +
+"/rest/v1/estudiantes" +
+"?select=dni,nombre,grado,seccion" +
+"&dni=eq." +
+encodeURIComponent(dni),
 
+{
 
-  try {
+method: "GET",
 
-    const url =
-      SUPABASE_URL +
-      "/rest/v1/estudiantes" +
-      "?select=dni,nombre,grado,seccion" +
-      "&dni=eq." +
-      encodeURIComponent(dni);
+headers: {
 
+"apikey":
+SUPABASE_KEY,
 
-    console.log(
-      "Consultando:",
-      url
-    );
+"Authorization":
+"Bearer " +
+SUPABASE_KEY
 
+}
 
-    const respuesta =
-      await fetch(
-        url,
-        {
+}
 
-          method: "GET",
-
-          headers: {
-
-            "apikey":
-              SUPABASE_KEY,
-
-            "Authorization":
-              "Bearer " +
-              SUPABASE_KEY,
-
-            "Content-Type":
-              "application/json"
-
-          }
-
-        }
-      );
+);
 
 
-    if (!respuesta.ok) {
+if (!respuesta.ok) {
 
-      throw new Error(
-        "Error HTTP " +
-        respuesta.status
-      );
+throw new Error(
+"Error HTTP " +
+respuesta.status
+);
 
-    }
-
-
-    const datos =
-      await respuesta.json();
+}
 
 
-    const finTiempo =
-      performance.now();
+const datos =
+await respuesta.json();
 
 
-    console.log(
-      "Tiempo de consulta:",
-      Math.round(
-        finTiempo -
-        inicioTiempo
-      ),
-      "ms"
-    );
+cargando.innerText = "";
 
 
-    console.log(
-      "Datos recibidos:",
-      datos
-    );
+if (!datos || datos.length === 0) {
+
+mostrarNoEncontrado();
+
+return;
+
+}
 
 
-    cargando.innerText =
-      "";
+/*
+   EL ESTUDIANTE EXISTE.
+   AHORA REGISTRAMOS SU ASISTENCIA.
+*/
 
+await registrarAsistencia(
+datos[0]
+);
 
-    if (
-      !datos ||
-      datos.length === 0
-    ) {
+}
 
-      mostrarNoEncontrado();
+catch (error) {
 
-      return;
+console.error(error);
 
-    }
+cargando.innerText = "";
 
+mostrarError();
 
-    mostrarEstudiante(
-      datos[0]
-    );
-
-
-  }
-
-  catch (error) {
-
-    console.error(
-      "ERROR:",
-      error
-    );
-
-
-    cargando.innerText =
-      "";
-
-
-    mostrarError();
-
-  }
-
-  finally {
-
-    consultando =
-      false;
-
-  }
+}
 
 }
 
 
 /* =====================================================
-   MOSTRAR ESTUDIANTE ENCONTRADO
+   REGISTRAR ASISTENCIA
+   ===================================================== */
+
+async function registrarAsistencia(estudiante) {
+
+try {
+
+const ahora =
+new Date();
+
+
+/*
+   FECHA Y HORA DE PERÚ
+*/
+
+const fechaPeru =
+new Intl.DateTimeFormat(
+"en-CA",
+{
+timeZone: "America/Lima",
+year: "numeric",
+month: "2-digit",
+day: "2-digit"
+}
+).format(ahora);
+
+
+const horaPeru =
+new Intl.DateTimeFormat(
+"en-GB",
+{
+timeZone: "America/Lima",
+hour: "2-digit",
+minute: "2-digit",
+second: "2-digit",
+hour12: false
+}
+).format(ahora);
+
+
+/*
+   DÍA DE LA SEMANA
+*/
+
+const diaPeru =
+new Intl.DateTimeFormat(
+"es-PE",
+{
+timeZone: "America/Lima",
+weekday: "long"
+}
+).format(ahora);
+
+
+/*
+   DATOS QUE SE GUARDARÁN
+*/
+
+const registro = {
+
+dni: estudiante.dni,
+
+fecha: fechaPeru,
+
+dia: diaPeru,
+
+hora: horaPeru,
+
+estado: "PRESENTE"
+
+};
+
+
+/*
+   INSERTAR EN SUPABASE
+*/
+
+const respuesta =
+await fetch(
+
+SUPABASE_URL +
+"/rest/v1/asistencia",
+
+{
+
+method: "POST",
+
+headers: {
+
+"apikey":
+SUPABASE_KEY,
+
+"Authorization":
+"Bearer " +
+SUPABASE_KEY,
+
+"Content-Type":
+"application/json",
+
+"Prefer":
+"return=minimal"
+
+},
+
+body:
+JSON.stringify(registro)
+
+}
+
+);
+
+
+if (!respuesta.ok) {
+
+const errorTexto =
+await respuesta.text();
+
+console.error(
+"Error al registrar:",
+errorTexto
+);
+
+throw new Error(
+"NO SE PUDO REGISTRAR"
+);
+
+}
+
+
+/*
+   MOSTRAR RESULTADO
+*/
+
+mostrarEstudiante(
+estudiante,
+fechaPeru,
+horaPeru
+);
+
+}
+
+
+/* =====================================================
+   MOSTRAR ESTUDIANTE Y ASISTENCIA
    ===================================================== */
 
 function mostrarEstudiante(
-  datos
+estudiante,
+fecha,
+hora
 ) {
 
-  inicio.style.display =
-    "none";
+inicio.style.display =
+"none";
+
+resultado.style.display =
+"block";
 
 
-  resultado.style.display =
-    "block";
+nombre.innerText =
+estudiante.nombre || "";
 
 
-  nombre.innerText =
-    datos.nombre || "";
+grado.innerText =
+estudiante.grado
+? "Grado: " +
+estudiante.grado
+: "";
 
 
-  grado.innerText =
-    datos.grado
-      ? "Grado: " +
-        datos.grado
-      : "";
+seccion.innerText =
+estudiante.seccion
+? "Sección: " +
+estudiante.seccion
+: "";
 
 
-  seccion.innerText =
-    datos.seccion
-      ? "Sección: " +
-        datos.seccion
-      : "";
+mensaje.className =
+"mensaje encontrado";
 
 
-  mensaje.className =
-    "mensaje encontrado";
+mensaje.innerText =
+"ASISTENCIA REGISTRADA";
 
 
-  mensaje.innerText =
-    "ESTUDIANTE ENCONTRADO";
-
-
-  /* Regresar automáticamente */
-
-  setTimeout(
-    regresarInicio,
-    1500
-  );
+setTimeout(
+regresarInicio,
+2000
+);
 
 }
 
@@ -562,131 +657,94 @@ function mostrarEstudiante(
 
 function mostrarNoEncontrado() {
 
-  inicio.style.display =
-    "none";
+inicio.style.display =
+"none";
+
+resultado.style.display =
+"block";
 
 
-  resultado.style.display =
-    "block";
+nombre.innerText =
+"DNI NO ENCONTRADO";
 
 
-  nombre.innerText =
-    "DNI NO ENCONTRADO";
+grado.innerText = "";
+
+seccion.innerText = "";
 
 
-  grado.innerText =
-    "";
+mensaje.className =
+"mensaje error";
 
 
-  seccion.innerText =
-    "";
+mensaje.innerText =
+"Verifique el DNI";
 
 
-  mensaje.className =
-    "mensaje error";
-
-
-  mensaje.innerText =
-    "Verifique el DNI";
-
-
-  setTimeout(
-    regresarInicio,
-    1500
-  );
+setTimeout(
+regresarInicio,
+2000
+);
 
 }
 
 
 /* =====================================================
-   ERROR DE CONEXIÓN
+   ERROR
    ===================================================== */
 
 function mostrarError() {
 
-  inicio.style.display =
-    "none";
+inicio.style.display =
+"none";
+
+resultado.style.display =
+"block";
 
 
-  resultado.style.display =
-    "block";
+nombre.innerText =
+"ERROR";
 
 
-  nombre.innerText =
-    "ERROR DE CONEXIÓN";
+grado.innerText = "";
+
+seccion.innerText = "";
 
 
-  grado.innerText =
-    "";
+mensaje.className =
+"mensaje error";
 
 
-  seccion.innerText =
-    "";
+mensaje.innerText =
+"No se pudo registrar la asistencia";
 
 
-  mensaje.className =
-    "mensaje error";
-
-
-  mensaje.innerText =
-    "No se pudo consultar la base de datos";
-
-
-  setTimeout(
-    regresarInicio,
-    2000
-  );
+setTimeout(
+regresarInicio,
+3000
+);
 
 }
 
 
 /* =====================================================
-   REGRESAR AL INICIO
+   VOLVER AL INICIO
    ===================================================== */
 
 function regresarInicio() {
 
-  resultado.style.display =
-    "none";
+resultado.style.display =
+"none";
 
+inicio.style.display =
+"block";
 
-  inicio.style.display =
-    "block";
+dniInput.value =
+"";
 
-
-  dniInput.value =
-    "";
-
-
-  ultimaConsulta =
-    "";
-
-
-  consultando =
-    false;
-
-
-  cargando.innerText =
-    "";
-
-
-  dniInput.focus();
+dniInput.focus();
 
 }
-
-
-/* =====================================================
-   ENFOCAR EL DNI AL CARGAR LA PÁGINA
-   ===================================================== */
-
-window.addEventListener(
-  "load",
-  function() {
-
-    dniInput.focus();
-
-  }
-);
 
 </script>
 
