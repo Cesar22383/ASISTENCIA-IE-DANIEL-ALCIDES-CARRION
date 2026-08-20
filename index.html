@@ -345,24 +345,34 @@ document.getElementById("mensaje");
    DETECTAR ENTER
    ===================================================== */
 
-dniInput.addEventListener(
-"keydown",
-function(event) {
+dniInput.addEventListener("keydown", function(event) {
 
-if (event.key === "Enter") {
+    if (event.key === "Enter") {
 
-event.preventDefault();
+        event.preventDefault();
 
-const dni =
-dniInput.value.trim();
+        const dni = dniInput.value.trim();
 
-if (dni.length === 8) {
+        if (dni.length === 8) {
 
-buscarEstudiante(dni);
+            buscarEstudiante(dni);
 
-}
+        }
 
-}
+    }
+
+});
+
+
+dniInput.addEventListener("input", function() {
+
+    const dni = dniInput.value.trim();
+
+    if (dni.length === 8) {
+
+        buscarEstudiante(dni);
+
+    }
 
 });
 
