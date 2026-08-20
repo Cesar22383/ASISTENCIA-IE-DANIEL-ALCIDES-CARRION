@@ -2,6 +2,7 @@
 <html lang="es">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta name="viewport"
@@ -15,88 +16,558 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
       background: #4a86e8;
+    }
+
+    .pantalla {
+      width: 100%;
+      height: 100vh;
+
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+      text-align: center;
     }
 
-    .contenedor {
-      width: 95%;
-      max-width: 700px;
-      text-align: center;
+    .titulo {
       color: white;
+      font-size: 42px;
+      font-weight: bold;
+      margin-bottom: 45px;
     }
 
-    h1 {
-      font-size: 40px;
-      margin-bottom: 15px;
-    }
-
-    h2 {
-      font-size: 28px;
-      margin-bottom: 40px;
-    }
-
-    label {
-      display: block;
-      font-size: 28px;
+    .dni-label {
+      color: white;
+      font-size: 32px;
       font-weight: bold;
       margin-bottom: 15px;
     }
 
-    input {
+    #dni {
+
       width: 350px;
-      max-width: 90%;
+      max-width: 90vw;
+
       height: 70px;
-      border: 4px solid white;
+
+      border: 5px solid white;
       border-radius: 12px;
-      font-size: 36px;
-      text-align: center;
+
+      background: white;
+      color: #222;
+
+      font-size: 38px;
       font-weight: bold;
+
+      text-align: center;
+
       outline: none;
     }
 
-    input:focus {
+    #dni:focus {
+
       border-color: #ffd966;
+
+      box-shadow:
+        0 0 20px #ffd966;
     }
 
-    #mensaje {
-      margin-top: 30px;
-      font-size: 28px;
+    #resultado {
+
+      width: 90%;
+      max-width: 850px;
+
+      margin-top: 35px;
+
+      color: white;
+
+      display: none;
+    }
+
+    .nombre {
+
+      font-size: 32px;
       font-weight: bold;
+
+      margin-bottom: 20px;
+    }
+
+    .datos {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      font-size: 25px;
+      font-weight: bold;
+
+      margin: 10px 0;
+    }
+
+    .mensaje {
+
+      width: 100%;
+
+      margin-top: 25px;
+
+      padding: 18px;
+
+      border-radius: 5px;
+
+      color: white;
+
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .encontrado {
+      background: #00a651;
+    }
+
+    .error {
+      background: #555;
+    }
+
+    .cargando {
+
+      color: white;
+
+      font-size: 25px;
+      font-weight: bold;
+
+      margin-top: 25px;
+    }
+
+    @media (max-width: 700px) {
+
+      .titulo {
+        font-size: 28px;
+        margin-bottom: 30px;
+      }
+
+      .dni-label {
+        font-size: 26px;
+      }
+
+      #dni {
+
+        width: 300px;
+        height: 65px;
+
+        font-size: 32px;
+      }
+
+      .nombre {
+        font-size: 25px;
+      }
+
+      .datos {
+        font-size: 20px;
+      }
+
+      .mensaje {
+        font-size: 22px;
+      }
+
     }
 
   </style>
 
 </head>
 
+
 <body>
 
-  <div class="contenedor">
+  <div class="pantalla">
 
-    <h1>I.E. DANIEL ALCIDES CARRIÓN</h1>
+    <div id="inicio">
 
-    <h2>CONTROL DE ASISTENCIA</h2>
+      <div class="titulo">
+        I.E. DANIEL ALCIDES CARRIÓN
+      </div>
 
-    <label for="dni">DNI</label>
+      <div class="dni-label">
+        DNI
+      </div>
 
-    <input
-      id="dni"
-      type="tel"
-      inputmode="numeric"
-      maxlength="8"
-      placeholder="Ingrese DNI"
-      autofocus
-    >
+      <input
+        id="dni"
+        type="tel"
+        inputmode="numeric"
+        maxlength="8"
+        autocomplete="off"
+        autofocus
+        placeholder="Ingrese DNI"
+      >
 
-    <div id="mensaje"></div>
+      <div
+        id="cargando"
+        class="cargando">
+      </div>
+
+    </div>
+
+
+    <div
+      id="resultado">
+
+      <div
+        id="nombre"
+        class="nombre">
+      </div>
+
+      <div class="datos">
+
+        <span id="grado"></span>
+
+        <span id="seccion"></span>
+
+      </div>
+
+      <div
+        id="mensaje"
+        class="mensaje">
+      </div>
+
+    </div>
 
   </div>
+
+
+<script>
+
+/* =====================================================
+   CONFIGURACIÓN SUPABASE
+   ===================================================== */
+
+const SUPABASE_URL =
+"https://glgmttpaqheuvqplbjrl.supabase.co";
+
+
+const SUPABASE_KEY =
+"sb_publishable_MX3PWni7cZ3hF7JqtFXb9A_Ee0iwIIb";
+
+
+/* =====================================================
+   ELEMENTOS
+   ===================================================== */
+
+const dniInput =
+document.getElementById("dni");
+
+const cargando =
+document.getElementById("cargando");
+
+const inicio =
+document.getElementById("inicio");
+
+const resultado =
+document.getElementById("resultado");
+
+const nombre =
+document.getElementById("nombre");
+
+const grado =
+document.getElementById("grado");
+
+const seccion =
+document.getElementById("seccion");
+
+const mensaje =
+document.getElementById("mensaje");
+
+
+/* =====================================================
+   DETECTAR ENTER
+   ===================================================== */
+
+dniInput.addEventListener(
+  "keydown",
+  function(event) {
+
+    if (event.key === "Enter") {
+
+      event.preventDefault();
+
+      const dni =
+        dniInput.value.trim();
+
+      if (dni.length === 8) {
+
+        buscarEstudiante(dni);
+
+      }
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   BUSCAR ESTUDIANTE DIRECTAMENTE EN SUPABASE
+   ===================================================== */
+
+async function buscarEstudiante(dni) {
+
+  cargando.innerText =
+    "Consultando...";
+
+
+  const inicioTiempo =
+    performance.now();
+
+
+  try {
+
+    const respuesta =
+      await fetch(
+
+        SUPABASE_URL +
+        "/rest/v1/estudiantes" +
+
+        "?select=dni,nombre,grado,seccion" +
+
+        "&dni=eq." +
+        encodeURIComponent(dni),
+
+        {
+
+          method: "GET",
+
+          headers: {
+
+            "apikey":
+              SUPABASE_KEY,
+
+            "Authorization":
+              "Bearer " +
+              SUPABASE_KEY
+
+          }
+
+        }
+
+      );
+
+
+    if (!respuesta.ok) {
+
+      throw new Error(
+        "Error HTTP " +
+        respuesta.status
+      );
+
+    }
+
+
+    const datos =
+      await respuesta.json();
+
+
+    const finTiempo =
+      performance.now();
+
+
+    console.log(
+      "Tiempo de consulta:",
+      Math.round(finTiempo - inicioTiempo),
+      "ms"
+    );
+
+
+    cargando.innerText = "";
+
+
+    if (
+      !datos ||
+      datos.length === 0
+    ) {
+
+      mostrarNoEncontrado();
+
+      return;
+
+    }
+
+
+    mostrarEstudiante(
+      datos[0]
+    );
+
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    cargando.innerText = "";
+
+    mostrarError();
+
+  }
+
+}
+
+
+/* =====================================================
+   MOSTRAR ESTUDIANTE
+   ===================================================== */
+
+function mostrarEstudiante(datos) {
+
+  inicio.style.display =
+    "none";
+
+  resultado.style.display =
+    "block";
+
+
+  nombre.innerText =
+    datos.nombre || "";
+
+
+  grado.innerText =
+    datos.grado
+      ? "Grado: " + datos.grado
+      : "";
+
+
+  seccion.innerText =
+    datos.seccion
+      ? "Sección: " + datos.seccion
+      : "";
+
+
+  mensaje.className =
+    "mensaje encontrado";
+
+
+  mensaje.innerText =
+    "ESTUDIANTE ENCONTRADO";
+
+
+  /* MENSAJE VISIBLE 1 SEGUNDO */
+
+  setTimeout(
+    regresarInicio,
+    1000
+  );
+
+}
+
+
+/* =====================================================
+   DNI NO ENCONTRADO
+   ===================================================== */
+
+function mostrarNoEncontrado() {
+
+  inicio.style.display =
+    "none";
+
+  resultado.style.display =
+    "block";
+
+
+  nombre.innerText =
+    "DNI NO ENCONTRADO";
+
+
+  grado.innerText = "";
+
+  seccion.innerText = "";
+
+
+  mensaje.className =
+    "mensaje error";
+
+
+  mensaje.innerText =
+    "Verifique el DNI";
+
+
+  setTimeout(
+    regresarInicio,
+    1000
+  );
+
+}
+
+
+/* =====================================================
+   ERROR DE CONEXIÓN
+   ===================================================== */
+
+function mostrarError() {
+
+  inicio.style.display =
+    "none";
+
+  resultado.style.display =
+    "block";
+
+
+  nombre.innerText =
+    "ERROR DE CONEXIÓN";
+
+
+  grado.innerText = "";
+
+  seccion.innerText = "";
+
+
+  mensaje.className =
+    "mensaje error";
+
+
+  mensaje.innerText =
+    "No se pudo consultar la base de datos";
+
+
+  setTimeout(
+    regresarInicio,
+    1000
+  );
+
+}
+
+
+/* =====================================================
+   REGRESAR AL INICIO
+   ===================================================== */
+
+function regresarInicio() {
+
+  resultado.style.display =
+    "none";
+
+
+  inicio.style.display =
+    "block";
+
+
+  dniInput.value =
+    "";
+
+
+  dniInput.focus();
+
+}
+
+</script>
 
 </body>
 
