@@ -219,8 +219,7 @@
     </div>
 
 
-    <div
-      id="resultado">
+    <div id="resultado">
 
       <div
         id="nombre"
@@ -253,7 +252,6 @@
 
 const SUPABASE_URL =
 "https://glgmttpaqheuvqplbjrl.supabase.co";
-
 
 const SUPABASE_KEY =
 "sb_publishable_MX3PWni7cZ3hF7JqtFXb9A_Ee0iwIIb";
@@ -289,7 +287,52 @@ document.getElementById("mensaje");
 
 
 /* =====================================================
-   DETECTAR ENTER
+   CONTROL PARA EVITAR CONSULTAS REPETIDAS
+   ===================================================== */
+
+let ultimaConsulta = "";
+
+let consultando = false;
+
+
+/* =====================================================
+   BUSCAR AUTOMÁTICAMENTE AL COMPLETAR LOS 8 DÍGITOS
+   ===================================================== */
+
+dniInput.addEventListener(
+  "input",
+  function() {
+
+    /* Dejar solamente números */
+
+    this.value =
+      this.value.replace(/\D/g, "");
+
+
+    const dni =
+      this.value.trim();
+
+
+    /* Solo consultar cuando tenga exactamente 8 dígitos */
+
+    if (
+      dni.length === 8 &&
+      dni !== ultimaConsulta &&
+      !consultando
+    ) {
+
+      ultimaConsulta = dni;
+
+      buscarEstudiante(dni);
+
+    }
+
+  }
+);
+
+
+/* =====================================================
+   TAMBIÉN PERMITIR ENTER
    ===================================================== */
 
 dniInput.addEventListener(
@@ -303,7 +346,13 @@ dniInput.addEventListener(
       const dni =
         dniInput.value.trim();
 
-      if (dni.length === 8) {
+
+      if (
+        dni.length === 8 &&
+        !consultando
+      ) {
+
+        ultimaConsulta = dni;
 
         buscarEstudiante(dni);
 
@@ -316,10 +365,12 @@ dniInput.addEventListener(
 
 
 /* =====================================================
-   BUSCAR ESTUDIANTE DIRECTAMENTE EN SUPABASE
+   BUSCAR ESTUDIANTE EN SUPABASE
    ===================================================== */
 
 async function buscarEstudiante(dni) {
+
+  consultando = true;
 
   cargando.innerText =
     "Consultando...";
@@ -331,17 +382,23 @@ async function buscarEstudiante(dni) {
 
   try {
 
+    const url =
+      SUPABASE_URL +
+      "/rest/v1/estudiantes" +
+      "?select=dni,nombre,grado,seccion" +
+      "&dni=eq." +
+      encodeURIComponent(dni);
+
+
+    console.log(
+      "Consultando:",
+      url
+    );
+
+
     const respuesta =
       await fetch(
-
-        SUPABASE_URL +
-        "/rest/v1/estudiantes" +
-
-        "?select=dni,nombre,grado,seccion" +
-
-        "&dni=eq." +
-        encodeURIComponent(dni),
-
+        url,
         {
 
           method: "GET",
@@ -353,12 +410,14 @@ async function buscarEstudiante(dni) {
 
             "Authorization":
               "Bearer " +
-              SUPABASE_KEY
+              SUPABASE_KEY,
+
+            "Content-Type":
+              "application/json"
 
           }
 
         }
-
       );
 
 
@@ -382,12 +441,22 @@ async function buscarEstudiante(dni) {
 
     console.log(
       "Tiempo de consulta:",
-      Math.round(finTiempo - inicioTiempo),
+      Math.round(
+        finTiempo -
+        inicioTiempo
+      ),
       "ms"
     );
 
 
-    cargando.innerText = "";
+    console.log(
+      "Datos recibidos:",
+      datos
+    );
+
+
+    cargando.innerText =
+      "";
 
 
     if (
@@ -411,11 +480,24 @@ async function buscarEstudiante(dni) {
 
   catch (error) {
 
-    console.error(error);
+    console.error(
+      "ERROR:",
+      error
+    );
 
-    cargando.innerText = "";
+
+    cargando.innerText =
+      "";
+
 
     mostrarError();
+
+  }
+
+  finally {
+
+    consultando =
+      false;
 
   }
 
@@ -423,13 +505,16 @@ async function buscarEstudiante(dni) {
 
 
 /* =====================================================
-   MOSTRAR ESTUDIANTE
+   MOSTRAR ESTUDIANTE ENCONTRADO
    ===================================================== */
 
-function mostrarEstudiante(datos) {
+function mostrarEstudiante(
+  datos
+) {
 
   inicio.style.display =
     "none";
+
 
   resultado.style.display =
     "block";
@@ -441,13 +526,15 @@ function mostrarEstudiante(datos) {
 
   grado.innerText =
     datos.grado
-      ? "Grado: " + datos.grado
+      ? "Grado: " +
+        datos.grado
       : "";
 
 
   seccion.innerText =
     datos.seccion
-      ? "Sección: " + datos.seccion
+      ? "Sección: " +
+        datos.seccion
       : "";
 
 
@@ -459,11 +546,11 @@ function mostrarEstudiante(datos) {
     "ESTUDIANTE ENCONTRADO";
 
 
-  /* MENSAJE VISIBLE 1 SEGUNDO */
+  /* Regresar automáticamente */
 
   setTimeout(
     regresarInicio,
-    1000
+    1500
   );
 
 }
@@ -478,6 +565,7 @@ function mostrarNoEncontrado() {
   inicio.style.display =
     "none";
 
+
   resultado.style.display =
     "block";
 
@@ -486,9 +574,12 @@ function mostrarNoEncontrado() {
     "DNI NO ENCONTRADO";
 
 
-  grado.innerText = "";
+  grado.innerText =
+    "";
 
-  seccion.innerText = "";
+
+  seccion.innerText =
+    "";
 
 
   mensaje.className =
@@ -501,7 +592,7 @@ function mostrarNoEncontrado() {
 
   setTimeout(
     regresarInicio,
-    1000
+    1500
   );
 
 }
@@ -516,6 +607,7 @@ function mostrarError() {
   inicio.style.display =
     "none";
 
+
   resultado.style.display =
     "block";
 
@@ -524,9 +616,12 @@ function mostrarError() {
     "ERROR DE CONEXIÓN";
 
 
-  grado.innerText = "";
+  grado.innerText =
+    "";
 
-  seccion.innerText = "";
+
+  seccion.innerText =
+    "";
 
 
   mensaje.className =
@@ -539,7 +634,7 @@ function mostrarError() {
 
   setTimeout(
     regresarInicio,
-    1000
+    2000
   );
 
 }
@@ -563,9 +658,35 @@ function regresarInicio() {
     "";
 
 
+  ultimaConsulta =
+    "";
+
+
+  consultando =
+    false;
+
+
+  cargando.innerText =
+    "";
+
+
   dniInput.focus();
 
 }
+
+
+/* =====================================================
+   ENFOCAR EL DNI AL CARGAR LA PÁGINA
+   ===================================================== */
+
+window.addEventListener(
+  "load",
+  function() {
+
+    dniInput.focus();
+
+  }
+);
 
 </script>
 
