@@ -771,26 +771,33 @@ estudiante.grado
 
 
 seccion.innerText =
-estudiante.seccion
-   document.getElementById("fecha").innerText = "Fecha: " + fecha;
-document.getElementById("dia").innerText = "Día: " + dia;
-document.getElementById("hora").innerText = "Hora: " + hora;
-document.getElementById("estado").innerText = "Estado: " + estadoTexto;
-? "Sección: " +
-estudiante.seccion
-: "";
-fecha.innerText =
+    estudiante.seccion
+    ? "Sección: " + estudiante.seccion
+    : "";
+
+document.getElementById("fecha").innerText =
     "Fecha: " + fecha;
 
-dia.innerText =
+document.getElementById("dia").innerText =
     "Día: " + dia;
 
-hora.innerText =
+document.getElementById("hora").innerText =
     "Hora: " + hora;
 
-estado.innerText =
-    "Estado: " + estado;
+document.getElementById("estado").innerText =
+    "Estado: " + estadoTexto;
 
+mensaje.className =
+    "mensaje";
+
+mensaje.style.backgroundColor =
+    color;
+
+mensaje.style.color =
+    "#ffffff";
+
+mensaje.innerText =
+    mensajeTexto;
 mensaje.className =
     "mensaje";
 
