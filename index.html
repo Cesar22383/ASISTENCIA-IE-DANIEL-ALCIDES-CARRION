@@ -161,6 +161,8 @@ font-size: 30px;
 
 font-weight: bold;
 
+white-space: pre-line;
+
 }
 
 .encontrado {
@@ -242,63 +244,63 @@ font-size: 22px;
 
 <div class="pantalla">
 
-<div id="inicio">
+    <div id="inicio">
 
-<div class="titulo">
+        <div class="titulo">
+            I.E. DANIEL ALCIDES CARRIÓN
+        </div>
 
-I.E. DANIEL ALCIDES CARRIÓN
+        <div class="dni-label">
+            DNI
+        </div>
 
-</div>
+        <input
+            id="dni"
+            type="tel"
+            inputmode="numeric"
+            maxlength="8"
+            autocomplete="off"
+            autofocus
+            placeholder="Ingrese DNI"
+        >
 
-<div class="dni-label">
+        <div
+            id="cargando"
+            class="cargando">
+        </div>
 
-DNI
+    </div>
 
-</div>
 
-<input
-id="dni"
-type="tel"
-inputmode="numeric"
-maxlength="8"
-autocomplete="off"
-autofocus
-placeholder="Ingrese DNI"
->
+    <!-- RESULTADO DEL ESTUDIANTE -->
+    <div id="resultado">
 
-<div
-id="cargando"
-class="cargando">
-</div>
+        <div
+            id="nombre"
+            class="nombre">
+        </div>
 
-</div>
+        <div class="datos">
+            <span id="grado"></span>
+            <span id="seccion"></span>
+        </div>
 
-<div
-id="nombre"
-class="nombre">
-</div>
+        <div class="datos">
+            <span id="fecha"></span>
+            <span id="dia"></span>
+            <span id="hora"></span>
+        </div>
 
-<div class="datos">
-  <span id="grado"></span>
-  <span id="seccion"></span>
-</div>
+        <div class="datos">
+            <span id="estado"></span>
+        </div>
 
-<div class="datos">
-  <span id="fecha"></span>
-  <span id="dia"></span>
-  <span id="hora"></span>
-</div>
+        <div
+            id="mensaje"
+            class="mensaje">
+        </div>
 
-<div class="datos">
-  <span id="estado"></span>
-</div>
-
-<div
-id="mensaje"
-class="mensaje">
-</div>
-
-</div>
+    </div>
 
 </div>
 
@@ -341,7 +343,19 @@ document.getElementById("grado");
 const seccion =
 document.getElementById("seccion");
 
-const mensaje =
+const fechaElemento =
+document.getElementById("fecha");
+
+const diaElemento =
+document.getElementById("dia");
+
+const horaElemento =
+document.getElementById("hora");
+
+const estadoElemento =
+document.getElementById("estado");
+
+const mensajeElemento =
 document.getElementById("mensaje");
 
 
@@ -368,95 +382,91 @@ dniInput.addEventListener("keydown", function(event) {
 });
 
 
-
-
-
 /* =====================================================
    BUSCAR ESTUDIANTE
    ===================================================== */
 
 async function buscarEstudiante(dni) {
 
-cargando.innerText =
-"Consultando...";
+    cargando.innerText =
+    "Consultando...";
 
-try {
+    try {
 
-const respuesta =
-await fetch(
+        const respuesta =
+        await fetch(
 
-SUPABASE_URL +
-"/rest/v1/estudiantes" +
-"?select=dni,nombre,grado,seccion" +
-"&dni=eq." +
-encodeURIComponent(dni),
+            SUPABASE_URL +
+            "/rest/v1/estudiantes" +
+            "?select=dni,nombre,grado,seccion" +
+            "&dni=eq." +
+            encodeURIComponent(dni),
 
-{
+            {
+                method: "GET",
 
-method: "GET",
+                headers: {
 
-headers: {
+                    "apikey":
+                    SUPABASE_KEY,
 
-"apikey":
-SUPABASE_KEY,
+                    "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY
 
-"Authorization":
-"Bearer " +
-SUPABASE_KEY
+                }
 
-}
+            }
 
-}
-
-);
-
-
-if (!respuesta.ok) {
-
-throw new Error(
-"Error HTTP " +
-respuesta.status
-);
-
-}
+        );
 
 
-const datos =
-await respuesta.json();
+        if (!respuesta.ok) {
+
+            throw new Error(
+                "Error HTTP " +
+                respuesta.status
+            );
+
+        }
 
 
-cargando.innerText = "";
+        const datos =
+        await respuesta.json();
 
 
-if (!datos || datos.length === 0) {
-
-mostrarNoEncontrado();
-
-return;
-
-}
+        cargando.innerText = "";
 
 
-/*
-   EL ESTUDIANTE EXISTE.
-   AHORA REGISTRAMOS SU ASISTENCIA.
-*/
+        if (!datos || datos.length === 0) {
 
-await registrarAsistencia(
-datos[0]
-);
+            mostrarNoEncontrado();
 
-}
+            return;
 
-catch (error) {
+        }
 
-console.error(error);
 
-cargando.innerText = "";
+        /*
+           EL ESTUDIANTE EXISTE.
+           AHORA REGISTRAMOS SU ASISTENCIA.
+        */
 
-mostrarError();
+        await registrarAsistencia(
+            datos[0]
+        );
 
-}
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        cargando.innerText = "";
+
+        mostrarError();
+
+    }
 
 }
 
@@ -467,270 +477,306 @@ mostrarError();
 
 async function registrarAsistencia(estudiante) {
 
-try {
+    try {
 
-const ahora =
-new Date();
+        const ahora =
+        new Date();
 
-
-/*
-   FECHA Y HORA DE PERÚ
-*/
-
-const fechaPeru =
-new Intl.DateTimeFormat(
-"en-CA",
-{
-timeZone: "America/Lima",
-year: "numeric",
-month: "2-digit",
-day: "2-digit"
-}
-).format(ahora);
 
+        /*
+           FECHA Y HORA DE PERÚ
+        */
 
-const horaPeru =
-new Intl.DateTimeFormat(
-"en-GB",
-{
-timeZone: "America/Lima",
-hour: "2-digit",
-minute: "2-digit",
-second: "2-digit",
-hour12: false
-}
-).format(ahora);
+        const fechaPeru =
+        new Intl.DateTimeFormat(
+            "en-CA",
+            {
+                timeZone: "America/Lima",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+            }
+        ).format(ahora);
 
 
-/*
-   DÍA DE LA SEMANA
-*/
+        const horaPeru =
+        new Intl.DateTimeFormat(
+            "en-GB",
+            {
+                timeZone: "America/Lima",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        ).format(ahora);
 
-const diaPeru =
-new Intl.DateTimeFormat(
-"es-PE",
-{
-timeZone: "America/Lima",
-weekday: "long"
-}
-).format(ahora);
 
+        /*
+           DÍA DE LA SEMANA
+        */
 
-/*
-   DATOS QUE SE GUARDARÁN
-*/
+        const diaPeru =
+        new Intl.DateTimeFormat(
+            "es-PE",
+            {
+                timeZone: "America/Lima",
+                weekday: "long"
+            }
+        ).format(ahora);
 
-let estado;
-let mensaje;
-let color;
 
-const partesHora = horaPeru.split(":");
-const hora = Number(partesHora[0]);
-const minuto = Number(partesHora[1]);
-const segundo = Number(partesHora[2]);
+        /*
+           DATOS QUE SE GUARDARÁN
+        */
 
-const segundosActuales =
-    hora * 3600 +
-    minuto * 60 +
-    segundo;
+        let estado;
+        let mensaje;
+        let color;
 
-const inicioTemprano =
-    7 * 3600 +
-    10 * 60;
 
-const inicioTardanza =
-    7 * 3600 +
-    31 * 60;
+        const partesHora =
+        horaPeru.split(":");
 
-const inicioDemasiadoTarde =
-    7 * 3600 +
-    36 * 60;
+        const hora =
+        Number(partesHora[0]);
 
+        const minuto =
+        Number(partesHora[1]);
 
-/*
-   🟢 TEMPRANO
-   07:10:00 - 07:30:59
-*/
+        const segundo =
+        Number(partesHora[2]);
 
-if (
-    segundosActuales >= inicioTemprano &&
-    segundosActuales < inicioTardanza
-) {
 
-    estado = "TEMPRANO";
+        const segundosActuales =
+            hora * 3600 +
+            minuto * 60 +
+            segundo;
 
-    mensaje =
-        "😊 ¡FELICITACIONES!\n" +
-        "¡Llegaste temprano! ¡Excelente comienzo, sigue así!";
 
-    color = "#00A651";
+        const inicioTemprano =
+            7 * 3600 +
+            10 * 60;
 
-}
 
+        const inicioTardanza =
+            7 * 3600 +
+            31 * 60;
 
-/*
-   🟡 TARDANZA
-   07:31:00 - 07:35:59
-*/
 
-else if (
-    segundosActuales >= inicioTardanza &&
-    segundosActuales < inicioDemasiadoTarde
-) {
+        const inicioDemasiadoTarde =
+            7 * 3600 +
+            36 * 60;
 
-    estado = "TARDANZA";
 
-    mensaje =
-        "😐 ¡TÚ PUEDES!\n" +
-        "Hoy llegaste un poquito tarde. ¡Mañana puedes mejorar tu puntualidad!";
+        /*
+           🟢 TEMPRANO
+           07:10:00 - 07:30:59
+        */
 
-    color = "#F9AB00";
+        if (
+            segundosActuales >= inicioTemprano &&
+            segundosActuales < inicioTardanza
+        ) {
 
-}
+            estado =
+            "TEMPRANO";
 
+            mensaje =
+                "😊 ¡FELICITACIONES!\n" +
+                "¡Llegaste temprano! ¡Excelente comienzo, sigue así!";
 
-/*
-   🔴 DEMASIADO TARDE
-   07:36:00 EN ADELANTE
-*/
+            color =
+            "#00A651";
 
-else if (
-    segundosActuales >= inicioDemasiadoTarde
-) {
+        }
 
-    estado = "DEMASIADO TARDE";
 
-    mensaje =
-        "😔 ¡NO TE RINDAS!\n" +
-        "Hoy llegaste tarde, pero mañana tienes una nueva oportunidad para llegar más temprano. ¡Tú puedes!";
+        /*
+           🟡 TARDANZA
+           07:31:00 - 07:35:59
+        */
 
-    color = "#D93025";
+        else if (
+            segundosActuales >= inicioTardanza &&
+            segundosActuales < inicioDemasiadoTarde
+        ) {
 
-}
+            estado =
+            "TARDANZA";
 
+            mensaje =
+                "😐 ¡TÚ PUEDES!\n" +
+                "Hoy llegaste un poquito tarde. ¡Mañana puedes mejorar tu puntualidad!";
 
-/*
-   ANTES DE LAS 07:10
-*/
+            color =
+            "#F9AB00";
 
-else {
+        }
 
-    estado = "TEMPRANO";
 
-    mensaje =
-        "😊 ¡EXCELENTE!\n" +
-        "Llegaste antes de la hora. ¡Sigue así!";
+        /*
+           🔴 DEMASIADO TARDE
+           07:36:00 EN ADELANTE
+        */
 
-    color = "#00A651";
+        else if (
+            segundosActuales >= inicioDemasiadoTarde
+        ) {
 
-}
+            estado =
+            "DEMASIADO TARDE";
 
+            mensaje =
+                "😔 ¡NO TE RINDAS!\n" +
+                "Hoy llegaste tarde, pero mañana tienes una nueva oportunidad para llegar más temprano. ¡Tú puedes!";
 
-/*
-   DATOS QUE SE GUARDARÁN
-*/
+            color =
+            "#D93025";
 
-const registro = {
+        }
 
-    dni: estudiante.dni,
 
-    fecha: fechaPeru,
+        /*
+           ANTES DE LAS 07:10
+        */
 
-    dia: diaPeru,
+        else {
 
-    hora: horaPeru,
+            estado =
+            "TEMPRANO";
 
-    estado: estado
+            mensaje =
+                "😊 ¡EXCELENTE!\n" +
+                "Llegaste antes de la hora. ¡Sigue así!";
 
-};
+            color =
+            "#00A651";
 
+        }
 
-/*
-   INSERTAR EN SUPABASE
-*/
 
-const respuesta =
-await fetch(
+        /*
+           DATOS QUE SE GUARDARÁN
+        */
 
-SUPABASE_URL +
-"/rest/v1/asistencia",
+        const registro = {
 
-{
+            dni:
+            estudiante.dni,
 
-method: "POST",
+            fecha:
+            fechaPeru,
 
-headers: {
+            dia:
+            diaPeru,
 
-"apikey":
-SUPABASE_KEY,
+            hora:
+            horaPeru,
 
-"Authorization":
-"Bearer " +
-SUPABASE_KEY,
+            estado:
+            estado
 
-"Content-Type":
-"application/json",
+        };
 
-"Prefer":
-"return=minimal"
 
-},
+        /*
+           INSERTAR EN SUPABASE
+        */
 
-body:
-JSON.stringify(registro)
+        const respuesta =
+        await fetch(
 
-}
+            SUPABASE_URL +
+            "/rest/v1/asistencia",
 
-);
+            {
 
+                method: "POST",
 
-if (!respuesta.ok) {
+                headers: {
 
-    const errorTexto =
-    await respuesta.text();
+                    "apikey":
+                    SUPABASE_KEY,
 
-    console.error(
-        "Error al registrar:",
-        errorTexto
-    );
+                    "Authorization":
+                    "Bearer " +
+                    SUPABASE_KEY,
 
-    if (
-        respuesta.status === 409 ||
-        errorTexto.includes("23505")
-    ) {
+                    "Content-Type":
+                    "application/json",
 
-        alert(
-            "Este estudiante ya registró su asistencia hoy."
+                    "Prefer":
+                    "return=minimal"
+
+                },
+
+                body:
+                JSON.stringify(registro)
+
+            }
+
         );
 
-        return;
+
+        if (!respuesta.ok) {
+
+            const errorTexto =
+            await respuesta.text();
+
+            console.error(
+                "Error al registrar:",
+                errorTexto
+            );
+
+
+            if (
+                respuesta.status === 409 ||
+                errorTexto.includes("23505")
+            ) {
+
+                alert(
+                    "Este estudiante ya registró su asistencia hoy."
+                );
+
+                return;
+
+            }
+
+
+            throw new Error(
+                "NO SE PUDO REGISTRAR"
+            );
+
+        }
+
+
+        /*
+           MOSTRAR RESULTADO
+        */
+
+        mostrarEstudiante(
+            estudiante,
+            fechaPeru,
+            diaPeru,
+            horaPeru,
+            estado,
+            mensaje,
+            color
+        );
+
     }
 
-    throw new Error(
-        "NO SE PUDO REGISTRAR"
-    );
-}
+    catch (error) {
 
+        console.error(
+            "Error al registrar asistencia:",
+            error
+        );
 
-/*
-   MOSTRAR RESULTADO
-*/
+        throw error;
 
-mostrarEstudiante(
-    estudiante,
-    fechaPeru,
-    diaPeru,
-    horaPeru,
-    estado,
-    mensaje,
-    color
-); } catch (error) {
-
-    console.error("Error al registrar asistencia:", error);
-
-    throw error;
-
-}
+    }
 
 }
 
@@ -749,69 +795,80 @@ function mostrarEstudiante(
     color
 ) {
 
-inicio.style.display =
-"none";
+    inicio.style.display =
+    "none";
 
-resultado.style.display =
-"block";
-
-
-nombre.innerText =
-estudiante.nombre || "";
+    resultado.style.display =
+    "block";
 
 
-grado.innerText =
-estudiante.grado
-? "Grado: " +
-estudiante.grado
-: "";
+    nombre.innerText =
+    estudiante.nombre || "";
 
 
-seccion.innerText =
-    estudiante.seccion
-    ? "Sección: " + estudiante.seccion
+    grado.innerText =
+    estudiante.grado
+    ? "Grado: " +
+      estudiante.grado
     : "";
 
-fecha.innerText =
-    "Fecha: " + fecha;
 
-dia.innerText =
-    "Día: " + dia;
+    seccion.innerText =
+    estudiante.seccion
+    ? "Sección: " +
+      estudiante.seccion
+    : "";
 
-hora.innerText =
-    "Hora: " + hora;
 
-estado.innerText =
-    "Estado: " + estadoTexto;
+    fechaElemento.innerText =
+    "Fecha: " +
+    fecha;
 
-mensaje.className =
+
+    diaElemento.innerText =
+    "Día: " +
+    dia;
+
+
+    horaElemento.innerText =
+    "Hora: " +
+    hora;
+
+
+    estadoElemento.innerText =
+    "Estado: " +
+    estadoTexto;
+
+
+    /*
+       PINTAR TODO EL MENSAJE
+    */
+
+    mensajeElemento.className =
     "mensaje";
 
-mensaje.style.backgroundColor =
+
+    mensajeElemento.style.backgroundColor =
     color;
 
-mensaje.style.color =
+
+    mensajeElemento.style.color =
     "#ffffff";
 
-mensaje.innerText =
-    mensajeTexto;
-mensaje.className =
-    "mensaje";
 
-mensaje.style.backgroundColor =
-    color;
-
-mensaje.style.color =
-    "#ffffff";
-
-mensaje.innerText =
+    mensajeElemento.innerText =
     mensajeTexto;
 
 
-setTimeout(
-regresarInicio,
-1000
-);
+    /*
+       MOSTRAR 1 SEGUNDO
+       Y VOLVER AL INICIO
+    */
+
+    setTimeout(
+        regresarInicio,
+        1000
+    );
 
 }
 
@@ -822,34 +879,49 @@ regresarInicio,
 
 function mostrarNoEncontrado() {
 
-inicio.style.display =
-"none";
+    inicio.style.display =
+    "none";
 
-resultado.style.display =
-"block";
-
-
-nombre.innerText =
-"DNI NO ENCONTRADO";
+    resultado.style.display =
+    "block";
 
 
-grado.innerText = "";
-
-seccion.innerText = "";
-
-
-mensaje.className =
-"mensaje error";
+    nombre.innerText =
+    "DNI NO ENCONTRADO";
 
 
-mensaje.innerText =
-"Verifique el DNI";
+    grado.innerText =
+    "";
+
+    seccion.innerText =
+    "";
 
 
-setTimeout(
-regresarInicio,
-1000
-);
+    fechaElemento.innerText =
+    "";
+
+    diaElemento.innerText =
+    "";
+
+    horaElemento.innerText =
+    "";
+
+    estadoElemento.innerText =
+    "";
+
+
+    mensajeElemento.className =
+    "mensaje error";
+
+
+    mensajeElemento.innerText =
+    "Verifique el DNI";
+
+
+    setTimeout(
+        regresarInicio,
+        1000
+    );
 
 }
 
@@ -860,34 +932,49 @@ regresarInicio,
 
 function mostrarError() {
 
-inicio.style.display =
-"none";
+    inicio.style.display =
+    "none";
 
-resultado.style.display =
-"block";
-
-
-nombre.innerText =
-"ERROR";
+    resultado.style.display =
+    "block";
 
 
-grado.innerText = "";
-
-seccion.innerText = "";
-
-
-mensaje.className =
-"mensaje error";
+    nombre.innerText =
+    "ERROR";
 
 
-mensaje.innerText =
-"No se pudo registrar la asistencia";
+    grado.innerText =
+    "";
+
+    seccion.innerText =
+    "";
 
 
-setTimeout(
-regresarInicio,
-1000
-);
+    fechaElemento.innerText =
+    "";
+
+    diaElemento.innerText =
+    "";
+
+    horaElemento.innerText =
+    "";
+
+    estadoElemento.innerText =
+    "";
+
+
+    mensajeElemento.className =
+    "mensaje error";
+
+
+    mensajeElemento.innerText =
+    "No se pudo registrar la asistencia";
+
+
+    setTimeout(
+        regresarInicio,
+        1000
+    );
 
 }
 
@@ -898,16 +985,17 @@ regresarInicio,
 
 function regresarInicio() {
 
-resultado.style.display =
-"none";
+    resultado.style.display =
+    "none";
 
-inicio.style.display =
-"block";
+    inicio.style.display =
+    "block";
 
-dniInput.value =
-"";
 
-dniInput.focus();
+    dniInput.value =
+    "";
+
+    dniInput.focus();
 
 }
 
