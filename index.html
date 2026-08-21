@@ -572,18 +572,29 @@ JSON.stringify(registro)
 
 if (!respuesta.ok) {
 
-const errorTexto =
-await respuesta.text();
+    const errorTexto =
+    await respuesta.text();
 
-console.error(
-"Error al registrar:",
-errorTexto
-);
+    console.error(
+        "Error al registrar:",
+        errorTexto
+    );
 
-throw new Error(
-"NO SE PUDO REGISTRAR"
-);
+    if (
+        respuesta.status === 409 ||
+        errorTexto.includes("23505")
+    ) {
 
+        alert(
+            "Este estudiante ya registró su asistencia hoy."
+        );
+
+        return;
+    }
+
+    throw new Error(
+        "NO SE PUDO REGISTRAR"
+    );
 }
 
 
