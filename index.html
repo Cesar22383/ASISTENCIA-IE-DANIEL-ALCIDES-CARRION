@@ -516,17 +516,127 @@ weekday: "long"
    DATOS QUE SE GUARDARÁN
 */
 
+let estado;
+let mensaje;
+let color;
+
+const partesHora = horaPeru.split(":");
+const hora = Number(partesHora[0]);
+const minuto = Number(partesHora[1]);
+const segundo = Number(partesHora[2]);
+
+const segundosActuales =
+    hora * 3600 +
+    minuto * 60 +
+    segundo;
+
+const inicioTemprano =
+    7 * 3600 +
+    10 * 60;
+
+const inicioTardanza =
+    7 * 3600 +
+    31 * 60;
+
+const inicioDemasiadoTarde =
+    7 * 3600 +
+    36 * 60;
+
+
+/*
+   🟢 TEMPRANO
+   07:10:00 - 07:30:59
+*/
+
+if (
+    segundosActuales >= inicioTemprano &&
+    segundosActuales < inicioTardanza
+) {
+
+    estado = "TEMPRANO";
+
+    mensaje =
+        "😊 ¡FELICITACIONES!\n" +
+        "¡Llegaste temprano! ¡Excelente comienzo, sigue así!";
+
+    color = "#00A651";
+
+}
+
+
+/*
+   🟡 TARDANZA
+   07:31:00 - 07:35:59
+*/
+
+else if (
+    segundosActuales >= inicioTardanza &&
+    segundosActuales < inicioDemasiadoTarde
+) {
+
+    estado = "TARDANZA";
+
+    mensaje =
+        "😐 ¡TÚ PUEDES!\n" +
+        "Hoy llegaste un poquito tarde. ¡Mañana puedes mejorar tu puntualidad!";
+
+    color = "#F9AB00";
+
+}
+
+
+/*
+   🔴 DEMASIADO TARDE
+   07:36:00 EN ADELANTE
+*/
+
+else if (
+    segundosActuales >= inicioDemasiadoTarde
+) {
+
+    estado = "DEMASIADO TARDE";
+
+    mensaje =
+        "😔 ¡NO TE RINDAS!\n" +
+        "Hoy llegaste tarde, pero mañana tienes una nueva oportunidad para llegar más temprano. ¡Tú puedes!";
+
+    color = "#D93025";
+
+}
+
+
+/*
+   ANTES DE LAS 07:10
+*/
+
+else {
+
+    estado = "TEMPRANO";
+
+    mensaje =
+        "😊 ¡EXCELENTE!\n" +
+        "Llegaste antes de la hora. ¡Sigue así!";
+
+    color = "#00A651";
+
+}
+
+
+/*
+   DATOS QUE SE GUARDARÁN
+*/
+
 const registro = {
 
-dni: estudiante.dni,
+    dni: estudiante.dni,
 
-fecha: fechaPeru,
+    fecha: fechaPeru,
 
-dia: diaPeru,
+    dia: diaPeru,
 
-hora: horaPeru,
+    hora: horaPeru,
 
-estado: "PRESENTE"
+    estado: estado
 
 };
 
