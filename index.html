@@ -282,11 +282,18 @@ class="nombre">
 </div>
 
 <div class="datos">
+  <span id="grado"></span>
+  <span id="seccion"></span>
+</div>
 
-<span id="grado"></span>
+<div class="datos">
+  <span id="fecha"></span>
+  <span id="dia"></span>
+  <span id="hora"></span>
+</div>
 
-<span id="seccion"></span>
-
+<div class="datos">
+  <span id="estado"></span>
 </div>
 
 <div
@@ -715,7 +722,9 @@ if (!respuesta.ok) {
 mostrarEstudiante(
     estudiante,
     fechaPeru,
+    diaPeru,
     horaPeru,
+    estado,
     mensaje,
     color
 ); } catch (error) {
@@ -736,7 +745,9 @@ mostrarEstudiante(
 function mostrarEstudiante(
     estudiante,
     fecha,
+    dia,
     hora,
+    estadoTexto,
     mensajeTexto,
     color
 ) {
@@ -761,10 +772,24 @@ estudiante.grado
 
 seccion.innerText =
 estudiante.seccion
+   document.getElementById("fecha").innerText = "Fecha: " + fecha;
+document.getElementById("dia").innerText = "Día: " + dia;
+document.getElementById("hora").innerText = "Hora: " + hora;
+document.getElementById("estado").innerText = "Estado: " + estadoTexto;
 ? "Sección: " +
 estudiante.seccion
 : "";
+fecha.innerText =
+    "Fecha: " + fecha;
 
+dia.innerText =
+    "Día: " + dia;
+
+hora.innerText =
+    "Hora: " + hora;
+
+estado.innerText =
+    "Estado: " + estado;
 
 mensaje.className =
     "mensaje";
