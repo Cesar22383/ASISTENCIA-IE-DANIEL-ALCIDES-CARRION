@@ -713,9 +713,11 @@ if (!respuesta.ok) {
 */
 
 mostrarEstudiante(
-estudiante,
-fechaPeru,
-horaPeru
+    estudiante,
+    fechaPeru,
+    horaPeru,
+    mensaje,
+    color
 ); } catch (error) {
 
     console.error("Error al registrar asistencia:", error);
@@ -732,9 +734,11 @@ horaPeru
    ===================================================== */
 
 function mostrarEstudiante(
-estudiante,
-fecha,
-hora
+    estudiante,
+    fecha,
+    hora,
+    mensajeTexto,
+    color
 ) {
 
 inicio.style.display =
@@ -763,11 +767,16 @@ estudiante.seccion
 
 
 mensaje.className =
-"mensaje encontrado";
+    "mensaje";
 
+mensaje.style.backgroundColor =
+    color;
+
+mensaje.style.color =
+    "#ffffff";
 
 mensaje.innerText =
-"ASISTENCIA REGISTRADA";
+    mensajeTexto;
 
 
 setTimeout(
