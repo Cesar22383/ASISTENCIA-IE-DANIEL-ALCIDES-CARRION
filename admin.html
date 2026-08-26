@@ -218,10 +218,17 @@ async function consultar() {
                 }
             );
 
-            if (!respuesta.ok) {
-                const errorTexto = await respuesta.text();
-                console.error(errorTexto);
-                throw new Error("Error consultando Supabase");
+           if (!respuesta.ok) {
+    const errorTexto = await respuesta.text();
+
+    resultado.innerHTML =
+        "<p style='color:red'><b>Error de Supabase:</b><br>" +
+        errorTexto +
+        "</p>";
+
+    console.error(errorTexto);
+    return;
+}
             }
 
             const datosDia = await respuesta.json();
