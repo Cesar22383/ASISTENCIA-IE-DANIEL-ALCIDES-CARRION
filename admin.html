@@ -176,98 +176,165 @@ async function consultar() {
         const seccion = document.getElementById("seccion").value;
         const desde = document.getElementById("desde").value;
         const hasta = document.getElementById("hasta").value;
+        const estadoFiltro = document.getElementById("estado").value;
+        const buscar = document.getElementById("buscar").value.trim().toLowerCase();
 
         if (!grado || !seccion || !desde || !hasta) {
+
             resultado.innerHTML =
                 "<p style='color:red'>⚠️ Selecciona grado, sección y las fechas.</p>";
+
             return;
         }
 
-        let fechaInicio = new Date(desde + "T00:00:00");
-        let fechaFin = new Date(hasta + "T00:00:00");
+        let estudiantesUrl =
+            SUPABASE_URL +
+            "/rest/v1/estudiantes" +
+            "?select=dni,nombre,grado,seccion,orden" +
+            "&grado=eq." + encodeURIComponent(grado) +
+            "&seccion=eq." + encodeURIComponent(seccion) +
+            "&order=orden.asc";
 
-        if (fechaInicio > fechaFin) {
+        const respuestaEstudiantes = await fetch(
+            estudiantesUrl,
+            {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                }
+            }
+        );
+
+        if (!respuestaEstudiantes.ok) {
+
+            const errorTexto =
+                await respuestaEstudiantes.text();
+
             resultado.innerHTML =
-                "<p style='color:red'>⚠️ La fecha Desde no puede ser posterior a Hasta.</p>";
+                "<p style='color:red'><b>Error estudiantes:</b><br>" +
+                errorTexto +
+                "</p>";
+
             return;
         }
+
+        const estudiantes =
+            await respuestaEstudiantes.json();
+
+        let asistenciaUrl =
+            SUPABASE_URL +
+            "/rest/v1/asistencia" +
+            "?select=*" +
+            "&fecha=gte." + encodeURIComponent(desde) +
+            "&fecha=lte." + encodeURIComponent(hasta);
+
+        const respuestaAsistencia = await fetch(
+            asistenciaUrl,
+            {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                }
+            }
+        );
+
+        if (!respuestaAsistencia.ok) {
+
+            const errorTexto =
+                await respuestaAsistencia.text();
+
+            resultado.innerHTML =
+                "<p style='color:red'><b>Error asistencia:</b><br>" +
+                errorTexto +
+                "</p>";
+
+            return;
+        }
+
+        const asistencias =
+            await respuestaAsistencia.json();
 
         let todosLosDatos = [];
 
-        while (fechaInicio <= fechaFin) {
+        estudiantes.forEach(estudiante => {
 
-            const fecha =
-                fechaInicio.toISOString().split("T")[0];
+            const registros =
+                asistencias.filter(a =>
+                    String(a.dni) === String(estudiante.dni)
+                );
 
-            const respuesta = await fetch(
-                SUPABASE_URL + "/rest/v1/rpc/obtener_asistencia_salon",
-                {
-                    method: "POST",
+            if (registros.length === 0) {
 
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": "Bearer " + SUPABASE_KEY,
-                        "Content-Type": "application/json"
-                    },
+                todosLosDatos.push({
 
-                    body: JSON.stringify({
-                        p_grado: grado,
-                        p_seccion: seccion,
-                        p_fecha: fecha
-                    })
-                }
-            );
+                    grado: estudiante.grado,
+                    seccion: estudiante.seccion,
+                    orden: estudiante.orden,
+                    nombre: estudiante.nombre,
+                    dni: estudiante.dni,
+                    fecha: desde,
+                    dia: "",
+                    hora: "",
+                    estado: "FALTO"
 
-           if (!respuesta.ok) {
-    const errorTexto = await respuesta.text();
+                });
 
-    resultado.innerHTML =
-        "<p style='color:red'><b>Error de Supabase:</b><br>" +
-        errorTexto +
-        "</p>";
+            } else {
 
-    console.error(errorTexto);
-    return;
-}
+                registros.forEach(registro => {
+
+                    todosLosDatos.push({
+
+                        grado: estudiante.grado,
+                        seccion: estudiante.seccion,
+                        orden: estudiante.orden,
+                        nombre: estudiante.nombre,
+                        dni: estudiante.dni,
+                        fecha: registro.fecha,
+                        dia: registro.dia,
+                        hora: registro.hora,
+                        estado: registro.estado
+
+                    });
+
+                });
+
             }
 
-            const datosDia = await respuesta.json();
-
-            todosLosDatos.push(...datosDia);
-
-            fechaInicio.setDate(
-                fechaInicio.getDate() + 1
-            );
-        }
-
-        const buscar =
-            document.getElementById("buscar").value
-                .trim()
-                .toLowerCase();
-
-        const estado =
-            document.getElementById("estado").value;
+        });
 
         if (buscar) {
-            todosLosDatos = todosLosDatos.filter(e =>
-                (e.nombre || "").toLowerCase().includes(buscar) ||
-                String(e.dni || "").includes(buscar)
-            );
+
+            todosLosDatos =
+                todosLosDatos.filter(e =>
+                    String(e.nombre || "")
+                        .toLowerCase()
+                        .includes(buscar) ||
+                    String(e.dni || "")
+                        .includes(buscar)
+                );
         }
 
-        if (estado) {
-            todosLosDatos = todosLosDatos.filter(
-                e => e.estado === estado
-            );
+        if (estadoFiltro) {
+
+            todosLosDatos =
+                todosLosDatos.filter(
+                    e => e.estado === estadoFiltro
+                );
         }
 
         todosLosDatos.sort((a, b) => {
 
             if (a.fecha !== b.fecha) {
-                return a.fecha.localeCompare(b.fecha);
+                return String(a.fecha)
+                    .localeCompare(String(b.fecha));
             }
 
-            return Number(a.orden) - Number(b.orden);
+            return Number(a.orden || 0) -
+                   Number(b.orden || 0);
+
         });
 
         datosActuales = todosLosDatos;
@@ -279,11 +346,11 @@ async function consultar() {
         console.error(error);
 
         resultado.innerHTML =
-            "<p style='color:red'>❌ Error al consultar la asistencia.</p>";
+            "<p style='color:red'><b>❌ Error:</b><br>" +
+            error.message +
+            "</p>";
     }
 }
-
-function mostrar(datos) {
 
 function mostrar(datos) {
 
