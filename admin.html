@@ -269,9 +269,11 @@ async function consultar() {
         const datos =
             await respuesta.json();
 
-        datosActuales = datos;
+    alert(JSON.stringify(datos, null, 2));
 
-        mostrar(datosActuales);
+datosActuales = datos;
+
+mostrar(datosActuales);
 
     } catch (error) {
 
