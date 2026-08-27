@@ -1000,13 +1000,13 @@ function regresarInicio() {
 }
 async function consultarAsistencia() {
     const resultado = document.getElementById("resultadoConsulta");
-
+const estadoSeleccionado = document.getElementById("consultaEstado").value;
     resultado.innerHTML = "⏳ Consultando...";
 
     try {
         const respuesta = await fetch(
             SUPABASE_URL +
-`/rest/v1/vista_asistencia?select=*&dni=eq.${encodeURIComponent(dniInput.value.trim())}&order=grado.asc,seccion.asc,orden.asc,fecha.desc`,
+`${SUPABASE_URL}/rest/v1/vista_asistencia?select=*&dni=eq.${encodeURIComponent(dniInput.value.trim())}${estadoSeleccionado ? `&estado=eq.${encodeURIComponent(estadoSeleccionado)}` : ""}&order=grado.asc,seccion.asc,orden.asc,fecha.desc`,
             {
                 headers: {
                     "apikey": SUPABASE_KEY,
