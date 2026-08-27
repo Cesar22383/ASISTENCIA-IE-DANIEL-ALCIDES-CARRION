@@ -267,7 +267,8 @@ async function consultar() {
         }
 
      const datos = await respuesta.json();
-
+console.log("URL:", url);
+console.log("DATOS:", datos);
 /* Obtener todos los estudiantes del grado y sección */
 let urlEstudiantes =
     SUPABASE_URL +
@@ -296,45 +297,6 @@ while (fechaActual <= fechaFinal) {
     fechas.push(fechaActual.toISOString().split("T")[0]);
     fechaActual.setDate(fechaActual.getDate() + 1);
 }
-
-/* Agregar FALTO cuando el estudiante no tiene asistencia */
-fechas.forEach(fecha => {
-
-    estudiantes.forEach(estudiante => {
-
-        const tieneRegistro = datos.some(e =>
-            String(e.dni) === String(estudiante.dni) &&
-            e.fecha === fecha
-        );
-
-        if (!tieneRegistro) {
-
-            let fechaObj = new Date(fecha + "T00:00:00");
-
-            const dias = [
-                "domingo",
-                "lunes",
-                "martes",
-                "miércoles",
-                "jueves",
-                "viernes",
-                "sábado"
-            ];
-
-            datos.push({
-                grado: estudiante.grado,
-                seccion: estudiante.seccion,
-                orden: estudiante.orden,
-                nombre: estudiante.nombre,
-                dni: estudiante.dni,
-                fecha: fecha,
-                dia: dias[fechaObj.getDay()],
-                hora: "",
-                estado: "FALTO"
-            });
-        }
-    });
-});
 
 /* Ordenar los resultados */
 datos.sort((a, b) => {
