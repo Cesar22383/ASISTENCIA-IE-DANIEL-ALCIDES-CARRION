@@ -220,12 +220,6 @@ async function consultar() {
             "&fecha=lte." +
             encodeURIComponent(hasta);
 
-        if (estado) {
-
-            url +=
-                "&estado=eq." +
-                encodeURIComponent(estado);
-        }
 
         if (buscar) {
 
@@ -344,7 +338,11 @@ datos.sort((a, b) => {
            Number(a.orden || 0) - Number(b.orden || 0);
 });
 
-datosActuales = datos;
+const datosFiltrados = estado
+    ? datos.filter(e => e.estado === estado)
+    : datos;
+
+datosActuales = datosFiltrados;
 
 mostrar(datosActuales);
 
