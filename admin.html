@@ -292,7 +292,6 @@ while (fechaActual <= fechaFinal) {
     fechaActual.setDate(fechaActual.getDate() + 1);
 }
 /* Agregar FALTO solo cuando se consulta ese estado */
-if (estado === "FALTO") {
 
     fechas.forEach(fecha => {
 
@@ -331,7 +330,6 @@ if (estado === "FALTO") {
             }
         });
     });
-}
 /* Ordenar los resultados */
 datos.sort((a, b) => {
     return String(a.fecha).localeCompare(String(b.fecha)) ||
