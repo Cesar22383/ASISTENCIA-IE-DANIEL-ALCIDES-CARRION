@@ -221,16 +221,16 @@ async function consultar() {
             encodeURIComponent(hasta);
 
 
-        if (buscar) {
-
-            url +=
-                "&or=(nombre.ilike.*" +
-                encodeURIComponent(buscar) +
-                "*,dni.eq." +
-                encodeURIComponent(buscar) +
-                ")";
-        }
-
+ if (buscar) {
+    url +=
+        "&dni=eq." +
+        encodeURIComponent(buscar);
+}
+if (estado) {
+    url +=
+        "&estado=eq." +
+        encodeURIComponent(estado);
+}
         url +=
             "&order=orden.asc,fecha.desc,hora.desc";
 
@@ -281,7 +281,11 @@ const respuestaEstudiantes = await fetch(urlEstudiantes, {
 });
 
 const estudiantes = await respuestaEstudiantes.json();
-
+const estudiantesMostrar = buscar
+    ? estudiantes.filter(estudiante =>
+        String(estudiante.dni) === String(buscar)
+      )
+    : estudiantes;
 /* Crear una lista con las fechas seleccionadas */
 let fechas = [];
 let fechaActual = new Date(desde + "T00:00:00");
@@ -295,7 +299,7 @@ while (fechaActual <= fechaFinal) {
 
     fechas.forEach(fecha => {
 
-        estudiantes.forEach(estudiante => {
+        estudiantesMostrar.forEach(estudiante => {
 
             const tieneRegistro = datos.some(e =>
                 String(e.dni) === String(estudiante.dni) &&
