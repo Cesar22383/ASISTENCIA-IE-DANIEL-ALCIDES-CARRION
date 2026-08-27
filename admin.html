@@ -303,9 +303,9 @@ while (fechaActual <= fechaFinal) {
 
         estudiantesMostrar.forEach(estudiante => {
 
-           const tieneRegistro = datos.some(e =>
-    String(e.dni) === String(estudiante.dni) &&
-    String(e.fecha).substring(0, 10) === fecha
+           const tieneRegistro = datos.some(mi =>
+    mi.dni === estudiante.dni &&
+    mi.fecha.substring(0, 10) === fecha
 );
             );
 
