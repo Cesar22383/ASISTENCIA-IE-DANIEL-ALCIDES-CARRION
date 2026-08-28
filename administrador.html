@@ -1011,6 +1011,132 @@ const FECHA_HOY = new Date().toISOString().substring(0, 10);
                 };
             });
         // ==========================================
+// CALCULAR FALTAS REALES
+// ==========================================
+
+const ahoraPeru = new Date();
+
+const fechaHoyPeru = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+}).format(ahoraPeru);
+
+const horaPeru = Number(
+    new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Lima",
+        hour: "2-digit",
+        hour12: false
+    }).format(ahoraPeru)
+);
+
+// La falta del día actual solo se cuenta desde las 11:00 a. m.
+const puedeContarseFaltaHoy = horaPeru >= 11;
+
+estudiantes.forEach(estudiante => {
+
+    const dni =
+        String(estudiante.dni || "").trim();
+
+    const claveSeccion =
+        `${estudiante.grado || ""}|${estudiante.seccion || ""}`;
+
+    if (!secciones[claveSeccion]) {
+
+        secciones[claveSeccion] = {
+
+            grado:
+                estudiante.grado || "",
+
+            seccion:
+                estudiante.seccion || "",
+
+            TEMPRANO: 0,
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0,
+            total: 0
+        };
+    }
+
+    fechasLaborables.forEach(fecha => {
+
+        // No procesar fechas inválidas
+        if (!fecha) return;
+
+        const fechaObj =
+            new Date(fecha + "T12:00:00");
+
+        if (isNaN(fechaObj.getTime())) return;
+
+        // Enero y febrero no cuentan
+        const mes =
+            fechaObj.getMonth() + 1;
+
+        if (mes === 1 || mes === 2) {
+            return;
+        }
+
+        // Sábado y domingo no cuentan
+        const diaSemana =
+            fechaObj.getDay();
+
+        if (diaSemana === 0 || diaSemana === 6) {
+            return;
+        }
+
+        // No contar fechas anteriores al inicio del sistema
+        if (fecha < "2026-08-27") {
+            return;
+        }
+
+        // No contar fechas futuras
+        if (fecha > fechaHoyPeru) {
+            return;
+        }
+
+        // Hoy todavía no es falta hasta las 11:00 a. m.
+        if (
+            fecha === fechaHoyPeru &&
+            !puedeContarseFaltaHoy
+        ) {
+            return;
+        }
+
+        const claveRegistro =
+            dni + "|" + fecha;
+
+        // Si no existe asistencia, es FALTO
+        if (!registrosExistentes.has(claveRegistro)) {
+
+            resumen.FALTO++;
+
+            personas.FALTO.push({
+
+                nombre:
+                    estudiante.nombre || "",
+
+                dni:
+                    estudiante.dni || "",
+
+                grado:
+                    estudiante.grado || "",
+
+                seccion:
+                    estudiante.seccion || "",
+
+                fecha:
+                    fecha
+            });
+
+            secciones[claveSeccion].FALTO++;
+
+            secciones[claveSeccion].total++;
+        }
+    });
+});
+        // ==========================================
         // NOMBRE DEL PERÍODO
         // ==========================================
 
