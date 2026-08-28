@@ -412,23 +412,153 @@ function seleccionarPeriodo(tipo) {
         botonActivo.classList.add("activo");
     }
 
+    const selector = document.getElementById("periodoResumen");
+
+    if (!selector) return;
+
+    selector.innerHTML = "";
+
+    let opciones = [];
+
+    if (tipo === "mensual") {
+
+        opciones = mesesResumen.map((mes, indice) => ({
+            valor: indice + 1,
+            texto: mes
+        }));
+
+    } else if (tipo === "bimestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Bimestre (Enero - Febrero)" },
+            { valor: 2, texto: "2.º Bimestre (Marzo - Abril)" },
+            { valor: 3, texto: "3.er Bimestre (Mayo - Junio)" },
+            { valor: 4, texto: "4.º Bimestre (Julio - Agosto)" },
+            { valor: 5, texto: "5.º Bimestre (Septiembre - Octubre)" },
+            { valor: 6, texto: "6.º Bimestre (Noviembre - Diciembre)" }
+        ];
+
+    } else if (tipo === "trimestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Trimestre (Enero - Marzo)" },
+            { valor: 2, texto: "2.º Trimestre (Abril - Junio)" },
+            { valor: 3, texto: "3.er Trimestre (Julio - Septiembre)" },
+            { valor: 4, texto: "4.º Trimestre (Octubre - Diciembre)" }
+        ];
+
+    } else if (tipo === "semestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Semestre (Enero - Junio)" },
+            { valor: 2, texto: "2.º Semestre (Julio - Diciembre)" }
+        ];
+
+    } else if (tipo === "anual") {
+
+        opciones = [
+            { valor: 1, texto: "Año completo (Enero - Diciembre)" }
+        ];
     }
-    
+
+    opciones.forEach(opcion => {
+
+        const option = document.createElement("option");
+
+        option.value = opcion.valor;
+        option.textContent = opcion.texto;
+
+        selector.appendChild(option);
+
+    });
+}
+
+    // Cambiar las opciones del período
+    const selector = document.getElementById("periodoResumen");
+
+    if (!selector) return;
+
+    selector.innerHTML = "";
+
+    let opciones = [];
+
+    if (tipo === "mensual") {
+
+        opciones = mesesResumen.map((mes, indice) => ({
+            valor: indice + 1,
+            texto: mes
+        }));
+
+    } else if (tipo === "bimestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Bimestre (Enero - Febrero)" },
+            { valor: 2, texto: "2.º Bimestre (Marzo - Abril)" },
+            { valor: 3, texto: "3.er Bimestre (Mayo - Junio)" },
+            { valor: 4, texto: "4.º Bimestre (Julio - Agosto)" },
+            { valor: 5, texto: "5.º Bimestre (Septiembre - Octubre)" },
+            { valor: 6, texto: "6.º Bimestre (Noviembre - Diciembre)" }
+        ];
+
+    } else if (tipo === "trimestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Trimestre (Enero - Marzo)" },
+            { valor: 2, texto: "2.º Trimestre (Abril - Junio)" },
+            { valor: 3, texto: "3.er Trimestre (Julio - Septiembre)" },
+            { valor: 4, texto: "4.º Trimestre (Octubre - Diciembre)" }
+        ];
+
+    } else if (tipo === "semestral") {
+
+        opciones = [
+            { valor: 1, texto: "1.er Semestre (Enero - Junio)" },
+            { valor: 2, texto: "2.º Semestre (Julio - Diciembre)" }
+        ];
+
+    } else if (tipo === "anual") {
+
+        opciones = [
+            { valor: 1, texto: "Año completo (Enero - Diciembre)" }
+        ];
+
+    }
+
+    opciones.forEach(opcion => {
+
+        const option = document.createElement("option");
+
+        option.value = opcion.valor;
+        option.textContent = opcion.texto;
+
+        selector.appendChild(option);
+
+    });
+}
 // ==========================================
 // GENERAR RESUMEN REAL DE ASISTENCIA
 // ==========================================
 
 async function generarResumen() {
 
-    const contenedor = document.getElementById("resultadoResumen");
+    const contenedor =
+        document.getElementById("resultadoResumen");
 
-    const anio = Number(
-        document.getElementById("anioResumen").value
-    );
+    if (!contenedor) return;
 
-    const periodo = Number(
-        document.getElementById("periodoResumen").value
-    );
+    const anio =
+        Number(document.getElementById("anioResumen").value);
+
+    const periodo =
+        Number(document.getElementById("periodoResumen").value);
+
+    if (!anio || !periodo || !periodoSeleccionado) {
+
+        contenedor.innerHTML =
+            "<p style='color:red'>⚠️ Selecciona año y período.</p>";
+
+        return;
+    }
 
     contenedor.innerHTML = `
         <div style="
@@ -443,12 +573,12 @@ async function generarResumen() {
 
     try {
 
-        // ------------------------------------------
-        // CALCULAR FECHAS DEL PERÍODO
-        // ------------------------------------------
+        // ==========================================
+        // CALCULAR MESES DEL PERÍODO
+        // ==========================================
 
-        let mesInicio;
-        let mesFin;
+        let mesInicio = 1;
+        let mesFin = 12;
 
         if (periodoSeleccionado === "mensual") {
 
@@ -457,25 +587,38 @@ async function generarResumen() {
 
         } else if (periodoSeleccionado === "bimestral") {
 
-            mesInicio = (periodo - 1) * 2 + 1;
-            mesFin = mesInicio + 1;
+            mesInicio =
+                (periodo - 1) * 2 + 1;
+
+            mesFin =
+                mesInicio + 1;
 
         } else if (periodoSeleccionado === "trimestral") {
 
-            mesInicio = (periodo - 1) * 3 + 1;
-            mesFin = mesInicio + 2;
+            mesInicio =
+                (periodo - 1) * 3 + 1;
+
+            mesFin =
+                mesInicio + 2;
 
         } else if (periodoSeleccionado === "semestral") {
 
-            mesInicio = periodo === 1 ? 1 : 7;
-            mesFin = periodo === 1 ? 6 : 12;
+            mesInicio =
+                periodo === 1 ? 1 : 7;
 
-        } else {
+            mesFin =
+                periodo === 1 ? 6 : 12;
+
+        } else if (periodoSeleccionado === "anual") {
 
             mesInicio = 1;
             mesFin = 12;
 
         }
+
+        // ==========================================
+        // FECHAS
+        // ==========================================
 
         const fechaInicio =
             `${anio}-${String(mesInicio).padStart(2, "0")}-01`;
@@ -486,9 +629,9 @@ async function generarResumen() {
         const fechaFin =
             `${anio}-${String(mesFin).padStart(2, "0")}-${ultimoDia}`;
 
-        // ------------------------------------------
+        // ==========================================
         // CONSULTAR ASISTENCIAS
-        // ------------------------------------------
+        // ==========================================
 
         const urlAsistencia =
             SUPABASE_URL +
@@ -505,7 +648,8 @@ async function generarResumen() {
 
                 headers: {
                     "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY
+                    "Authorization":
+                        "Bearer " + SUPABASE_KEY
                 }
 
             });
@@ -515,15 +659,14 @@ async function generarResumen() {
             throw new Error(
                 "No se pudieron consultar los registros de asistencia."
             );
-
         }
 
         const asistencias =
             await respuestaAsistencia.json();
 
-        // ------------------------------------------
+        // ==========================================
         // CONSULTAR ESTUDIANTES
-        // ------------------------------------------
+        // ==========================================
 
         const urlEstudiantes =
             SUPABASE_URL +
@@ -536,7 +679,8 @@ async function generarResumen() {
 
                 headers: {
                     "apikey": SUPABASE_KEY,
-                    "Authorization": "Bearer " + SUPABASE_KEY
+                    "Authorization":
+                        "Bearer " + SUPABASE_KEY
                 }
 
             });
@@ -546,15 +690,60 @@ async function generarResumen() {
             throw new Error(
                 "No se pudo consultar la lista de estudiantes."
             );
-
         }
 
-        const estudiantes =
+        let estudiantes =
             await respuestaEstudiantes.json();
 
-        // ------------------------------------------
-        // SOLO DÍAS DE LUNES A VIERNES
-        // ------------------------------------------
+        // ==========================================
+        // FILTROS DE GRADO Y SECCIÓN
+        // ==========================================
+
+        const selectorGrado =
+            document.getElementById("gradoResumen");
+
+        const selectorSeccion =
+            document.getElementById("seccionResumen");
+
+        const gradoSeleccionado =
+            selectorGrado
+                ? selectorGrado.value
+                : "";
+
+        const seccionSeleccionada =
+            selectorSeccion
+                ? selectorSeccion.value
+                : "";
+
+        if (
+            gradoSeleccionado &&
+            gradoSeleccionado !== "todos" &&
+            gradoSeleccionado !== "Todos los grados"
+        ) {
+
+            estudiantes =
+                estudiantes.filter(estudiante =>
+                    String(estudiante.grado) ===
+                    String(gradoSeleccionado)
+                );
+        }
+
+        if (
+            seccionSeleccionada &&
+            seccionSeleccionada !== "todas" &&
+            seccionSeleccionada !== "Todas las secciones"
+        ) {
+
+            estudiantes =
+                estudiantes.filter(estudiante =>
+                    String(estudiante.seccion) ===
+                    String(seccionSeleccionada)
+                );
+        }
+
+        // ==========================================
+        // DÍAS LABORABLES
+        // ==========================================
 
         const fechasLaborables = [];
 
@@ -569,23 +758,26 @@ async function generarResumen() {
             const diaSemana =
                 fechaActual.getDay();
 
-            if (diaSemana !== 0 && diaSemana !== 6) {
+            if (
+                diaSemana !== 0 &&
+                diaSemana !== 6
+            ) {
 
                 fechasLaborables.push(
-                    fechaActual.toISOString().split("T")[0]
+                    fechaActual
+                        .toISOString()
+                        .split("T")[0]
                 );
-
             }
 
             fechaActual.setDate(
                 fechaActual.getDate() + 1
             );
-
         }
 
-        // ------------------------------------------
+        // ==========================================
         // ESTADOS
-        // ------------------------------------------
+        // ==========================================
 
         const estados = [
             "TEMPRANO",
@@ -608,13 +800,12 @@ async function generarResumen() {
             FALTO: []
         };
 
-        // ------------------------------------------
+        // ==========================================
         // SECCIONES
-        // ------------------------------------------
+        // ==========================================
 
         const secciones = {};
 
-        // Crear estructura por estudiante
         estudiantes.forEach(estudiante => {
 
             const clave =
@@ -623,83 +814,143 @@ async function generarResumen() {
             if (!secciones[clave]) {
 
                 secciones[clave] = {
-                    grado: estudiante.grado || "",
-                    seccion: estudiante.seccion || "",
+
+                    grado:
+                        estudiante.grado || "",
+
+                    seccion:
+                        estudiante.seccion || "",
+
                     TEMPRANO: 0,
                     TARDANZA: 0,
                     "DEMASIADO TARDE": 0,
                     FALTO: 0,
                     total: 0
                 };
-
             }
-
         });
 
-        // ------------------------------------------
-        // REGISTRAR ASISTENCIAS
-        // ------------------------------------------
+        // ==========================================
+        // REGISTROS VÁLIDOS
+        // ==========================================
 
-        const registrosExistentes = new Set();
+        const registrosExistentes =
+            new Map();
 
         asistencias.forEach(registro => {
 
             const dni =
-                String(registro.dni);
+                String(registro.dni || "");
 
             const fecha =
-                String(registro.fecha).substring(0, 10);
+                String(registro.fecha || "")
+                    .substring(0, 10);
 
             const estado =
-                String(registro.estado || "").trim();
+                String(registro.estado || "")
+                    .trim()
+                    .toUpperCase();
+
+            if (!dni || !fecha) return;
 
             if (!estados.includes(estado)) return;
 
-            const claveRegistro =
+            const clave =
                 dni + "|" + fecha;
 
-            registrosExistentes.add(claveRegistro);
+            // Evitar duplicar al mismo estudiante
+            // el mismo día
+            if (!registrosExistentes.has(clave)) {
 
-            resumen[estado]++;
-
-            personas[estado].push({
-                nombre: registro.nombre || "",
-                dni: registro.dni || "",
-                grado: registro.grado || "",
-                seccion: registro.seccion || "",
-                fecha: fecha
-            });
-
-            const claveSeccion =
-                `${registro.grado || ""}|${registro.seccion || ""}`;
-
-            if (!secciones[claveSeccion]) {
-
-                secciones[claveSeccion] = {
-                    grado: registro.grado || "",
-                    seccion: registro.seccion || "",
-                    TEMPRANO: 0,
-                    TARDANZA: 0,
-                    "DEMASIADO TARDE": 0,
-                    FALTO: 0,
-                    total: 0
-                };
-
+                registrosExistentes.set(
+                    clave,
+                    registro
+                );
             }
-
-            secciones[claveSeccion][estado]++;
-            secciones[claveSeccion].total++;
-
         });
 
-        // ------------------------------------------
+        // ==========================================
+        // PROCESAR ASISTENCIAS
+        // ==========================================
+
+        registrosExistentes.forEach(
+            registro => {
+
+                const estado =
+                    String(registro.estado || "")
+                        .trim()
+                        .toUpperCase();
+
+                const dni =
+                    String(registro.dni || "");
+
+                const fecha =
+                    String(registro.fecha || "")
+                        .substring(0, 10);
+
+                const estudianteExiste =
+                    estudiantes.some(estudiante =>
+                        String(estudiante.dni) === dni
+                    );
+
+                if (!estudianteExiste) return;
+
+                resumen[estado]++;
+
+                personas[estado].push({
+
+                    nombre:
+                        registro.nombre || "",
+
+                    dni:
+                        registro.dni || "",
+
+                    grado:
+                        registro.grado || "",
+
+                    seccion:
+                        registro.seccion || "",
+
+                    fecha:
+                        fecha
+                });
+
+                const claveSeccion =
+                    `${registro.grado || ""}|${registro.seccion || ""}`;
+
+                if (!secciones[claveSeccion]) {
+
+                    secciones[claveSeccion] = {
+
+                        grado:
+                            registro.grado || "",
+
+                        seccion:
+                            registro.seccion || "",
+
+                        TEMPRANO: 0,
+                        TARDANZA: 0,
+                        "DEMASIADO TARDE": 0,
+                        FALTO: 0,
+                        total: 0
+                    };
+                }
+
+                secciones[claveSeccion][estado]++;
+
+                secciones[claveSeccion].total++;
+            }
+        );
+
+        // ==========================================
         // CALCULAR FALTAS REALES
-        // ------------------------------------------
+        // SOLO LUNES A VIERNES
+        // ==========================================
 
         estudiantes.forEach(estudiante => {
 
             const dni =
-                String(estudiante.dni);
+                String(estudiante.dni || "");
 
             const claveSeccion =
                 `${estudiante.grado || ""}|${estudiante.seccion || ""}`;
@@ -707,15 +958,19 @@ async function generarResumen() {
             if (!secciones[claveSeccion]) {
 
                 secciones[claveSeccion] = {
-                    grado: estudiante.grado || "",
-                    seccion: estudiante.seccion || "",
+
+                    grado:
+                        estudiante.grado || "",
+
+                    seccion:
+                        estudiante.seccion || "",
+
                     TEMPRANO: 0,
                     TARDANZA: 0,
                     "DEMASIADO TARDE": 0,
                     FALTO: 0,
                     total: 0
                 };
-
             }
 
             fechasLaborables.forEach(fecha => {
@@ -723,49 +978,69 @@ async function generarResumen() {
                 const claveRegistro =
                     dni + "|" + fecha;
 
-                if (!registrosExistentes.has(claveRegistro)) {
+                if (
+                    !registrosExistentes.has(
+                        claveRegistro
+                    )
+                ) {
 
                     resumen.FALTO++;
 
                     personas.FALTO.push({
-                        nombre: estudiante.nombre || "",
-                        dni: estudiante.dni || "",
-                        grado: estudiante.grado || "",
-                        seccion: estudiante.seccion || "",
-                        fecha: fecha
+
+                        nombre:
+                            estudiante.nombre || "",
+
+                        dni:
+                            estudiante.dni || "",
+
+                        grado:
+                            estudiante.grado || "",
+
+                        seccion:
+                            estudiante.seccion || "",
+
+                        fecha:
+                            fecha
                     });
 
                     secciones[claveSeccion].FALTO++;
+
                     secciones[claveSeccion].total++;
-
                 }
-
             });
-
         });
 
-        // ------------------------------------------
+        // ==========================================
         // NOMBRE DEL PERÍODO
-        // ------------------------------------------
+        // ==========================================
 
         let nombrePeriodo = "";
 
-        if (periodoSeleccionado === "mensual") {
+        if (
+            periodoSeleccionado === "mensual"
+        ) {
 
             nombrePeriodo =
                 mesesResumen[periodo - 1];
 
-        } else if (periodoSeleccionado === "bimestral") {
+        } else if (
+            periodoSeleccionado === "bimestral"
+        ) {
 
             nombrePeriodo =
                 `${periodo}° Bimestre`;
 
-        } else if (periodoSeleccionado === "trimestral") {
+        } else if (
+            periodoSeleccionado === "trimestral"
+        ) {
 
             nombrePeriodo =
                 `${periodo}° Trimestre`;
 
-        } else if (periodoSeleccionado === "semestral") {
+        } else if (
+            periodoSeleccionado === "semestral"
+        ) {
 
             nombrePeriodo =
                 `${periodo}° Semestre`;
@@ -774,12 +1049,66 @@ async function generarResumen() {
 
             nombrePeriodo =
                 "Año completo";
-
         }
 
-        // ------------------------------------------
+        // ==========================================
+        // TOTALES
+        // ==========================================
+
+        const totalGeneral =
+            resumen.TEMPRANO +
+            resumen.TARDANZA +
+            resumen["DEMASIADO TARDE"] +
+            resumen.FALTO;
+
+        const totalAsistencias =
+            resumen.TEMPRANO +
+            resumen.TARDANZA +
+            resumen["DEMASIADO TARDE"];
+
+        const porcentajeAsistencia =
+            totalGeneral > 0
+                ? (
+                    totalAsistencias /
+                    totalGeneral
+                ) * 100
+                : 0;
+
+        const porcentajeTemprano =
+            totalGeneral > 0
+                ? (
+                    resumen.TEMPRANO /
+                    totalGeneral
+                ) * 100
+                : 0;
+
+        const porcentajeTardanza =
+            totalGeneral > 0
+                ? (
+                    resumen.TARDANZA /
+                    totalGeneral
+                ) * 100
+                : 0;
+
+        const porcentajeDemasiado =
+            totalGeneral > 0
+                ? (
+                    resumen["DEMASIADO TARDE"] /
+                    totalGeneral
+                ) * 100
+                : 0;
+
+        const porcentajeFalto =
+            totalGeneral > 0
+                ? (
+                    resumen.FALTO /
+                    totalGeneral
+                ) * 100
+                : 0;
+
+        // ==========================================
         // HTML DEL RESUMEN
-        // ------------------------------------------
+        // ==========================================
 
         let html = `
 
@@ -788,6 +1117,7 @@ async function generarResumen() {
             <div class="cabecera-resumen">
 
                 <div>
+
                     <h3>
                         📊 RESUMEN DE ASISTENCIA
                     </h3>
@@ -796,18 +1126,17 @@ async function generarResumen() {
                         <b>${nombrePeriodo}</b>
                         — Año ${anio}
                     </p>
+
                 </div>
 
                 <div class="total-general">
+
                     TOTAL
+
                     <strong>
-                        ${
-                            resumen.TEMPRANO +
-                            resumen.TARDANZA +
-                            resumen["DEMASIADO TARDE"] +
-                            resumen.FALTO
-                        }
+                        ${totalGeneral}
                     </strong>
+
                 </div>
 
             </div>
@@ -815,27 +1144,132 @@ async function generarResumen() {
             <div class="tarjetas-estados">
 
                 <div class="tarjeta-estado temprano">
+
                     <span>🟢</span>
-                    <small>TEMPRANO</small>
-                    <strong>${resumen.TEMPRANO}</strong>
+
+                    <small>
+                        TEMPRANO
+                    </small>
+
+                    <strong>
+                        ${resumen.TEMPRANO}
+                    </strong>
+
+                    <small>
+                        ${porcentajeTemprano.toFixed(2)}%
+                    </small>
+
                 </div>
 
                 <div class="tarjeta-estado tardanza">
+
                     <span>🟡</span>
-                    <small>TARDANZA</small>
-                    <strong>${resumen.TARDANZA}</strong>
+
+                    <small>
+                        TARDANZA
+                    </small>
+
+                    <strong>
+                        ${resumen.TARDANZA}
+                    </strong>
+
+                    <small>
+                        ${porcentajeTardanza.toFixed(2)}%
+                    </small>
+
                 </div>
 
                 <div class="tarjeta-estado demasiado">
+
                     <span>🔴</span>
-                    <small>DEMASIADO TARDE</small>
-                    <strong>${resumen["DEMASIADO TARDE"]}</strong>
+
+                    <small>
+                        DEMASIADO TARDE
+                    </small>
+
+                    <strong>
+                        ${resumen["DEMASIADO TARDE"]}
+                    </strong>
+
+                    <small>
+                        ${porcentajeDemasiado.toFixed(2)}%
+                    </small>
+
                 </div>
 
                 <div class="tarjeta-estado falto">
+
                     <span>⚪</span>
-                    <small>FALTÓ</small>
-                    <strong>${resumen.FALTO}</strong>
+
+                    <small>
+                        FALTÓ
+                    </small>
+
+                    <strong>
+                        ${resumen.FALTO}
+                    </strong>
+
+                    <small>
+                        ${porcentajeFalto.toFixed(2)}%
+                    </small>
+
+                </div>
+
+            </div>
+
+            <div style="
+                margin:20px 0;
+                padding:20px;
+                border-radius:12px;
+                background:#f8fafc;
+                text-align:center;
+            ">
+
+                <h3>
+                    PORCENTAJE DE ASISTENCIA GENERAL
+                </h3>
+
+                <div style="
+                    font-size:36px;
+                    font-weight:bold;
+                    color:#16a34a;
+                    margin:10px 0;
+                ">
+                    ${porcentajeAsistencia.toFixed(2)}%
+                </div>
+
+                <p>
+                    Temprano + Tardanza + Demasiado tarde
+                </p>
+
+                <div style="
+                    display:flex;
+                    justify-content:center;
+                    gap:25px;
+                    flex-wrap:wrap;
+                    margin-top:15px;
+                ">
+
+                    <span>
+                        🟢 Temprano:
+                        <b>${porcentajeTemprano.toFixed(2)}%</b>
+                    </span>
+
+                    <span>
+                        🟡 Tardanza:
+                        <b>${porcentajeTardanza.toFixed(2)}%</b>
+                    </span>
+
+                    <span>
+                        🔴 Demasiado tarde:
+                        <b>${porcentajeDemasiado.toFixed(2)}%</b>
+                    </span>
+
+                    <span>
+                        ⚪ Faltas:
+                        <b>${porcentajeFalto.toFixed(2)}%</b>
+                    </span>
+
                 </div>
 
             </div>
@@ -851,6 +1285,7 @@ async function generarResumen() {
                     <thead>
 
                         <tr>
+
                             <th>Grado</th>
                             <th>Sección</th>
                             <th>Temprano</th>
@@ -858,6 +1293,7 @@ async function generarResumen() {
                             <th>Demasiado tarde</th>
                             <th>Faltó</th>
                             <th>Total</th>
+
                         </tr>
 
                     </thead>
@@ -867,8 +1303,10 @@ async function generarResumen() {
 
         Object.values(secciones)
             .sort((a, b) =>
-                String(a.grado).localeCompare(String(b.grado)) ||
-                String(a.seccion).localeCompare(String(b.seccion))
+                String(a.grado)
+                    .localeCompare(String(b.grado)) ||
+                String(a.seccion)
+                    .localeCompare(String(b.seccion))
             )
             .forEach(seccion => {
 
@@ -876,10 +1314,14 @@ async function generarResumen() {
 
                     <tr>
 
-                        <td>${seccion.grado}</td>
+                        <td>
+                            ${seccion.grado}
+                        </td>
 
                         <td>
-                            <b>${seccion.seccion}</b>
+                            <b>
+                                ${seccion.seccion}
+                            </b>
                         </td>
 
                         <td class="celda-temprano">
@@ -899,13 +1341,14 @@ async function generarResumen() {
                         </td>
 
                         <td>
-                            <b>${seccion.total}</b>
+                            <b>
+                                ${seccion.total}
+                            </b>
                         </td>
 
                     </tr>
 
                 `;
-
             });
 
         html += `
@@ -926,9 +1369,11 @@ async function generarResumen() {
 
         estados.forEach(estado => {
 
-            const lista = personas[estado];
+            const lista =
+                personas[estado];
 
-            let titulo = estado;
+            let titulo =
+                estado;
 
             if (estado === "FALTO") {
                 titulo = "FALTARON";
@@ -949,14 +1394,17 @@ async function generarResumen() {
                     </summary>
 
                     <div class="lista-personas">
+
             `;
 
             if (!lista.length) {
 
                 html += `
+
                     <p>
                         No hay estudiantes en este estado.
                     </p>
+
                 `;
 
             } else {
@@ -964,7 +1412,9 @@ async function generarResumen() {
                 lista
                     .sort((a, b) =>
                         String(a.nombre)
-                            .localeCompare(String(b.nombre))
+                            .localeCompare(
+                                String(b.nombre)
+                            )
                     )
                     .forEach(persona => {
 
@@ -972,21 +1422,23 @@ async function generarResumen() {
 
                             <div class="persona">
 
-                                <b>${persona.nombre}</b>
+                                <b>
+                                    ${persona.nombre}
+                                </b>
 
                                 <span>
                                     DNI: ${persona.dni}
-                                    — ${persona.grado}
+                                    —
+                                    ${persona.grado}
                                     ${persona.seccion}
-                                    — ${persona.fecha}
+                                    —
+                                    ${persona.fecha}
                                 </span>
 
                             </div>
 
                         `;
-
                     });
-
             }
 
             html += `
@@ -996,7 +1448,6 @@ async function generarResumen() {
                 </details>
 
             `;
-
         });
 
         html += `
@@ -1007,9 +1458,36 @@ async function generarResumen() {
 
         `;
 
-        contenedor.innerHTML = html;
+        contenedor.innerHTML =
+            html;
 
     } catch (error) {
+
+        console.error(
+            "Error al generar resumen:",
+            error
+        );
+
+        contenedor.innerHTML = `
+
+            <div style="
+                padding:20px;
+                color:#dc2626;
+                background:#fee2e2;
+                border-radius:10px;
+            ">
+
+                <b>❌ Error al generar el resumen</b>
+
+                <br><br>
+
+                ${error.message}
+
+            </div>
+
+        `;
+    }
+} catch (error) {
 
         console.error(error);
 
@@ -1036,86 +1514,6 @@ async function generarResumen() {
     }
 
 }
-function actualizarResumen() {
-
-    const resultadoResumen =
-        document.getElementById("resultadoResumen");
-
-    if (!resultadoResumen) return;
-
-    resultadoResumen.innerHTML =
-        "<p>Selecciona un período para generar el resumen.</p>";
-}
-    const selector = document.getElementById("periodoResumen");
-
-    if (!selector) return;
-
-    selector.innerHTML = "";
-
-    let opciones = [];
-
-    if (tipo === "mensual") {
-
-        opciones = mesesResumen.map((mes, indice) => ({
-            valor: indice + 1,
-            texto: mes
-        }));
-
-    }
-
-    else if (tipo === "bimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Bimestre (Enero - Febrero)" },
-            { valor: 2, texto: "2.º Bimestre (Marzo - Abril)" },
-            { valor: 3, texto: "3.er Bimestre (Mayo - Junio)" },
-            { valor: 4, texto: "4.º Bimestre (Julio - Agosto)" },
-            { valor: 5, texto: "5.º Bimestre (Septiembre - Octubre)" },
-            { valor: 6, texto: "6.º Bimestre (Noviembre - Diciembre)" }
-        ];
-
-    }
-
-    else if (tipo === "trimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Trimestre (Enero - Marzo)" },
-            { valor: 2, texto: "2.º Trimestre (Abril - Junio)" },
-            { valor: 3, texto: "3.er Trimestre (Julio - Septiembre)" },
-            { valor: 4, texto: "4.º Trimestre (Octubre - Diciembre)" }
-        ];
-
-    }
-
-    else if (tipo === "semestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Semestre (Enero - Junio)" },
-            { valor: 2, texto: "2.º Semestre (Julio - Diciembre)" }
-        ];
-
-    }
-
-    else if (tipo === "anual") {
-
-        opciones = [
-            { valor: 1, texto: "Año completo (Enero - Diciembre)" }
-        ];
-
-    }
-
-    opciones.forEach(opcion => {
-
-        const option = document.createElement("option");
-
-        option.value = opcion.valor;
-        option.textContent = opcion.texto;
-
-        selector.appendChild(option);
-
-    });
-}
-
 
 // ==========================================
 // INICIALIZAR RESUMEN
