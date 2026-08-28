@@ -226,11 +226,7 @@ async function consultar() {
         "&dni=eq." +
         encodeURIComponent(buscar);
 }
-if (estado) {
-    url +=
-        "&estado=eq." +
-        encodeURIComponent(estado);
-}
+
         url +=
             "&order=orden.asc,fecha.desc,hora.desc";
 
