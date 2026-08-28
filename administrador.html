@@ -326,12 +326,17 @@ Hasta
         Año:
     </label>
 
-    <select id="anioResumen">
-        <option value="2026">2026</option>
-        <option value="2025">2025</option>
-        <option value="2024">2024</option>
-        <option value="2023">2023</option>
-        <option value="2022">2022</option>
+     <select id="anioResumen">
+    <option value="2026">2026</option>
+    <option value="2027">2027</option>
+    <option value="2028">2028</option>
+    <option value="2029">2029</option>
+    <option value="2030">2030</option>
+    <option value="2031">2031</option>
+    <option value="2032">2032</option>
+    <option value="2033">2033</option>
+    <option value="2034">2034</option>
+    <option value="2035">2035</option>
     </select>
 
     <label for="periodoResumen">
@@ -760,33 +765,52 @@ async function generarResumen() {
 
         const fechasLaborables = [];
 
-        let fechaActual =
-            new Date(fechaInicio + "T00:00:00");
+let fechaActual = new Date(fechaInicio + "T00:00:00");
+const fechaFinal = new Date(fechaFin + "T00:00:00");
 
-        const fechaFinal =
-            new Date(fechaFin + "T00:00:00");
+// Fecha en que comenzó a funcionar el sistema
+const fechaInicioSistema = new Date("2026-08-27T00:00:00");
 
-        while (fechaActual <= fechaFinal) {
+// Hoy
+const hoy = new Date();
+const fechaHoy = new Date(
+    hoy.getFullYear(),
+    hoy.getMonth(),
+    hoy.getDate()
+);
 
-            const diaSemana =
-                fechaActual.getDay();
+// No contar fechas anteriores al inicio del sistema
+if (fechaActual < fechaInicioSistema) {
+    fechaActual = new Date(fechaInicioSistema);
+}
 
-            if (
-                diaSemana !== 0 &&
-                diaSemana !== 6
-            ) {
+// No contar fechas futuras
+const limiteFecha = fechaFinal < fechaHoy ? fechaFinal : fechaHoy;
 
-                fechasLaborables.push(
-                    fechaActual
-                        .toISOString()
-                        .split("T")[0]
-                );
-            }
+while (fechaActual <= limiteFecha) {
 
-            fechaActual.setDate(
-                fechaActual.getDate() + 1
-            );
-        }
+    const mes = fechaActual.getMonth() + 1;
+    const diaSemana = fechaActual.getDay();
+
+    // Enero y febrero no cuentan
+    // 0 = domingo, 6 = sábado
+    if (
+        mes !== 1 &&
+        mes !== 2 &&
+        diaSemana !== 0 &&
+        diaSemana !== 6
+    ) {
+        fechasLaborables.push(
+            fechaActual
+                .toISOString()
+                .split("T")[0]
+        );
+    }
+
+    fechaActual.setDate(
+        fechaActual.getDate() + 1
+    );
+}
 
         // ==========================================
         // ESTADOS
@@ -959,7 +983,8 @@ async function generarResumen() {
         // CALCULAR FALTAS REALES
         // SOLO LUNES A VIERNES
         // ==========================================
-
+const FECHA_INICIO_ASISTENCIA = "2026-08-24";
+const FECHA_HOY = new Date().toISOString().substring(0, 10);
         estudiantes.forEach(estudiante => {
 
             const dni =
@@ -986,36 +1011,209 @@ async function generarResumen() {
                 };
             }
 
-            fechasLaborables.forEach(fecha => {
+           fechasLaborables.forEach(fecha => {
 
-                const claveRegistro =
-                    dni + "|" + fecha;
+    // ==========================================
+    // SOLO CONTAR FALTAS REALES
+    // ==========================================
 
-                if (
-                    !registrosExistentes.has(
-                        claveRegistro
-                    )
-                ) {
+    const hoy = new Date();
 
-                    resumen.FALTO++;
+    // Fecha actual en formato YYYY-MM-DD
+    const fechaHoy =
+        hoy.getFullYear() + "-" +
+        String(hoy.getMonth() + 1).padStart(2, "0") + "-" +
+        String(hoy.getDate()).padStart(2, "0");
+// ==========================================
+// CALCULAR FALTAS REALES
+// REGLAS DEL SISTEMA DE ASISTENCIA
+// ==========================================
 
-                    personas.FALTO.push({
+const FECHA_INICIO_ASISTENCIA = "2026-08-24";
 
-                        nombre:
-                            estudiante.nombre || "",
+// Obtener fecha actual según Perú
+const ahoraPeru = new Date();
 
-                        dni:
-                            estudiante.dni || "",
+const fechaHoyPeru = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+}).format(ahoraPeru);
 
-                        grado:
-                            estudiante.grado || "",
+// Hora actual en Perú
+const horaPeru = Number(
+    new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Lima",
+        hour: "2-digit",
+        hour12: false
+    }).format(ahoraPeru)
+);
 
-                        seccion:
-                            estudiante.seccion || "",
+// Desde las 11:00 a. m. se cierra el registro
+const puedeContarseFaltaHoy = horaPeru >= 11;
 
-                        fecha:
-                            fecha
-                    });
+
+// ==========================================
+// PROCESAR CADA ESTUDIANTE
+// ==========================================
+
+estudiantes.forEach(estudiante => {
+
+    const dni = String(estudiante.dni || "").trim();
+
+    const claveSeccion =
+        `${estudiante.grado || ""}|${estudiante.seccion || ""}`;
+
+    // Crear sección si no existe
+    if (!secciones[claveSeccion]) {
+
+        secciones[claveSeccion] = {
+
+            grado:
+                estudiante.grado || "",
+
+            seccion:
+                estudiante.seccion || "",
+
+            TEMPRANO: 0,
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0,
+            total: 0
+        };
+    }
+
+
+    // ==========================================
+    // REVISAR CADA DÍA DEL PERÍODO
+    // ==========================================
+
+    fechasLaborables.forEach(fecha => {
+
+        // ------------------------------------------
+        // Solo fechas válidas
+        // ------------------------------------------
+
+        if (!fecha) return;
+
+        // Convertir a fecha segura
+        const fechaObj = new Date(fecha + "T12:00:00");
+
+        if (isNaN(fechaObj.getTime())) return;
+
+
+        // ------------------------------------------
+        // Enero y febrero NO cuentan
+        // ------------------------------------------
+
+        const mes = fechaObj.getMonth() + 1;
+
+        if (mes === 1 || mes === 2) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // Solo desde que comenzó el sistema
+        // ------------------------------------------
+
+        if (fecha < FECHA_INICIO_ASISTENCIA) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // No contar fechas futuras
+        // ------------------------------------------
+
+        if (fecha > fechaHoyPeru) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // Sábado y domingo NO cuentan
+        // ------------------------------------------
+
+        const diaSemana = fechaObj.getDay();
+
+        if (diaSemana === 0 || diaSemana === 6) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // HOY todavía no se considera falta
+        // hasta las 11:00 a. m.
+        // ------------------------------------------
+
+        if (
+            fecha === fechaHoyPeru &&
+            !puedeContarseFaltaHoy
+        ) {
+            return;
+        }
+
+
+        // ------------------------------------------
+        // Buscar si el estudiante registró asistencia
+        // ese día
+        // ------------------------------------------
+
+        const claveRegistro = dni + "|" + fecha;
+
+
+        // ==========================================
+        // SI NO EXISTE REGISTRO → FALTO
+        // ==========================================
+
+        if (!registrosExistentes.has(claveRegistro)) {
+
+            resumen.FALTO++;
+
+            personas.FALTO.push({
+
+                nombre:
+                    estudiante.nombre || "",
+
+                dni:
+                    estudiante.dni || "",
+
+                grado:
+                    estudiante.grado || "",
+
+                seccion:
+                    estudiante.seccion || "",
+
+                fecha:
+                    fecha
+            });
+
+
+            // --------------------------------------
+            // Acumular falta en la sección
+            // --------------------------------------
+
+            secciones[claveSeccion].FALTO++;
+
+            secciones[claveSeccion].total++;
+
+        }
+
+    });
+
+});
+
+    // ==========================================
+    // ACTUALIZAR RESUMEN POR GRADO Y SECCIÓN
+    // ==========================================
+
+    secciones[claveSeccion].FALTO++;
+
+    secciones[claveSeccion].total++;
+
+});
 
                     secciones[claveSeccion].FALTO++;
 
