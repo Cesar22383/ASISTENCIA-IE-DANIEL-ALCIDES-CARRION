@@ -400,85 +400,6 @@ const mesesResumen = [
     "Diciembre"
 ];
 
-function seleccionarPeriodo(tipo) {
-
-    periodoSeleccionado = tipo;
-
-    // Activar visualmente el botón seleccionado
-    document.querySelectorAll(".btn-periodo").forEach(boton => {
-        boton.classList.remove("activo");
-    });
-
-    const botonActivo = document.querySelector(
-        `.btn-periodo[onclick="seleccionarPeriodo('${tipo}')"]`
-    );
-
-    if (botonActivo) {
-        botonActivo.classList.add("activo");
-    }
-
-    const selector = document.getElementById("periodoResumen");
-
-    if (!selector) return;
-
-    selector.innerHTML = "";
-
-    let opciones = [];
-
-    if (tipo === "mensual") {
-
-        opciones = mesesResumen.map((mes, indice) => ({
-            valor: indice + 1,
-            texto: mes
-        }));
-
-    } else if (tipo === "bimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Bimestre (Enero - Febrero)" },
-            { valor: 2, texto: "2.º Bimestre (Marzo - Abril)" },
-            { valor: 3, texto: "3.er Bimestre (Mayo - Junio)" },
-            { valor: 4, texto: "4.º Bimestre (Julio - Agosto)" },
-            { valor: 5, texto: "5.º Bimestre (Septiembre - Octubre)" },
-            { valor: 6, texto: "6.º Bimestre (Noviembre - Diciembre)" }
-        ];
-
-    } else if (tipo === "trimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Trimestre (Enero - Marzo)" },
-            { valor: 2, texto: "2.º Trimestre (Abril - Junio)" },
-            { valor: 3, texto: "3.er Trimestre (Julio - Septiembre)" },
-            { valor: 4, texto: "4.º Trimestre (Octubre - Diciembre)" }
-        ];
-
-    } else if (tipo === "semestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Semestre (Enero - Junio)" },
-            { valor: 2, texto: "2.º Semestre (Julio - Diciembre)" }
-        ];
-
-    } else if (tipo === "anual") {
-
-        opciones = [
-            { valor: 1, texto: "Año completo (Enero - Diciembre)" }
-        ];
-    }
-
-    opciones.forEach(opcion => {
-
-        const option = document.createElement("option");
-
-        option.value = opcion.valor;
-        option.textContent = opcion.texto;
-
-        selector.appendChild(option);
-
-    });
-}
-
-    
 // ==========================================
 // GENERAR RESUMEN REAL DE ASISTENCIA
 // ==========================================
@@ -838,54 +759,61 @@ async function generarResumen() {
         // DÍAS LABORABLES
         // ==========================================
 
-        const fechasLaborables = [];
+  // ==========================================
+// DÍAS LECTIVOS DEL PERÍODO
+// SEGÚN CALENDARIO ESCOLAR
+// ==========================================
 
-let fechaActual = new Date(fechaInicio + "T00:00:00");
-const fechaFinal = new Date(fechaFin + "T00:00:00");
+const fechasLaborables = [];
 
-// Fecha en que comenzó a funcionar el sistema
-const fechaInicioSistema = new Date("2026-08-27T00:00:00");
+let fechaActual =
+    new Date(fechaInicio + "T12:00:00");
 
-// Hoy
-const hoy = new Date();
-const fechaHoy = new Date(
-    hoy.getFullYear(),
-    hoy.getMonth(),
-    hoy.getDate()
-);
+const fechaFinal =
+    new Date(fechaFin + "T12:00:00");
 
-// No contar fechas anteriores al inicio del sistema
-if (fechaActual < fechaInicioSistema) {
-    fechaActual = new Date(fechaInicioSistema);
-}
+// Fecha actual en Perú
+const ahoraPeru = new Date();
+
+const fechaHoyPeru =
+    new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Lima",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(ahoraPeru);
 
 // No contar fechas futuras
-const limiteFecha = fechaFinal < fechaHoy ? fechaFinal : fechaHoy;
+const fechaLimite =
+    fechaFinal <
+    new Date(fechaHoyPeru + "T12:00:00")
+        ? fechaFinal
+        : new Date(fechaHoyPeru + "T12:00:00");
 
-while (fechaActual <= limiteFecha) {
+// ==========================================
+// RECORRER LAS FECHAS
+// ==========================================
 
-    const mes = fechaActual.getMonth() + 1;
-    const diaSemana = fechaActual.getDay();
+while (fechaActual <= fechaLimite) {
 
-    // Enero y febrero no cuentan
-    // 0 = domingo, 6 = sábado
-    if (
-        mes !== 1 &&
-        mes !== 2 &&
-        diaSemana !== 0 &&
-        diaSemana !== 6
-    ) {
-        fechasLaborables.push(
-            fechaActual
-                .toISOString()
-                .split("T")[0]
-        );
+    const fecha =
+        fechaActual
+            .toISOString()
+            .split("T")[0];
+
+    // Usar el calendario escolar
+    if (esDiaLectivo(fecha)) {
+
+        fechasLaborables.push(fecha);
+
     }
 
     fechaActual.setDate(
         fechaActual.getDate() + 1
     );
 }
+
+// No contar fechas futuras
 
         // ==========================================
         // ESTADOS
@@ -1835,7 +1763,10 @@ while (fechaActual <= fechaFinal) {
 /* Agregar FALTO solo cuando se consulta ese estado */
 
     fechas.forEach(fecha => {
-
+    // Respetar el calendario escolar
+    if (!esDiaLectivo(fecha)) {
+        return;
+    }
         estudiantesMostrar.forEach(estudiante => {
 
            const tieneRegistro = datos.some(mi =>
