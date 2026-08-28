@@ -557,6 +557,81 @@ function seleccionarPeriodo(tipo) {
         periodo.appendChild(option);
     });
 }
+// ==========================================================
+// CALENDARIO ESCOLAR
+// PIURA - AÑO 2026
+// ==========================================================
+
+function esDiaLectivo(fecha) {
+
+    if (!fecha) return false;
+
+    const fechaObj =
+        new Date(fecha + "T12:00:00");
+
+    if (isNaN(fechaObj.getTime())) {
+        return false;
+    }
+
+    const anio =
+        fechaObj.getFullYear();
+
+    // ======================================================
+    // CALENDARIO EXCEPCIONAL PIURA 2026
+    // ======================================================
+
+    if (anio === 2026) {
+
+        // Inicio del control de asistencia
+        if (fecha < "2026-08-24") {
+            return false;
+        }
+
+        // Fin de clases
+        if (fecha > "2026-11-27") {
+            return false;
+        }
+
+        // Sábado y domingo no cuentan
+        const diaSemana =
+            fechaObj.getDay();
+
+        if (diaSemana === 0 || diaSemana === 6) {
+            return false;
+        }
+
+        // III BIMESTRE
+        if (
+            fecha >= "2026-08-24" &&
+            fecha <= "2026-10-02"
+        ) {
+            return true;
+        }
+
+        // IV BIMESTRE
+        if (
+            fecha >= "2026-10-05" &&
+            fecha <= "2026-11-27"
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // ======================================================
+    // OTROS AÑOS - CALENDARIO NORMAL
+    // ======================================================
+
+    const diaSemana =
+        fechaObj.getDay();
+
+    if (diaSemana === 0 || diaSemana === 6) {
+        return false;
+    }
+
+    return true;
+}
 async function generarResumen() {
 
     const contenedor =
