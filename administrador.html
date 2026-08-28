@@ -1107,37 +1107,73 @@ if (!esDiaLectivo(fecha)) {
         // SI NO EXISTE REGISTRO → FALTO
         // ==========================================
 
-        if (!registrosExistentes.has(claveRegistro)) {
+if (!registrosExistentes.has(claveRegistro)) {
 
-            resumen.FALTO++;
+    // Si no registró su asistencia, se considera FALTO
+    resumen.FALTO++;
 
-            personas.FALTO.push({
+    personas.FALTO.push({
 
-                nombre:
-                    estudiante.nombre || "",
+        nombre:
+            estudiante.nombre || "",
 
-                dni:
-                    estudiante.dni || "",
+        dni:
+            estudiante.dni || "",
 
-                grado:
-                    estudiante.grado || "",
+        grado:
+            estudiante.grado || "",
 
-                seccion:
-                    estudiante.seccion || "",
+        seccion:
+            estudiante.seccion || "",
 
-                fecha:
-                    fecha
-            });
+        fecha:
+            fecha
+    });
 
-            secciones[claveSeccion].FALTO++;
+    secciones[claveSeccion].FALTO++;
 
-            secciones[claveSeccion].total++;
-        }
+    secciones[claveSeccion].total++;
+
+}
 
     }); // cierra fechasLaborables.forEach
 
 }); // cierra estudiantes.forEach
+// ==========================================
+// RECONSTRUIR FALTAS POR GRADO Y SECCIÓN
+// EVITAR DUPLICADOS
+// ==========================================
 
+Object.values(secciones).forEach(seccion => {
+
+    seccion.FALTO = 0;
+
+});
+
+// Contar cada falta real una sola vez
+personas.FALTO.forEach(persona => {
+
+    const clave =
+        `${persona.grado || ""}|${persona.seccion || ""}`;
+
+    if (secciones[clave]) {
+
+        secciones[clave].FALTO++;
+
+    }
+
+});
+
+// Recalcular el total de cada sección
+Object.values(secciones).forEach(seccion => {
+
+    seccion.total =
+        seccion.TEMPRANO +
+        seccion.TARDANZA +
+        seccion["DEMASIADO TARDE"] +
+        seccion.FALTO;
+
+});
         // ==========================================
         // NOMBRE DEL PERÍODO
         // ==========================================
