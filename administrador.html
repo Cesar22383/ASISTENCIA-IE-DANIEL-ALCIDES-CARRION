@@ -802,12 +802,14 @@ while (fechaActual <= fechaLimite) {
             .toISOString()
             .split("T")[0];
 
-    // Usar el calendario escolar
-    if (esDiaLectivo(fecha)) {
+// No contar sábados ni domingos
+const diaSemana = new Date(fecha + "T12:00:00").getDay();
 
-        fechasLaborables.push(fecha);
+if (diaSemana !== 0 && diaSemana !== 6 && esDiaLectivo(fecha)) {
 
-    }
+    fechasLaborables.push(fecha);
+
+}
 
     fechaActual.setDate(
         fechaActual.getDate() + 1
