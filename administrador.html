@@ -473,68 +473,7 @@ function seleccionarPeriodo(tipo) {
     });
 }
 
-    // Cambiar las opciones del período
-    const selector = document.getElementById("periodoResumen");
-
-    if (!selector) return;
-
-    selector.innerHTML = "";
-
-    let opciones = [];
-
-    if (tipo === "mensual") {
-
-        opciones = mesesResumen.map((mes, indice) => ({
-            valor: indice + 1,
-            texto: mes
-        }));
-
-    } else if (tipo === "bimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Bimestre (Enero - Febrero)" },
-            { valor: 2, texto: "2.º Bimestre (Marzo - Abril)" },
-            { valor: 3, texto: "3.er Bimestre (Mayo - Junio)" },
-            { valor: 4, texto: "4.º Bimestre (Julio - Agosto)" },
-            { valor: 5, texto: "5.º Bimestre (Septiembre - Octubre)" },
-            { valor: 6, texto: "6.º Bimestre (Noviembre - Diciembre)" }
-        ];
-
-    } else if (tipo === "trimestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Trimestre (Enero - Marzo)" },
-            { valor: 2, texto: "2.º Trimestre (Abril - Junio)" },
-            { valor: 3, texto: "3.er Trimestre (Julio - Septiembre)" },
-            { valor: 4, texto: "4.º Trimestre (Octubre - Diciembre)" }
-        ];
-
-    } else if (tipo === "semestral") {
-
-        opciones = [
-            { valor: 1, texto: "1.er Semestre (Enero - Junio)" },
-            { valor: 2, texto: "2.º Semestre (Julio - Diciembre)" }
-        ];
-
-    } else if (tipo === "anual") {
-
-        opciones = [
-            { valor: 1, texto: "Año completo (Enero - Diciembre)" }
-        ];
-
-    }
-
-    opciones.forEach(opcion => {
-
-        const option = document.createElement("option");
-
-        option.value = opcion.valor;
-        option.textContent = opcion.texto;
-
-        selector.appendChild(option);
-
-    });
-}
+    
 // ==========================================
 // GENERAR RESUMEN REAL DE ASISTENCIA
 // ==========================================
