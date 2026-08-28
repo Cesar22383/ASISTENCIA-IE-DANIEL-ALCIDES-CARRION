@@ -403,7 +403,7 @@ const mesesResumen = [
 // ==========================================
 // GENERAR RESUMEN REAL DE ASISTENCIA
 // ==========================================
-function seleccionarPeriodo(tipo) {
+window.seleccionarPeriodo = function(tipo) {
 
     periodoSeleccionado = tipo;
 
@@ -1633,7 +1633,7 @@ document.addEventListener("DOMContentLoaded", () => {
     seleccionarPeriodo("mensual");
 
 });
-async function consultar() {
+window.consultar = async function() {
 
     const resultado =
         document.getElementById("resultado");
