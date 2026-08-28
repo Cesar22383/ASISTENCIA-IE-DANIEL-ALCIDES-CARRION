@@ -1153,17 +1153,13 @@ estudiantes.forEach(estudiante => {
         }
 
 
-        // ==========================================
-        // SOLO LUNES A VIERNES
-        // ==========================================
+// ==========================================
+// VALIDAR DÍA LECTIVO SEGÚN CALENDARIO
+// ==========================================
 
-        const diaSemana =
-            fechaObj.getDay();
-
-        if (diaSemana === 0 || diaSemana === 6) {
-            return;
-        }
-
+if (!esDiaLectivo(fecha)) {
+    return;
+}
 
         // ==========================================
         // HOY: ESPERAR HASTA LAS 11:00 A. M.
