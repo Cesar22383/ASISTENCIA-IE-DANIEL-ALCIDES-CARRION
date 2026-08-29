@@ -556,24 +556,229 @@ function esDiaLectivo(fecha) {
 }
 async function generarResumen() {
 
-    const contenedor =
-        document.getElementById("resultadoResumen");
-
+    const contenedor = document.getElementById("resultadoResumen");
     if (!contenedor) return;
 
-    const anio =
-        Number(document.getElementById("anioResumen").value);
-
-    const periodo =
-        Number(document.getElementById("periodoResumen").value);
+    const anio = Number(document.getElementById("anioResumen").value);
+    const periodo = Number(document.getElementById("periodoResumen").value);
 
     if (!anio || !periodo || !periodoSeleccionado) {
-
-        contenedor.innerHTML =
-            "<p style='color:red'>⚠️ Selecciona año y período.</p>";
-
+        contenedor.innerHTML = "<p style='color:red'>⚠️ Selecciona año y período.</p>";
         return;
     }
+
+    contenedor.innerHTML = `
+        <div style="padding:20px;text-align:center;font-weight:bold;color:#1d4ed8;">
+            ⏳ Generando resumen de asistencia...
+        </div>
+    `;
+
+    try {
+
+        // ==========================================
+        // 1. RANGO DE MESES SEGÚN EL PERÍODO
+        // ==========================================
+
+        let mesInicio = 1, mesFin = 12;
+
+        if (periodoSeleccionado === "mensual") {
+            mesInicio = periodo; mesFin = periodo;
+        } else if (periodoSeleccionado === "bimestral") {
+            mesInicio = (periodo - 1) * 2 + 1; mesFin = mesInicio + 1;
+        } else if (periodoSeleccionado === "trimestral") {
+            mesInicio = (periodo - 1) * 3 + 1; mesFin = mesInicio + 2;
+        } else if (periodoSeleccionado === "semestral") {
+            mesInicio = periodo === 1 ? 1 : 7; mesFin = periodo === 1 ? 6 : 12;
+        } else if (periodoSeleccionado === "anual") {
+            mesInicio = 1; mesFin = 12;
+        }
+
+        const fechaInicio = `${anio}-${String(mesInicio).padStart(2, "0")}-01`;
+        const ultimoDia = new Date(anio, mesFin, 0).getDate();
+        const fechaFin = `${anio}-${String(mesFin).padStart(2, "0")}-${ultimoDia}`;
+
+        // ==========================================
+        // 2. TRAER ASISTENCIAS DEL RANGO
+        // ==========================================
+
+        const urlAsistencia =
+            SUPABASE_URL + "/rest/v1/vista_asistencia?select=*" +
+            "&fecha=gte." + encodeURIComponent(fechaInicio) +
+            "&fecha=lte." + encodeURIComponent(fechaFin);
+
+        const respAsistencia = await fetch(urlAsistencia, {
+            headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY }
+        });
+
+        if (!respAsistencia.ok) {
+            throw new Error("No se pudieron consultar los registros de asistencia.");
+        }
+
+        const asistencias = await respAsistencia.json();
+
+        // ==========================================
+        // 3. TRAER ESTUDIANTES Y DEDUPLICAR POR DNI
+        //    (fuente única de verdad de grado/sección)
+        // ==========================================
+
+        const urlEstudiantes =
+            SUPABASE_URL + "/rest/v1/estudiantes?select=*&order=orden.asc";
+
+        const respEstudiantes = await fetch(urlEstudiantes, {
+            headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY }
+        });
+
+        if (!respEstudiantes.ok) {
+            throw new Error("No se pudo consultar la lista de estudiantes.");
+        }
+
+        const estudiantesRaw = await respEstudiantes.json();
+
+        const dniVistos = new Set();
+
+        let estudiantes = estudiantesRaw.filter(e => {
+            const dni = String(e.dni || "").trim();
+            if (!dni || dniVistos.has(dni)) return false;
+            dniVistos.add(dni);
+            return true;
+        });
+
+        const selectorGrado = document.getElementById("gradoResumen");
+        const selectorSeccion = document.getElementById("seccionResumen");
+        const gradoSel = selectorGrado ? selectorGrado.value : "";
+        const seccionSel = selectorSeccion ? selectorSeccion.value : "";
+
+        if (gradoSel && gradoSel !== "todos" && gradoSel !== "Todos los grados") {
+            estudiantes = estudiantes.filter(e =>
+                String(e.grado || "").trim() === String(gradoSel).trim()
+            );
+        }
+
+        if (seccionSel && seccionSel !== "todas" && seccionSel !== "Todas las secciones") {
+            estudiantes = estudiantes.filter(e =>
+                String(e.seccion || "").trim() === String(seccionSel).trim()
+            );
+        }
+
+        // ==========================================
+        // 4. FECHAS LECTIVAS DEL PERÍODO
+        // ==========================================
+
+        const ahoraPeru = new Date();
+
+        const fechaHoyPeru = new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Lima", year: "numeric", month: "2-digit", day: "2-digit"
+        }).format(ahoraPeru);
+
+        const horaPeru = Number(new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Lima", hour: "2-digit", hour12: false
+        }).format(ahoraPeru));
+
+        const puedeContarseFaltaHoy = horaPeru >= 11;
+        const FECHA_INICIO_ASISTENCIA = "2026-08-24";
+
+        const fechasLectivas = [];
+        let cursor = new Date(fechaInicio + "T12:00:00");
+        const finRango = new Date(fechaFin + "T12:00:00");
+
+        while (cursor <= finRango) {
+
+            const f = cursor.toISOString().split("T")[0];
+            const diaSemana = cursor.getDay();
+
+            const esFuturo = f > fechaHoyPeru;
+            const esHoySinHabilitar = (f === fechaHoyPeru && !puedeContarseFaltaHoy);
+            const antesDeInicio = f < FECHA_INICIO_ASISTENCIA;
+
+            if (
+                diaSemana !== 0 && diaSemana !== 6 &&
+                esDiaLectivo(f) &&
+                !esFuturo && !esHoySinHabilitar && !antesDeInicio
+            ) {
+                fechasLectivas.push(f);
+            }
+
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
+        // ==========================================
+        // 5. MAPA ÚNICO dni|fecha -> estado
+        // ==========================================
+
+        const estados = ["TEMPRANO", "TARDANZA", "DEMASIADO TARDE", "FALTO"];
+        const asistenciaPorClave = new Map();
+
+        asistencias.forEach(registro => {
+            const dni = String(registro.dni || "").trim();
+            const fecha = String(registro.fecha || "").substring(0, 10);
+            const estado = String(registro.estado || "").trim().toUpperCase();
+
+            if (!dni || !fecha) return;
+            if (!estados.includes(estado)) return;
+
+            const clave = dni + "|" + fecha;
+            if (!asistenciaPorClave.has(clave)) {
+                asistenciaPorClave.set(clave, estado);
+            }
+        });
+
+        // ==========================================
+        // 6. FUENTE ÚNICA DE VERDAD
+        //    1 registro por (estudiante único × fecha lectiva)
+        // ==========================================
+
+        const registrosCalculados = [];
+
+        estudiantes.forEach(estudiante => {
+
+            const dni = String(estudiante.dni || "").trim();
+            if (!dni) return;
+
+            const grado = String(estudiante.grado || "").trim();
+            const seccion = String(estudiante.seccion || "").trim();
+
+            fechasLectivas.forEach(fecha => {
+
+                const clave = dni + "|" + fecha;
+                const estado = asistenciaPorClave.get(clave) || "FALTO";
+
+                registrosCalculados.push({
+                    dni, nombre: estudiante.nombre || "", grado, seccion, fecha, estado
+                });
+            });
+        });
+
+        // ==========================================
+        // 7. TODO SALE DE registrosCalculados
+        // ==========================================
+
+        const resumen = { TEMPRANO: 0, TARDANZA: 0, "DEMASIADO TARDE": 0, FALTO: 0 };
+        const personas = { TEMPRANO: [], TARDANZA: [], "DEMASIADO TARDE": [], FALTO: [] };
+        const secciones = {};
+
+        registrosCalculados.forEach(r => {
+
+            resumen[r.estado]++;
+
+            personas[r.estado].push({
+                nombre: r.nombre, dni: r.dni, grado: r.grado, seccion: r.seccion, fecha: r.fecha
+            });
+
+            const clave = `${r.grado}|${r.seccion}`;
+
+            if (!secciones[clave]) {
+                secciones[clave] = {
+                    grado: r.grado, seccion: r.seccion,
+                    TEMPRANO: 0, TARDANZA: 0, "DEMASIADO TARDE": 0, FALTO: 0, total: 0
+                };
+            }
+
+            secciones[clave][r.estado]++;
+            secciones[clave].total++;
+        });
+
+        // A PARTIR DE AQUÍ SIGUE TU CÓDIGO ACTUAL SIN CAMBIOS,
+        // empezando justo en el comentario "// NOMBRE DEL PERÍODO"
 
     contenedor.innerHTML = `
         <div style="
