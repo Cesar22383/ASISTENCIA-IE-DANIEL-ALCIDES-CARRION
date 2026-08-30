@@ -288,8 +288,16 @@ Hasta
 🔎 Consultar
 </button>
 
+<button onclick="limpiarConsulta()">
+🧹 Limpiar
+</button>
+
 <button onclick="descargar()">
 📥 Descargar
+</button>
+
+<button onclick="abrirDiasNoLectivos()">
+📅 Días no lectivos
 </button>
 
 </div>
@@ -1943,6 +1951,35 @@ function descargar() {
         "reporte_asistencia.csv";
 
     enlace.click();
+}
+
+function limpiarConsulta() {
+
+    // Limpiar los campos de búsqueda
+    document.getElementById("buscar").value = "";
+    document.getElementById("grado").value = "";
+    document.getElementById("seccion").value = "";
+    document.getElementById("desde").value = "";
+    document.getElementById("hasta").value = "";
+    document.getElementById("estado").value = "";
+
+    // Limpiar los resultados
+    const resultado = document.getElementById("resultado");
+    if (resultado) {
+        resultado.innerHTML =
+            "Selecciona los filtros y pulsa <b>Consultar</b>.";
+    }
+
+    // Limpiar el resumen
+    const resultadoResumen =
+        document.getElementById("resultadoResumen");
+
+    if (resultadoResumen) {
+        resultadoResumen.innerHTML = "";
+    }
+
+    // Vaciar los datos actuales
+    datosActuales = [];
 }
 
 </script>
