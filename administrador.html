@@ -604,7 +604,12 @@ function generarFechasLectivas(fechaInicio, fechaFin) {
         const esFuturo = f > fechaHoyPeru;
         const esHoySinHabilitar = (f === fechaHoyPeru && !puedeContarseFaltaHoy);
         const antesDeInicio = f < FECHA_INICIO_ASISTENCIA;
-
+console.log(
+    "FECHA:", f,
+    "| HOY:", fechaHoyPeru,
+    "| FUTURO:", esFuturo,
+    "| DÍA:", diaSemana
+);
         if (
             diaSemana !== 0 && diaSemana !== 6 &&
             esDiaLectivo(f) &&
