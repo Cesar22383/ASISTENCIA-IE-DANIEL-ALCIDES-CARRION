@@ -1981,7 +1981,73 @@ function limpiarConsulta() {
     // Vaciar los datos actuales
     datosActuales = [];
 }
+window.abrirDiasNoLectivos = async function() {
 
+    const fecha = prompt(
+        "📅 Escribe la fecha no lectiva:\n\nEjemplo: 2026-09-05"
+    );
+
+    if (!fecha) return;
+
+    const motivo = prompt(
+        "✏️ Escribe el motivo:\n\nEjemplo: Suspensión de clases"
+    );
+
+    if (!motivo) return;
+
+    // Verificar formato de fecha
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        alert("⚠️ La fecha debe tener este formato:\n2026-09-05");
+        return;
+    }
+
+    try {
+
+        const respuesta = await fetch(
+            SUPABASE_URL + "/rest/v1/dias_no_lectivos",
+            {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                body: JSON.stringify({
+                    fecha: fecha,
+                    motivo: motivo
+                })
+            }
+        );
+
+        if (!respuesta.ok) {
+
+            const error = await respuesta.text();
+
+            alert(
+                "❌ No se pudo guardar el día.\n\n" +
+                error
+            );
+
+            return;
+        }
+
+        alert(
+            "✅ Día no lectivo registrado correctamente.\n\n" +
+            "Fecha: " + fecha + "\n" +
+            "Motivo: " + motivo
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Error al guardar el día:\n" +
+            error.message
+        );
+    }
+};
 </script>
 
 </body>
