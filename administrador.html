@@ -1758,7 +1758,23 @@ window.consultar = async function() {
         datosActuales = datosFiltrados;
 
         mostrar(datosActuales);
+console.log("====================================");
+console.log("PRUEBA DE FALTAS");
+console.log("Fechas lectivas:", fechasLectivas);
+console.log("Cantidad de estudiantes:", estudiantesMostrar.length);
+console.log("Cantidad de datos generados:", datos.length);
+console.log("Cantidad de FALTOS:", datosFiltrados.length);
 
+console.table(
+    datosFiltrados.map(r => ({
+        DNI: r.dni,
+        Nombre: r.nombre,
+        Fecha: r.fecha,
+        Día: r.dia,
+        Estado: r.estado
+    }))
+);
+console.log("====================================");
     } catch (error) {
 
         console.error(error);
