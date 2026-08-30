@@ -1371,36 +1371,66 @@ async function generarResumen() {
 
             } else {
 
-                lista
-                    .sort((a, b) =>
-                        String(a.nombre)
-                            .localeCompare(
-                                String(b.nombre)
-                            )
-                    )
-                    .forEach(persona => {
+                const listaOrdenada = [...lista].sort((a, b) =>
+                    String(a.grado).localeCompare(String(b.grado)) ||
+                    String(a.seccion).localeCompare(String(b.seccion)) ||
+                    String(a.nombre).localeCompare(String(b.nombre))
+                );
+
+                let claveSeccionAnterior = null;
+
+                listaOrdenada.forEach(persona => {
+
+                    const claveSeccionActual =
+                        `${persona.grado}|${persona.seccion}`;
+
+                    if (claveSeccionActual !== claveSeccionAnterior) {
+
+                        claveSeccionAnterior = claveSeccionActual;
+
+                        const cantidadEnSeccion =
+                            secciones[claveSeccionActual]
+                                ? secciones[claveSeccionActual][estado]
+                                : listaOrdenada.filter(p =>
+                                    `${p.grado}|${p.seccion}` === claveSeccionActual
+                                  ).length;
 
                         html += `
-
-                            <div class="persona">
-
-                                <b>
-                                    ${persona.nombre}
-                                </b>
-
-                                <span>
-                                    DNI: ${persona.dni}
-                                    —
-                                    ${persona.grado}
-                                    ${persona.seccion}
-                                    —
-                                    ${persona.fecha}
-                                </span>
-
+                            <div style="
+                                margin:14px 0 6px;
+                                padding:6px 10px;
+                                background:#e0e7ff;
+                                border-radius:6px;
+                                font-weight:700;
+                                color:#1d4ed8;
+                            ">
+                                ${persona.grado} ${persona.seccion}
+                                (${cantidadEnSeccion})
                             </div>
-
                         `;
-                    });
+                    }
+
+                    html += `
+
+                        <div class="persona">
+
+                            <b>
+                                ${persona.nombre}
+                            </b>
+
+                            <span>
+                                DNI: ${persona.dni}
+                                —
+                                ${persona.grado}
+                                ${persona.seccion}
+                                —
+                                ${persona.fecha}
+                            </span>
+
+                        </div>
+
+                    `;
+                });
             }
 
             html += `
