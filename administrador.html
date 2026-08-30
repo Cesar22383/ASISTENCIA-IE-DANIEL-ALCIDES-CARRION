@@ -1983,28 +1983,202 @@ function limpiarConsulta() {
 }
 window.abrirDiasNoLectivos = function() {
 
-    const fecha = prompt(
-        "📅 Escribe la fecha no lectiva:\n\nEjemplo: 2026-09-05"
-    );
+    const fondo = document.createElement("div");
 
-    if (!fecha) return;
+    fondo.style.position = "fixed";
+    fondo.style.top = "0";
+    fondo.style.left = "0";
+    fondo.style.width = "100%";
+    fondo.style.height = "100%";
+    fondo.style.background = "rgba(0,0,0,0.5)";
+    fondo.style.display = "flex";
+    fondo.style.alignItems = "center";
+    fondo.style.justifyContent = "center";
+    fondo.style.zIndex = "9999";
 
-    const motivo = prompt(
-        "📝 Escribe el motivo:\n\nEjemplo: Suspensión de clases"
-    );
+    const ventana = document.createElement("div");
 
-    if (!motivo) return;
+    ventana.style.background = "white";
+    ventana.style.padding = "25px";
+    ventana.style.borderRadius = "12px";
+    ventana.style.width = "360px";
+    ventana.style.maxWidth = "90%";
+    ventana.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-        alert("⚠️ La fecha debe tener el formato:\n2026-09-05");
-        return;
+    ventana.innerHTML = `
+        <h2 style="margin-top:0; color:#1d4ed8;">
+            📅 Días no lectivos
+        </h2>
+
+        <label><b>Año:</b></label>
+        <select id="nuevoAnio" style="width:100%;padding:10px;margin:8px 0;">
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select>
+
+        <label><b>Mes:</b></label>
+        <select id="nuevoMes" style="width:100%;padding:10px;margin:8px 0;">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+
+        <label><b>Fecha:</b></label>
+        <select id="nuevoDia" style="width:100%;padding:10px;margin:8px 0;">
+        </select>
+
+        <label><b>Motivo:</b></label>
+        <input
+            type="text"
+            id="nuevoMotivo"
+            placeholder="Ejemplo: Suspensión de clases"
+            style="width:100%;padding:10px;margin:8px 0;box-sizing:border-box;"
+        >
+
+        <div style="display:flex;gap:10px;margin-top:15px;">
+
+            <button id="btnGuardarDia"
+                style="flex:1;padding:10px;background:#1d4ed8;color:white;border:none;border-radius:7px;cursor:pointer;">
+                💾 Guardar
+            </button>
+
+            <button id="btnCancelarDia"
+                style="flex:1;padding:10px;background:#64748b;color:white;border:none;border-radius:7px;cursor:pointer;">
+                ❌ Cancelar
+            </button>
+
+        </div>
+    `;
+
+    fondo.appendChild(ventana);
+    document.body.appendChild(fondo);
+
+    const anio = document.getElementById("nuevoAnio");
+    const mes = document.getElementById("nuevoMes");
+    const dia = document.getElementById("nuevoDia");
+
+    function cargarDias() {
+
+        const año = Number(anio.value);
+        const mesSeleccionado = Number(mes.value);
+
+        const cantidadDias =
+            new Date(año, mesSeleccionado, 0).getDate();
+
+        dia.innerHTML = "";
+
+        for (let d = 1; d <= cantidadDias; d++) {
+
+            const opcion = document.createElement("option");
+
+            opcion.value =
+                String(d).padStart(2, "0");
+
+            opcion.textContent =
+                String(d).padStart(2, "0");
+
+            dia.appendChild(opcion);
+        }
     }
 
-    alert(
-        "📅 Fecha: " + fecha +
-        "\n📝 Motivo: " + motivo +
-        "\n\nLa fecha será registrada."
-    );
+    anio.addEventListener("change", cargarDias);
+    mes.addEventListener("change", cargarDias);
+
+    cargarDias();
+
+    document.getElementById("btnCancelarDia").onclick =
+        function() {
+
+            fondo.remove();
+
+        };
+
+    document.getElementById("btnGuardarDia").onclick =
+        async function() {
+
+            const fecha =
+                anio.value + "-" +
+                String(mes.value).padStart(2, "0") + "-" +
+                dia.value;
+
+            const motivo =
+                document.getElementById("nuevoMotivo").value.trim();
+
+            if (!motivo) {
+
+                alert("⚠️ Escribe el motivo.");
+
+                return;
+            }
+
+            try {
+
+                const respuesta = await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/dias_no_lectivos",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization":
+                                "Bearer " + SUPABASE_KEY,
+                            "Content-Type":
+                                "application/json",
+                            "Prefer":
+                                "return=representation"
+                        },
+
+                        body: JSON.stringify({
+                            fecha: fecha,
+                            motivo: motivo
+                        })
+                    }
+                );
+
+                if (!respuesta.ok) {
+
+                    const error =
+                        await respuesta.text();
+
+                    alert(
+                        "❌ No se pudo guardar.\n\n" +
+                        error
+                    );
+
+                    return;
+                }
+
+                alert(
+                    "✅ Día no lectivo registrado.\n\n" +
+                    "Fecha: " + fecha +
+                    "\nMotivo: " + motivo
+                );
+
+                fondo.remove();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "❌ Error al guardar:\n" +
+                    error.message
+                );
+            }
+        };
 };
 </script>
 
