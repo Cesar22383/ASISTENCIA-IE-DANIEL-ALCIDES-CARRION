@@ -503,7 +503,28 @@ function esDiaLectivo(fecha) {
     // ======================================================
 
     if (anio === 2026) {
+if (anio === 2026) {
 
+    // DÍAS EXCEPCIONALES SIN CLASES
+    const diasNoLectivos = [
+        "2026-08-28"
+    ];
+
+    if (diasNoLectivos.includes(fecha)) {
+        return false;
+    }
+
+    // Inicio del control de asistencia
+    if (fecha < "2026-08-24") {
+        return false;
+    }
+
+    // Fin de clases
+    if (fecha > "2026-11-27") {
+        return false;
+    }
+
+    // Sábado y domingo no cuentan
         // Inicio del control de asistencia
         if (fecha < "2026-08-24") {
             return false;
