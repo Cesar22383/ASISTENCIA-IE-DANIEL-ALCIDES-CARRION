@@ -587,39 +587,84 @@ function generarFechasLectivas(fechaInicio, fechaFin) {
 
     const FECHA_INICIO_ASISTENCIA = "2026-08-24";
 
+    // Fecha actual en Perú
     const fechaHoyPeru = obtenerFechaHoyPeru();
-    console.log("HOY EN PERÚ:", fechaHoyPeru);
-    const puedeContarseFaltaHoy = puedeContarseFaltaHoyFn();
+
+    const hoy = new Date(fechaHoyPeru + "T00:00:00");
+
+    const inicioAsistencia =
+        new Date(FECHA_INICIO_ASISTENCIA + "T00:00:00");
 
     const fechasLectivas = [];
 
-    let cursor = new Date(fechaInicio + "T12:00:00");
-    const finRango = new Date(fechaFin + "T12:00:00");
+    let cursor =
+        new Date(fechaInicio + "T12:00:00");
+
+    const finRango =
+        new Date(fechaFin + "T12:00:00");
 
     while (cursor <= finRango) {
 
-        const f = cursor.toISOString().split("T")[0];
-        const diaSemana = cursor.getDay();
+        const f =
+            cursor.toISOString().split("T")[0];
 
-        const esFuturo = f > fechaHoyPeru;
-        const esHoySinHabilitar = (f === fechaHoyPeru && !puedeContarseFaltaHoy);
-        const antesDeInicio = f < FECHA_INICIO_ASISTENCIA;
-console.log(
-    "FECHA:", f,
-    "| HOY:", fechaHoyPeru,
-    "| FUTURO:", esFuturo,
-    "| DÍA:", diaSemana
-);
+        const fechaActual =
+            new Date(f + "T00:00:00");
+
+        const diaSemana =
+            fechaActual.getDay();
+
+        // Sábado o domingo
+        const esFinDeSemana =
+            diaSemana === 0 || diaSemana === 6;
+
+        // La fecha todavía no ha llegado
+        const esFuturo =
+            fechaActual > hoy;
+
+        // Antes del inicio del sistema
+        const antesDeInicio =
+            fechaActual < inicioAsistencia;
+
+        // Es el día de hoy
+        const esHoy =
+            f === fechaHoyPeru;
+
+        // Después de las 11:00 se puede considerar falta
+        const puedeContarseFaltaHoy =
+            puedeContarseFaltaHoyFn();
+
+        const esHoySinHabilitar =
+            esHoy && !puedeContarseFaltaHoy;
+
+        console.log(
+            "FECHA:", f,
+            "| HOY:", fechaHoyPeru,
+            "| FUTURO:", esFuturo,
+            "| FIN DE SEMANA:", esFinDeSemana,
+            "| DÍA:", diaSemana
+        );
+
         if (
-            diaSemana !== 0 && diaSemana !== 6 &&
+            !esFinDeSemana &&
             esDiaLectivo(f) &&
-            !esFuturo && !esHoySinHabilitar && !antesDeInicio
+            !esFuturo &&
+            !esHoySinHabilitar &&
+            !antesDeInicio
         ) {
+
             fechasLectivas.push(f);
         }
 
-        cursor.setDate(cursor.getDate() + 1);
+        cursor.setDate(
+            cursor.getDate() + 1
+        );
     }
+
+    console.log(
+        "FECHAS LECTIVAS FINALES:",
+        fechasLectivas
+    );
 
     return fechasLectivas;
 }
