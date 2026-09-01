@@ -2448,7 +2448,20 @@ window.abrirRegistrarJustificacion = function() {
             if (!respuestaGuardar.ok) {
                 const errorTexto = await respuestaGuardar.text();
 
-                if (errorTexto.includes("duplicate") ||
+                // Error típico de Supabase cuando la tabla todavía no fue creada
+                // o todavía no aparece en el schema cache.
+                if (errorTexto.includes("PGRST205") ||
+                    errorTexto.includes("Could not find the table 'public.justificaciones'")) {
+                    throw new Error(
+                        "La tabla JUSTIFICACIONES todavía no está creada en Supabase.\n\n" +
+                        "Primero ejecuta en el Editor SQL el script " +
+                        "crear_tabla_justificaciones.sql que acompaña este archivo.\n\n" +
+                        "Después recarga la página e inténtalo nuevamente."
+                    );
+                }
+
+                if (errorTexto.includes("23505") ||
+                    errorTexto.includes("duplicate") ||
                     errorTexto.includes("unique")) {
                     throw new Error(
                         "Ya existe una justificación registrada para ese estudiante y esa fecha."
