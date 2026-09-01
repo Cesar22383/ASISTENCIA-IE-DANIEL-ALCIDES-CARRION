@@ -234,6 +234,81 @@ th {
 .btn-resumen-consultar{background:#1d4ed8!important;color:#fff!important;padding:10px 16px;border-radius:7px;font-weight:700}
 .btn-resumen-limpiar{background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important;padding:10px 16px;border-radius:7px;font-weight:700}
 .btn-resumen-consultar:hover{background:#1e40af!important}.btn-resumen-limpiar:hover{background:#f1f5f9!important}
+
+.btn-registrar-justificacion{
+    background:#7c3aed!important;
+    color:#fff!important;
+    padding:10px 16px;
+    border-radius:7px;
+    font-weight:700;
+}
+.btn-registrar-justificacion:hover{background:#6d28d9!important}
+.modal-justificacion{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.58);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+    padding:20px;
+}
+.ventana-justificacion{
+    width:430px;
+    max-width:100%;
+    background:#fff;
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 15px 45px rgba(0,0,0,.25);
+}
+.ventana-justificacion h3{
+    margin:0 0 6px;
+    color:#1d4ed8;
+}
+.ventana-justificacion .ayuda{
+    margin:0 0 16px;
+    color:#64748b;
+    font-size:13px;
+}
+.form-just{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-bottom:13px;
+}
+.form-just label{
+    font-weight:700;
+    color:#334155;
+    font-size:14px;
+}
+.form-just input,.form-just select,.form-just textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:10px 11px;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    background:#fff;
+    font-size:14px;
+}
+.form-just textarea{min-height:75px;resize:vertical}
+.botones-just{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+}
+.botones-just button{
+    flex:1;
+}
+.btn-guardar-just{background:#1d4ed8!important}
+.btn-cancelar-just{background:#64748b!important}
+.justificacion-aviso{
+    padding:9px 11px;
+    background:#f5f3ff;
+    border:1px solid #ddd6fe;
+    border-radius:8px;
+    color:#6d28d9;
+    font-size:12px;
+}
 .resumen-profesional-nuevo{border:1px solid #dbe4f0;border-radius:14px;background:#fff;padding:18px;margin-top:12px}
 .resumen-titulo-nuevo{display:flex;justify-content:space-between;gap:15px;align-items:center;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:14px}
 .resumen-titulo-nuevo h3{margin:0;color:#1d4ed8;font-size:22px}.resumen-titulo-nuevo p{margin:4px 0 0;color:#64748b}
@@ -253,6 +328,26 @@ th {
 .resumen-nota{margin-top:14px;padding:11px 13px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;color:#334155;font-size:13px}
 .sin-datos{padding:20px;text-align:center;background:#f8fafc;border-radius:10px;color:#64748b}
 @media(max-width:950px){.resumen-cuerpo{grid-template-columns:1fr}.chart-wrap{height:280px}.resumen-titulo-nuevo{align-items:flex-start;flex-direction:column}}
+
+
+/* ==========================================================
+   MEJORAS DEL MÓDULO DE JUSTIFICACIONES
+   ========================================================== */
+.ventana-justificacion input:focus,
+.ventana-justificacion select:focus,
+.ventana-justificacion textarea:focus{
+    outline:2px solid #c4b5fd;
+    border-color:#7c3aed;
+}
+.justificacion-ayuda-final{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    font-size:12px;
+    color:#475569;
+}
 
 </style>
 </head>
@@ -383,6 +478,7 @@ Hasta
     </div>
     <button class="btn-resumen-consultar" onclick="generarResumen()">🔎 Consultar resumen</button>
     <button class="btn-resumen-limpiar" onclick="limpiarResumen()">🧹 Limpiar</button>
+    <button class="btn-registrar-justificacion" onclick="abrirRegistrarJustificacion()">📝 Registrar justificación</button>
 </div>
 
 <div id="resultadoResumen"></div>
@@ -663,6 +759,7 @@ function deduplicarEstudiantesPorDni(lista) {
 }
 
 async function generarResumen() {
+
     const contenedor = document.getElementById("resultadoResumen");
     if (!contenedor) return;
 
@@ -671,158 +768,1048 @@ async function generarResumen() {
     const anio = Number(document.getElementById("anioResumen").value);
     const periodo = Number(document.getElementById("periodoResumen").value);
 
-    if (!grado || !seccion) {
-        contenedor.innerHTML = `<div class="sin-datos">⚠️ Selecciona <b>grado y sección</b>. El resumen siempre mostrará solamente esa sección.</div>`;
+    if (!grado || !seccion || !periodo) {
+        contenedor.innerHTML =
+            `<div class="sin-datos">⚠️ Selecciona <b>grado, sección y período</b>.</div>`;
         return;
     }
 
-    contenedor.innerHTML = `<div class="sin-datos">⏳ Generando informe de ${grado} ${seccion}...</div>`;
+    contenedor.innerHTML =
+        `<div class="sin-datos">⏳ Generando informe de ${grado} ${seccion}...</div>`;
 
     try {
-        let mesInicio=1, mesFin=12;
-        if (periodoSeleccionado === "mensual") { mesInicio=periodo; mesFin=periodo; }
-        else if (periodoSeleccionado === "bimestral") { mesInicio=(periodo-1)*2+1; mesFin=mesInicio+1; }
-        else if (periodoSeleccionado === "trimestral") { mesInicio=(periodo-1)*3+1; mesFin=mesInicio+2; }
-        else if (periodoSeleccionado === "semestral") { mesInicio=periodo===1?1:7; mesFin=periodo===1?6:12; }
 
-        const fechaInicio=`${anio}-${String(mesInicio).padStart(2,"0")}-01`;
-        const ultimoDia=new Date(anio,mesFin,0).getDate();
-        const fechaFin=`${anio}-${String(mesFin).padStart(2,"0")}-${ultimoDia}`;
+        // ----------------------------------------------------------
+        // RANGO DEL PERÍODO SELECCIONADO
+        // ----------------------------------------------------------
+        let mesInicio = 1, mesFin = 12;
 
-        const headers={"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY};
-        const [ra,re,rj] = await Promise.all([
-            fetch(SUPABASE_URL+"/rest/v1/vista_asistencia?select=*&fecha=gte."+encodeURIComponent(fechaInicio)+"&fecha=lte."+encodeURIComponent(fechaFin)+"&grado=eq."+encodeURIComponent(grado)+"&seccion=eq."+encodeURIComponent(seccion),{headers}),
-            fetch(SUPABASE_URL+"/rest/v1/estudiantes?select=*&grado=eq."+encodeURIComponent(grado)+"&seccion=eq."+encodeURIComponent(seccion)+"&order=orden.asc",{headers}),
-            fetch(SUPABASE_URL+"/rest/v1/justificaciones?select=*&fecha=gte."+encodeURIComponent(fechaInicio)+"&fecha=lte."+encodeURIComponent(fechaFin),{headers})
+        if (periodoSeleccionado === "mensual") {
+            mesInicio = periodo;
+            mesFin = periodo;
+        }
+        else if (periodoSeleccionado === "bimestral") {
+            mesInicio = (periodo - 1) * 2 + 1;
+            mesFin = mesInicio + 1;
+        }
+        else if (periodoSeleccionado === "trimestral") {
+            mesInicio = (periodo - 1) * 3 + 1;
+            mesFin = mesInicio + 2;
+        }
+        else if (periodoSeleccionado === "semestral") {
+            mesInicio = periodo === 1 ? 1 : 7;
+            mesFin = periodo === 1 ? 6 : 12;
+        }
+
+        const fechaInicio =
+            `${anio}-${String(mesInicio).padStart(2, "0")}-01`;
+
+        const ultimoDia =
+            new Date(anio, mesFin, 0).getDate();
+
+        const fechaFin =
+            `${anio}-${String(mesFin).padStart(2, "0")}-${String(ultimoDia).padStart(2, "0")}`;
+
+        const headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+        };
+
+        // ----------------------------------------------------------
+        // CONSULTAS INDEPENDIENTES
+        // ----------------------------------------------------------
+        const [ra, re, rj] = await Promise.all([
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/vista_asistencia?select=*&fecha=gte." +
+                encodeURIComponent(fechaInicio) +
+                "&fecha=lte." +
+                encodeURIComponent(fechaFin) +
+                "&grado=eq." +
+                encodeURIComponent(grado) +
+                "&seccion=eq." +
+                encodeURIComponent(seccion),
+                { headers }
+            ),
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/estudiantes?select=*&grado=eq." +
+                encodeURIComponent(grado) +
+                "&seccion=eq." +
+                encodeURIComponent(seccion) +
+                "&order=orden.asc",
+                { headers }
+            ),
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/justificaciones?select=*&fecha=gte." +
+                encodeURIComponent(fechaInicio) +
+                "&fecha=lte." +
+                encodeURIComponent(fechaFin),
+                { headers }
+            )
         ]);
 
-        if(!ra.ok) throw new Error("No se pudieron consultar los registros de asistencia.");
-        if(!re.ok) throw new Error("No se pudo consultar la lista de estudiantes.");
+        if (!ra.ok)
+            throw new Error("No se pudieron consultar los registros de asistencia.");
 
-        const asistencias=await ra.json();
-        const estudiantes=deduplicarEstudiantesPorDni(await re.json());
-        let justificaciones=[];
-        let justificacionesDisponible=true;
-        if(rj.ok) justificaciones=await rj.json();
-        else justificacionesDisponible=false;
+        if (!re.ok)
+            throw new Error("No se pudo consultar la lista de estudiantes.");
 
-        const fechasLectivas=generarFechasLectivas(fechaInicio,fechaFin);
-        const asistenciaMap=new Map();
-        asistencias.forEach(r=>{
-            const dni=String(r.dni||"").trim(), fecha=String(r.fecha||"").substring(0,10);
-            if(dni&&fecha) asistenciaMap.set(dni+"|"+fecha,r);
+        const asistencias = await ra.json();
+
+        const estudiantes =
+            deduplicarEstudiantesPorDni(await re.json());
+
+        // Si la tabla de justificaciones todavía no existe,
+        // el resumen de asistencia sigue funcionando.
+        let justificaciones = [];
+        let justificacionesDisponible = true;
+
+        if (rj.ok) {
+            justificaciones = await rj.json();
+        } else {
+            justificacionesDisponible = false;
+        }
+
+        // ----------------------------------------------------------
+        // FECHAS LECTIVAS
+        // ----------------------------------------------------------
+        const fechasLectivas =
+            generarFechasLectivas(fechaInicio, fechaFin);
+
+        // ----------------------------------------------------------
+        // MAPA DE ASISTENCIAS
+        // ----------------------------------------------------------
+        const asistenciaMap = new Map();
+
+        asistencias.forEach(r => {
+
+            const dni =
+                String(r.dni || "").trim();
+
+            const fecha =
+                String(r.fecha || "").substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            asistenciaMap.set(dni + "|" + fecha, r);
         });
 
-        const justMap=new Map();
-        justificaciones.forEach(j=>{
-            const dni=String(j.dni||j.DNI||"").trim();
-            const fecha=String(j.fecha||j.Fecha||"").substring(0,10);
-            if(dni&&fecha) justMap.set(dni+"|"+fecha,j);
+        // ----------------------------------------------------------
+        // MAPA DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const justMap = new Map();
+
+        justificaciones.forEach(j => {
+
+            const dni =
+                String(j.dni || j.DNI || "").trim();
+
+            const fecha =
+                String(j.fecha || j.Fecha || "").substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            justMap.set(dni + "|" + fecha, j);
         });
 
-        const estadoNormalizado=r=>String(r?.estado||"").trim().toUpperCase();
-        const registros=[];
-        estudiantes.forEach(e=>{
-            const dni=String(e.dni||"").trim();
-            fechasLectivas.forEach(fecha=>{
-                const r=asistenciaMap.get(dni+"|"+fecha);
-                const original=r?estadoNormalizado(r):"FALTO";
-                const just=justMap.get(dni+"|"+fecha);
-                const final=just ? "TEMPRANO" : original;
-                registros.push({dni,nombre:e.nombre||"",grado:e.grado||grado,seccion:e.seccion||seccion,fecha,original,estado:final,just:!!just,justData:just||null});
+        const normalizarEstado = r =>
+            String(r?.estado || "").trim().toUpperCase();
+
+        // ----------------------------------------------------------
+        // CONSTRUIR RESULTADO FINAL
+        //
+        // TARDANZA JUSTIFICADA       -> TEMPRANO FINAL
+        // DEMASIADO TARDE JUSTIFICADO -> TEMPRANO FINAL
+        // FALTA JUSTIFICADA          -> NO SE CUENTA COMO FALTA
+        //
+        // PERO SIEMPRE CONSERVAMOS LA SITUACIÓN ORIGINAL
+        // PARA EL INFORME DE JUSTIFICACIONES.
+        // ----------------------------------------------------------
+        const registros = [];
+
+        estudiantes.forEach(e => {
+
+            const dni =
+                String(e.dni || "").trim();
+
+            fechasLectivas.forEach(fecha => {
+
+                const originalRegistro =
+                    asistenciaMap.get(dni + "|" + fecha);
+
+                const original =
+                    originalRegistro
+                        ? normalizarEstado(originalRegistro)
+                        : "FALTO";
+
+                const just =
+                    justMap.get(dni + "|" + fecha);
+
+                let estadoFinal = original;
+
+                if (just) {
+
+                    // Para el resumen, toda justificación aceptada
+                    // deja de contar como incidencia.
+                    if (
+                        original === "TARDANZA" ||
+                        original === "DEMASIADO TARDE"
+                    ) {
+                        estadoFinal = "TEMPRANO";
+                    }
+                    else if (original === "FALTO") {
+                        // Una falta justificada no es una falta final.
+                        // Se conserva aparte como "Falta justificada".
+                        estadoFinal = "JUSTIFICADA";
+                    }
+                }
+
+                registros.push({
+                    dni,
+                    nombre: e.nombre || "",
+                    grado: e.grado || grado,
+                    seccion: e.seccion || seccion,
+                    fecha,
+                    original,
+                    estado: estadoFinal,
+                    just: Boolean(just),
+                    justData: just || null
+                });
+
             });
         });
 
-        const resumen={TEMPRANO:0,TARDANZA:0,"DEMASIADO TARDE":0,FALTO:0};
-        registros.forEach(r=>resumen[r.estado]++);
-        const justRegistros=registros.filter(r=>r.just);
-        const total=registros.length;
-        const pct=n=>total?(n/total*100):0;
+        // ----------------------------------------------------------
+        // RESUMEN FINAL
+        // ----------------------------------------------------------
+        const resumen = {
+            TEMPRANO: 0,
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0
+        };
 
-        const justPorTipo={TARDANZA:0,"DEMASIADO TARDE":0,FALTO:0};
-        justRegistros.forEach(r=>{if(justPorTipo[r.original]!==undefined) justPorTipo[r.original]++;});
+        registros.forEach(r => {
 
-        let nombrePeriodo="";
-        if(periodoSeleccionado==="mensual") nombrePeriodo=mesesResumen[periodo-1];
-        else if(periodoSeleccionado==="bimestral") nombrePeriodo=`${periodo}° Bimestre`;
-        else if(periodoSeleccionado==="trimestral") nombrePeriodo=`${periodo}° Trimestre`;
-        else if(periodoSeleccionado==="semestral") nombrePeriodo=`${periodo}° Semestre`;
-        else nombrePeriodo="Año completo";
+            if (r.estado === "TEMPRANO")
+                resumen.TEMPRANO++;
 
-        // Datos diarios para el diagrama poligonal
-        const diario=fechasLectivas.map(fecha=>{
-            const rs=registros.filter(r=>r.fecha===fecha);
-            return {fecha, TEMPRANO:rs.filter(r=>r.estado==="TEMPRANO").length, TARDANZA:rs.filter(r=>r.estado==="TARDANZA").length, "DEMASIADO TARDE":rs.filter(r=>r.estado==="DEMASIADO TARDE").length, FALTO:rs.filter(r=>r.estado==="FALTO").length};
+            if (r.estado === "TARDANZA")
+                resumen.TARDANZA++;
+
+            if (r.estado === "DEMASIADO TARDE")
+                resumen["DEMASIADO TARDE"]++;
+
+            if (r.estado === "FALTO")
+                resumen.FALTO++;
         });
 
-        function esc(v){return String(v??"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));}
-        function colorEstado(s){return s==="TEMPRANO"?"#16a34a":s==="TARDANZA"?"#eab308":s==="DEMASIADO TARDE"?"#f97316":"#ef4444";}
+        const justRegistros =
+            registros.filter(r => r.just);
 
-        // SVG del diagrama poligonal, sin depender de librerías externas
-        const W=760,H=300,ML=48,MR=18,MT=18,MB=42;
-        const pw=W-ML-MR, ph=H-MT-MB;
-        const maxVal=Math.max(1,...diario.flatMap(d=>[d.TEMPRANO,d.TARDANZA,d["DEMASIADO TARDE"],d.FALTO]));
-        const yMax=Math.max(5,Math.ceil(maxVal/5)*5);
-        const xAt=i=>diario.length<=1?ML+pw/2:ML+(i/(diario.length-1))*pw;
-        const yAt=v=>MT+ph-(v/yMax)*ph;
-        let svg=`<svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
-        for(let k=0;k<=5;k++){const v=Math.round(yMax*k/5);const y=yAt(v);svg+=`<line x1="${ML}" y1="${y}" x2="${W-MR}" y2="${y}" stroke="#e2e8f0"/><text x="${ML-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#64748b">${v}</text>`;}
-        const series=["TEMPRANO","TARDANZA","DEMASIADO TARDE","FALTO"];
-        series.forEach(s=>{const pts=diario.map((d,i)=>`${xAt(i)},${yAt(d[s])}`).join(" ");svg+=`<polyline points="${pts}" fill="none" stroke="${colorEstado(s)}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;diario.forEach((d,i)=>{svg+=`<circle cx="${xAt(i)}" cy="${yAt(d[s])}" r="3.5" fill="${colorEstado(s)}"/>`;});});
-        const paso=Math.max(1,Math.ceil(diario.length/8));
-        diario.forEach((d,i)=>{if(i%paso===0||i===diario.length-1)svg+=`<text x="${xAt(i)}" y="${H-14}" text-anchor="middle" font-size="10" fill="#64748b">${d.fecha.substring(8,10)}/${d.fecha.substring(5,7)}</text>`;});
-        svg+=`</svg>`;
+        const totalFinal =
+            Object.values(resumen).reduce((a, b) => a + b, 0);
 
-        const justRows=justRegistros.slice().sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.nombre.localeCompare(b.nombre));
-        const justHtml=justRows.length?justRows.map(r=>{
-            const j=r.justData||{}; const tipo=j.situacion||j.tipo||j.tipo_justificacion||j.estado_original||r.original;
-            const motivo=j.motivo||j.Motivo||"";
-            return `<div class="just-row"><strong>${esc(r.fecha)} — ${esc(r.nombre)}</strong><span>${esc(r.grado)} ${esc(r.seccion)} · Registro original: ${esc(r.original)}</span><span class="just-badge">Justificado: ${esc(tipo)}</span>${motivo?`<span>Motivo: ${esc(motivo)}</span>`:""}</div>`;
-        }).join(""):"<div class='sin-datos'>No hay justificaciones registradas en este período.</div>";
+        const porcentajeFinal = n =>
+            totalFinal ? (n / totalFinal * 100) : 0;
 
-        contenedor.innerHTML=`
-        <div class="resumen-profesional-nuevo">
-          <div class="resumen-titulo-nuevo">
-            <div><h3>📊 ${esc(grado)} ${esc(seccion)} — RESUMEN DE ASISTENCIA</h3><p><b>${esc(nombrePeriodo)}</b> · ${anio} · ${fechaInicio} al ${fechaFin}</p></div>
-            <div class="resumen-total-box">REGISTROS<strong>${total}</strong></div>
-          </div>
-          <div class="resumen-cuerpo">
-            <div class="resumen-card-nuevo">
-              <h4>RESULTADO FINAL</h4>
-              <div class="estado-linea estado-verde"><span>🟢 Temprano (incluye justificados)</span><span class="estado-num">${resumen.TEMPRANO}</span><span class="estado-pct">${pct(resumen.TEMPRANO).toFixed(1)}%</span></div>
-              <div class="estado-linea estado-amarillo"><span>🟡 Tardanza no justificada</span><span class="estado-num">${resumen.TARDANZA}</span><span class="estado-pct">${pct(resumen.TARDANZA).toFixed(1)}%</span></div>
-              <div class="estado-linea estado-naranja"><span>🟠 Demasiado tarde no justificada</span><span class="estado-num">${resumen["DEMASIADO TARDE"]}</span><span class="estado-pct">${pct(resumen["DEMASIADO TARDE"]).toFixed(1)}%</span></div>
-              <div class="estado-linea estado-rojo"><span>🔴 Falta no justificada</span><span class="estado-num">${resumen.FALTO}</span><span class="estado-pct">${pct(resumen.FALTO).toFixed(1)}%</span></div>
-              <div class="just-total">📌 <b>JUSTIFICACIONES ACEPTADAS</b><br><strong>${justRegistros.length}</strong> <span>(${pct(justRegistros.length).toFixed(1)}% del período)</span></div>
-              <p style="font-size:12px;color:#64748b;margin:10px 0 0">Las justificadas se excluyen de tardanzas, demasiado tarde y faltas; para el resultado final se consideran asistencia.</p>
+        // ----------------------------------------------------------
+        // JUSTIFICACIONES POR TIPO
+        // ----------------------------------------------------------
+        const justPorTipo = {
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0
+        };
+
+        justRegistros.forEach(r => {
+
+            if (Object.prototype.hasOwnProperty.call(
+                justPorTipo,
+                r.original
+            )) {
+                justPorTipo[r.original]++;
+            }
+        });
+
+        const totalJust =
+            justRegistros.length;
+
+        const porcentajeJust = n =>
+            totalJust ? (n / totalJust * 100) : 0;
+
+        // ----------------------------------------------------------
+        // NOMBRE DEL PERÍODO
+        // ----------------------------------------------------------
+        let nombrePeriodo = "";
+
+        if (periodoSeleccionado === "mensual")
+            nombrePeriodo = mesesResumen[periodo - 1];
+
+        else if (periodoSeleccionado === "bimestral")
+            nombrePeriodo = `${periodo}° Bimestre`;
+
+        else if (periodoSeleccionado === "trimestral")
+            nombrePeriodo = `${periodo}° Trimestre`;
+
+        else if (periodoSeleccionado === "semestral")
+            nombrePeriodo = `${periodo}° Semestre`;
+
+        else
+            nombrePeriodo = "Año completo";
+
+        // ----------------------------------------------------------
+        // DATOS DIARIOS DE ASISTENCIA
+        // ----------------------------------------------------------
+        const diario = fechasLectivas.map(fecha => {
+
+            const rs =
+                registros.filter(r => r.fecha === fecha);
+
+            return {
+                fecha,
+
+                TEMPRANO:
+                    rs.filter(r => r.estado === "TEMPRANO").length,
+
+                TARDANZA:
+                    rs.filter(r => r.estado === "TARDANZA").length,
+
+                "DEMASIADO TARDE":
+                    rs.filter(r => r.estado === "DEMASIADO TARDE").length,
+
+                FALTO:
+                    rs.filter(r => r.estado === "FALTO").length
+            };
+        });
+
+        // ----------------------------------------------------------
+        // DATOS DIARIOS DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const diarioJust = fechasLectivas.map(fecha => {
+
+            const rs =
+                justRegistros.filter(r => r.fecha === fecha);
+
+            return {
+                fecha,
+
+                TARDANZA:
+                    rs.filter(r => r.original === "TARDANZA").length,
+
+                "DEMASIADO TARDE":
+                    rs.filter(r => r.original === "DEMASIADO TARDE").length,
+
+                FALTO:
+                    rs.filter(r => r.original === "FALTO").length
+            };
+        });
+
+        // ----------------------------------------------------------
+        // FUNCIONES DE SEGURIDAD HTML
+        // ----------------------------------------------------------
+        function esc(v) {
+
+            return String(v ?? "")
+                .replace(/[&<>\"]/g, m => ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;"
+                }[m]));
+        }
+
+        function colorEstado(s) {
+
+            if (s === "TEMPRANO") return "#16a34a";
+            if (s === "TARDANZA") return "#eab308";
+            if (s === "DEMASIADO TARDE") return "#f97316";
+            return "#ef4444";
+        }
+
+        function colorJust(s) {
+
+            if (s === "TARDANZA") return "#7c3aed";
+            if (s === "DEMASIADO TARDE") return "#9333ea";
+            return "#a855f7";
+        }
+
+        // ----------------------------------------------------------
+        // CREAR GRÁFICO POLIGONAL SVG
+        // ----------------------------------------------------------
+        function crearGraficoPoligonal(datos, series, colores) {
+
+            const W = 760;
+            const H = 300;
+
+            const ML = 48;
+            const MR = 18;
+            const MT = 18;
+            const MB = 42;
+
+            const pw = W - ML - MR;
+            const ph = H - MT - MB;
+
+            const maxVal =
+                Math.max(
+                    1,
+                    ...datos.flatMap(d =>
+                        series.map(s => Number(d[s] || 0))
+                    )
+                );
+
+            const yMax =
+                Math.max(5, Math.ceil(maxVal / 5) * 5);
+
+            const xAt = i =>
+                datos.length <= 1
+                    ? ML + pw / 2
+                    : ML + (i / (datos.length - 1)) * pw;
+
+            const yAt = v =>
+                MT + ph - (v / yMax) * ph;
+
+            let svg =
+                `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+
+            // Cuadrícula
+            for (let k = 0; k <= 5; k++) {
+
+                const v =
+                    Math.round(yMax * k / 5);
+
+                const y =
+                    yAt(v);
+
+                svg += `
+                    <line
+                        x1="${ML}" y1="${y}"
+                        x2="${W - MR}" y2="${y}"
+                        stroke="#e2e8f0"
+                    />
+                    <text
+                        x="${ML - 8}" y="${y + 4}"
+                        text-anchor="end"
+                        font-size="11"
+                        fill="#64748b"
+                    >${v}</text>
+                `;
+            }
+
+            // Líneas
+            series.forEach((s, indice) => {
+
+                const puntos =
+                    datos.map((d, i) =>
+                        `${xAt(i)},${yAt(Number(d[s] || 0))}`
+                    ).join(" ");
+
+                svg += `
+                    <polyline
+                        points="${puntos}"
+                        fill="none"
+                        stroke="${colores[indice]}"
+                        stroke-width="3"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                    />
+                `;
+
+                datos.forEach((d, i) => {
+
+                    svg += `
+                        <circle
+                            cx="${xAt(i)}"
+                            cy="${yAt(Number(d[s] || 0))}"
+                            r="3.5"
+                            fill="${colores[indice]}"
+                        >
+                            <title>
+                                ${esc(s)} — ${esc(d.fecha)}:
+                                ${Number(d[s] || 0)}
+                            </title>
+                        </circle>
+                    `;
+                });
+            });
+
+            const paso =
+                Math.max(1, Math.ceil(datos.length / 8));
+
+            datos.forEach((d, i) => {
+
+                if (i % paso === 0 || i === datos.length - 1) {
+
+                    svg += `
+                        <text
+                            x="${xAt(i)}"
+                            y="${H - 14}"
+                            text-anchor="middle"
+                            font-size="10"
+                            fill="#64748b"
+                        >${d.fecha.substring(8, 10)}/${d.fecha.substring(5, 7)}</text>
+                    `;
+                }
+            });
+
+            svg += `</svg>`;
+
+            return svg;
+        }
+
+        // ----------------------------------------------------------
+        // TENDENCIA DE JUSTIFICACIONES
+        // Primera mitad vs segunda mitad del período.
+        // ----------------------------------------------------------
+        function calcularTendenciaJustificaciones() {
+
+            if (!diarioJust.length)
+                return {
+                    primera: 0,
+                    segunda: 0,
+                    porcentaje: 0,
+                    texto: "Sin datos"
+                };
+
+            const mitad =
+                Math.ceil(diarioJust.length / 2);
+
+            const primera =
+                diarioJust
+                    .slice(0, mitad)
+                    .reduce(
+                        (s, d) =>
+                            s +
+                            d.TARDANZA +
+                            d["DEMASIADO TARDE"] +
+                            d.FALTO,
+                        0
+                    );
+
+            const segunda =
+                diarioJust
+                    .slice(mitad)
+                    .reduce(
+                        (s, d) =>
+                            s +
+                            d.TARDANZA +
+                            d["DEMASIADO TARDE"] +
+                            d.FALTO,
+                        0
+                    );
+
+            if (primera === 0 && segunda === 0) {
+
+                return {
+                    primera,
+                    segunda,
+                    porcentaje: 0,
+                    texto: "Sin justificaciones"
+                };
+            }
+
+            if (primera === 0) {
+
+                return {
+                    primera,
+                    segunda,
+                    porcentaje: 100,
+                    texto: "📈 Incremento"
+                };
+            }
+
+            const porcentaje =
+                ((segunda - primera) / primera) * 100;
+
+            return {
+                primera,
+                segunda,
+                porcentaje,
+                texto:
+                    porcentaje > 0
+                        ? "📈 Incremento"
+                        : porcentaje < 0
+                            ? "📉 Disminución"
+                            : "➡️ Sin variación"
+            };
+        }
+
+        const tendencia =
+            calcularTendenciaJustificaciones();
+
+        // ----------------------------------------------------------
+        // LISTADO DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const justRows =
+            justRegistros
+                .slice()
+                .sort(
+                    (a, b) =>
+                        a.fecha.localeCompare(b.fecha) ||
+                        a.nombre.localeCompare(b.nombre)
+                );
+
+        const justHtml =
+            justRows.length
+                ? justRows.map(r => {
+
+                    const j =
+                        r.justData || {};
+
+                    const motivo =
+                        j.motivo ||
+                        j.Motivo ||
+                        "";
+
+                    const tipo =
+                        r.original === "FALTO"
+                            ? "Falta justificada"
+                            : r.original === "TARDANZA"
+                                ? "Tardanza justificada"
+                                : "Demasiado tarde justificado";
+
+                    return `
+                        <div class="just-row">
+                            <strong>
+                                ${esc(r.fecha)} — ${esc(r.nombre)}
+                            </strong>
+
+                            <span>
+                                DNI: ${esc(r.dni)}
+                            </span>
+
+                            <span>
+                                ${esc(r.grado)} ${esc(r.seccion)}
+                            </span>
+
+                            <span class="just-badge">
+                                ${esc(tipo)}
+                            </span>
+
+                            ${
+                                motivo
+                                    ? `<span>Motivo: ${esc(motivo)}</span>`
+                                    : ""
+                            }
+                        </div>
+                    `;
+
+                }).join("")
+
+                : `
+                    <div class="sin-datos">
+                        No hay justificaciones registradas en este período.
+                    </div>
+                `;
+
+        // ----------------------------------------------------------
+        // GRÁFICOS
+        // ----------------------------------------------------------
+        const svgAsistencia =
+            crearGraficoPoligonal(
+                diario,
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ],
+                [
+                    "#16a34a",
+                    "#eab308",
+                    "#f97316",
+                    "#ef4444"
+                ]
+            );
+
+        const svgJustificaciones =
+            crearGraficoPoligonal(
+                diarioJust,
+                [
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ],
+                [
+                    "#7c3aed",
+                    "#9333ea",
+                    "#a855f7"
+                ]
+            );
+
+        // ----------------------------------------------------------
+        // INFORME
+        // ----------------------------------------------------------
+        contenedor.innerHTML = `
+
+            <div class="resumen-profesional-nuevo">
+
+                <div class="resumen-titulo-nuevo">
+
+                    <div>
+                        <h3>
+                            📊 ${esc(grado)} ${esc(seccion)}
+                            — INFORME DE ASISTENCIA
+                        </h3>
+
+                        <p>
+                            <b>${esc(nombrePeriodo)}</b>
+                            · ${anio}
+                            · ${fechaInicio} al ${fechaFin}
+                        </p>
+                    </div>
+
+                    <div class="resumen-total-box">
+                        REGISTROS
+                        <strong>${totalFinal}</strong>
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ASISTENCIA FINAL
+                     ================================================== -->
+
+                <div class="resumen-cuerpo">
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>📌 RESULTADO FINAL</h4>
+
+                        <div class="estado-linea estado-verde">
+                            <span>🟢 Temprano</span>
+                            <span class="estado-num">
+                                ${resumen.TEMPRANO}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.TEMPRANO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-amarillo">
+                            <span>🟡 Tardanza</span>
+                            <span class="estado-num">
+                                ${resumen.TARDANZA}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.TARDANZA).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-naranja">
+                            <span>🟠 Demasiado tarde</span>
+                            <span class="estado-num">
+                                ${resumen["DEMASIADO TARDE"]}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen["DEMASIADO TARDE"]).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-rojo">
+                            <span>🔴 Falta</span>
+                            <span class="estado-num">
+                                ${resumen.FALTO}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.FALTO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="just-total">
+
+                            📌 <b>JUSTIFICACIONES ACEPTADAS</b>
+
+                            <br>
+
+                            <strong>${totalJust}</strong>
+
+                            <span>
+                                (${totalFinal
+                                    ? (totalJust / (totalFinal + totalJust) * 100).toFixed(1)
+                                    : "0.0"}% de las incidencias originales)
+                            </span>
+
+                        </div>
+
+                        <p style="
+                            font-size:12px;
+                            color:#64748b;
+                            margin:10px 0 0;
+                        ">
+                            Las justificaciones no se contabilizan como
+                            tardanza, demasiado tarde o falta.
+                            Las tardanzas y demasiado tarde justificadas
+                            pasan a asistencia; las faltas justificadas
+                            quedan registradas aparte.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         POLIGONAL DE ASISTENCIA
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            📈 EVOLUCIÓN DIARIA DE ASISTENCIA
+                        </h4>
+
+                        <div class="chart-wrap">
+                            ${svgAsistencia}
+                        </div>
+
+                        <div class="chart-legend">
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#16a34a"
+                                ></i>
+                                Temprano
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#eab308"
+                                ></i>
+                                Tardanza
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#f97316"
+                                ></i>
+                                Dem. tarde
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#ef4444"
+                                ></i>
+                                Faltas
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     JUSTIFICACIONES
+                     ================================================== -->
+
+                <div
+                    class="resumen-cuerpo"
+                    style="margin-top:14px;"
+                >
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>📝 RESUMEN DE JUSTIFICACIONES</h4>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Tardanza justificada
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo.TARDANZA}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo.TARDANZA).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Demasiado tarde justificado
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo["DEMASIADO TARDE"]}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo["DEMASIADO TARDE"]).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Falta justificada
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo.FALTO}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo.FALTO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="just-total">
+
+                            <b>TOTAL JUSTIFICADAS</b>
+
+                            <br>
+
+                            <strong>${totalJust}</strong>
+
+                            <span>
+                                (${totalJust ? "100.0" : "0.0"}%)
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         POLIGONAL DE JUSTIFICACIONES
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            📈 EVOLUCIÓN DE JUSTIFICACIONES
+                        </h4>
+
+                        <div class="chart-wrap">
+                            ${svgJustificaciones}
+                        </div>
+
+                        <div class="chart-legend">
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#7c3aed"
+                                ></i>
+                                Tardanza
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#9333ea"
+                                ></i>
+                                Dem. tarde
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#a855f7"
+                                ></i>
+                                Falta
+                            </span>
+
+                        </div>
+
+                        <div style="
+                            margin-top:12px;
+                            padding:10px;
+                            border-radius:9px;
+                            background:#faf5ff;
+                            border:1px solid #e9d5ff;
+                            color:#6b21a8;
+                            font-size:13px;
+                        ">
+
+                            <b>${tendencia.texto}</b>
+
+                            ${
+                                tendencia.primera || tendencia.segunda
+                                    ? `
+                                        · Primera parte:
+                                        <b>${tendencia.primera}</b>
+                                        · Segunda parte:
+                                        <b>${tendencia.segunda}</b>
+                                        · Variación:
+                                        <b>
+                                            ${
+                                                tendencia.porcentaje > 0
+                                                    ? "+"
+                                                    : ""
+                                            }${tendencia.porcentaje.toFixed(1)}%
+                                        </b>
+                                      `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         DETALLE DE JUSTIFICACIONES
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            👥 DETALLE DE JUSTIFICACIONES
+                        </h4>
+
+                        <div class="just-list">
+                            ${justHtml}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="resumen-nota">
+
+                    ℹ️ <b>${esc(grado)} ${esc(seccion)}</b>:
+                    este informe corresponde exclusivamente a la
+                    sección seleccionada.
+
+                    ${
+                        justificacionesDisponible
+                            ? "Las justificaciones aceptadas se muestran aparte y no incrementan las incidencias finales."
+                            : "No se pudo consultar la tabla de justificaciones; se muestra el resultado sin aplicar justificaciones."
+                    }
+
+                </div>
+
             </div>
+        `;
 
-            <div class="resumen-card-nuevo">
-              <h4>📈 EVOLUCIÓN DIARIA — ${esc(grado)} ${esc(seccion)}</h4>
-              <div class="chart-wrap">${svg}</div>
-              <div class="chart-legend">
-                <span class="legend-item"><i class="legend-dot" style="background:#16a34a"></i>Temprano</span>
-                <span class="legend-item"><i class="legend-dot" style="background:#eab308"></i>Tardanza</span>
-                <span class="legend-item"><i class="legend-dot" style="background:#f97316"></i>Dem. tarde</span>
-                <span class="legend-item"><i class="legend-dot" style="background:#ef4444"></i>Faltas</span>
-              </div>
-            </div>
+    }
+    catch (error) {
 
-            <div class="resumen-card-nuevo">
-              <h4>📌 DETALLE DE JUSTIFICACIONES</h4>
-              <table class="just-tabla"><thead><tr><th>Situación original</th><th>Cant.</th><th>%</th></tr></thead><tbody>
-                <tr><td>Tardanza justificada</td><td>${justPorTipo.TARDANZA}</td><td>${justRegistros.length?pct(justPorTipo.TARDANZA).toFixed(1):"0.0"}%</td></tr>
-                <tr><td>Demasiado tarde justificada</td><td>${justPorTipo["DEMASIADO TARDE"]}</td><td>${justRegistros.length?pct(justPorTipo["DEMASIADO TARDE"]).toFixed(1):"0.0"}%</td></tr>
-                <tr><td>Falta justificada</td><td>${justPorTipo.FALTO}</td><td>${justRegistros.length?pct(justPorTipo.FALTO).toFixed(1):"0.0"}%</td></tr>
-              </tbody><tfoot><tr><td>TOTAL JUSTIFICADAS</td><td>${justRegistros.length}</td><td>${justRegistros.length?"100.0":"0.0"}%</td></tr></tfoot></table>
-              <div style="margin-top:14px"><h4 style="margin-bottom:8px">👥 LISTADO DE JUSTIFICACIONES</h4><div class="just-list">${justHtml}</div></div>
-            </div>
-          </div>
-          <div class="resumen-nota">ℹ️ <b>${esc(grado)} ${esc(seccion)}:</b> este informe corresponde únicamente a la sección seleccionada. ${justificacionesDisponible?"Las justificaciones registradas se incorporan al cálculo final.":"No se pudo consultar la tabla de justificaciones; el resultado se muestra sin descontarlas."}</div>
-        </div>`;
-    } catch(error) {
         console.error(error);
-        contenedor.innerHTML=`<div style="padding:18px;color:#b91c1c;background:#fee2e2;border-radius:10px"><b>❌ Error al generar el resumen</b><br><br>${esc(error.message)}</div>`;
+
+        contenedor.innerHTML =
+            `<div style="
+                padding:18px;
+                color:#b91c1c;
+                background:#fee2e2;
+                border-radius:10px;
+            ">
+                <b>❌ Error al generar el resumen</b>
+                <br><br>
+                ${esc(error.message)}
+            </div>`;
     }
 }
 
@@ -1247,6 +2234,261 @@ function limpiarConsulta() {
     // Vaciar los datos actuales
     datosActuales = [];
 }
+
+// ==========================================================
+// REGISTRAR JUSTIFICACIÓN
+// IMPORTANTE: no modifica el cuadro DETALLE.
+// La justificación se guarda aparte y el RESUMEN la considera
+// como TEMPRANO, conservando la situación original.
+// ==========================================================
+window.abrirRegistrarJustificacion = function() {
+
+    const fondo = document.createElement("div");
+    fondo.className = "modal-justificacion";
+
+    const ventana = document.createElement("div");
+    ventana.className = "ventana-justificacion";
+
+    ventana.innerHTML = `
+        <h3>📝 Registrar justificación</h3>
+        <p class="ayuda">
+            Registra una justificación para un estudiante en una fecha concreta.
+            La situación original se conserva para el informe.
+        </p>
+
+        <div class="form-just">
+            <label for="justDni">DNI del estudiante</label>
+            <input id="justDni" type="text" inputmode="numeric"
+                   maxlength="12" placeholder="Ingrese el DNI">
+        </div>
+
+        <div class="form-just">
+            <label for="justFecha">Fecha</label>
+            <input id="justFecha" type="date">
+        </div>
+
+        <div class="form-just">
+            <label for="justTipo">Tipo de justificación</label>
+            <select id="justTipo">
+                <option value="">Seleccione...</option>
+                <option value="TARDANZA">Justificación de tardanza</option>
+                <option value="DEMASIADO TARDE">Justificación de demasiado tarde</option>
+                <option value="FALTO">Justificación de falta</option>
+            </select>
+        </div>
+
+        <div class="form-just">
+            <label for="justMotivo">Motivo / sustento</label>
+            <textarea id="justMotivo"
+                placeholder="Ejemplo: cita médica, enfermedad, emergencia familiar..."></textarea>
+        </div>
+
+        <div class="justificacion-aviso">
+            ℹ️ Al guardar, el resumen contabilizará ese registro como
+            <b>TEMPRANO</b>, pero mostrará que fue una
+            <b>tardanza, demasiado tarde o falta justificada</b>.
+        </div>
+
+        <div class="botones-just">
+            <button class="btn-guardar-just" id="btnGuardarJust">💾 Guardar</button>
+            <button class="btn-cancelar-just" id="btnCancelarJust">❌ Cancelar</button>
+        </div>
+    `;
+
+    fondo.appendChild(ventana);
+    document.body.appendChild(fondo);
+
+    const dniInput = document.getElementById("justDni");
+    const fechaInput = document.getElementById("justFecha");
+    const tipoInput = document.getElementById("justTipo");
+    const motivoInput = document.getElementById("justMotivo");
+
+    // Si el usuario ya seleccionó grado/sección/periodo en el resumen,
+    // se toma una fecha razonable del período actual.
+    const hoy = new Date();
+    fechaInput.value =
+        `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-${String(hoy.getDate()).padStart(2,"0")}`;
+
+    document.getElementById("btnCancelarJust").onclick = () => fondo.remove();
+
+    document.getElementById("btnGuardarJust").onclick = async function() {
+
+        const dni = dniInput.value.trim();
+        const fecha = fechaInput.value;
+        const tipoSeleccionado = tipoInput.value;
+        const motivo = motivoInput.value.trim();
+
+        if (!/^\d{8}$/.test(dni)) {
+            alert("⚠️ Ingresa un DNI válido de 8 dígitos.");
+            return;
+        }
+
+        if (!fecha) {
+            alert("⚠️ Selecciona la fecha.");
+            return;
+        }
+
+        if (!tipoSeleccionado) {
+            alert("⚠️ Selecciona el tipo de justificación.");
+            return;
+        }
+
+        if (!motivo) {
+            alert("⚠️ Escribe el motivo o sustento.");
+            return;
+        }
+
+        const boton = this;
+        boton.disabled = true;
+        boton.textContent = "⏳ Verificando...";
+
+        try {
+            const headers = {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            };
+
+            // 1. Verificar estudiante y obtener su situación original.
+            const urlEstudiante =
+                SUPABASE_URL +
+                "/rest/v1/estudiantes?select=*&dni=eq." +
+                encodeURIComponent(dni);
+
+            const respuestaEstudiante =
+                await fetch(urlEstudiante, { headers });
+
+            if (!respuestaEstudiante.ok) {
+                throw new Error("No se pudo consultar el estudiante.");
+            }
+
+            const estudiantes = await respuestaEstudiante.json();
+
+            if (!estudiantes.length) {
+                alert("❌ No existe un estudiante registrado con ese DNI.");
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            // 2. Buscar el registro de asistencia de ese día.
+            const urlAsistencia =
+                SUPABASE_URL +
+                "/rest/v1/vista_asistencia?select=estado&dni=eq." +
+                encodeURIComponent(dni) +
+                "&fecha=eq." +
+                encodeURIComponent(fecha);
+
+            const respuestaAsistencia =
+                await fetch(urlAsistencia, { headers });
+
+            if (!respuestaAsistencia.ok) {
+                throw new Error("No se pudo consultar la asistencia de ese día.");
+            }
+
+            const registrosAsistencia = await respuestaAsistencia.json();
+
+            // Si no existe registro, por la lógica del sistema se considera FALTO.
+            const situacionOriginal =
+                registrosAsistencia.length
+                    ? String(registrosAsistencia[0].estado || "").trim().toUpperCase()
+                    : "FALTO";
+
+            if (!["TARDANZA", "DEMASIADO TARDE", "FALTO"].includes(situacionOriginal)) {
+                alert(
+                    "⚠️ El estudiante no tiene una tardanza, demasiado tarde o falta " +
+                    "para la fecha seleccionada.\n\n" +
+                    "Situación encontrada: " + (situacionOriginal || "SIN REGISTRO")
+                );
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            if (situacionOriginal !== tipoSeleccionado) {
+                const nombres = {
+                    "TARDANZA": "TARDANZA",
+                    "DEMASIADO TARDE": "DEMASIADO TARDE",
+                    "FALTO": "FALTA"
+                };
+
+                alert(
+                    "⚠️ El tipo seleccionado no coincide con la situación registrada.\n\n" +
+                    "Situación real del día: " + nombres[situacionOriginal] + "\n" +
+                    "Seleccionaste: " + nombres[tipoSeleccionado] + "\n\n" +
+                    "Selecciona la opción correcta."
+                );
+
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            boton.textContent = "⏳ Guardando...";
+
+            // 3. Guardar la justificación sin alterar la asistencia original.
+            const respuestaGuardar = await fetch(
+                SUPABASE_URL + "/rest/v1/justificaciones",
+                {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=representation"
+                    },
+                    body: JSON.stringify({
+                        dni: dni,
+                        fecha: fecha,
+                        situacion: situacionOriginal,
+                        motivo: motivo
+                    })
+                }
+            );
+
+            if (!respuestaGuardar.ok) {
+                const errorTexto = await respuestaGuardar.text();
+
+                if (errorTexto.includes("duplicate") ||
+                    errorTexto.includes("unique")) {
+                    throw new Error(
+                        "Ya existe una justificación registrada para ese estudiante y esa fecha."
+                    );
+                }
+
+                throw new Error(errorTexto || "No se pudo guardar la justificación.");
+            }
+
+            alert(
+                "✅ Justificación registrada correctamente.\n\n" +
+                "DNI: " + dni +
+                "\nFecha: " + fecha +
+                "\nSituación original: " + situacionOriginal +
+                "\n\nEn el RESUMEN dejará de contar como incidencia y quedará registrada como justificada."
+            );
+
+            fondo.remove();
+
+            // Si el resumen estaba visible, se actualiza automáticamente.
+            const resultadoResumen = document.getElementById("resultadoResumen");
+            if (resultadoResumen && resultadoResumen.innerHTML.trim()) {
+                setTimeout(() => generarResumen(), 250);
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ No se pudo registrar la justificación.\n\n" +
+                error.message
+            );
+
+            boton.disabled = false;
+            boton.textContent = "💾 Guardar";
+        }
+    };
+};
+
 window.abrirDiasNoLectivos = function() {
 
     const fondo = document.createElement("div");
