@@ -505,6 +505,40 @@ const SUPABASE_KEY =
 "sb_publishable_MX3PWni7cZ3hF7JqtFXb9A_Ee0iwIIb";
 
 let datosActuales = [];
+let diasNoLectivosCache = [];
+let motivosDiasNoLectivos = new Map();
+
+async function cargarDiasNoLectivos() {
+    const respuesta = await fetch(
+        SUPABASE_URL +
+        "/rest/v1/dias_no_lectivos?select=fecha,motivo&order=fecha.asc",
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            }
+        }
+    );
+
+    if (!respuesta.ok) {
+        throw new Error("No se pudieron consultar los días no lectivos.");
+    }
+
+    const filas = await respuesta.json();
+
+    diasNoLectivosCache = filas
+        .map(r => String(r.fecha || "").substring(0, 10))
+        .filter(Boolean);
+
+    motivosDiasNoLectivos = new Map(
+        filas
+            .filter(r => r.fecha)
+            .map(r => [
+                String(r.fecha).substring(0, 10),
+                String(r.motivo || "Suspensión de clases")
+            ])
+    );
+}
 // ==========================================
 // ==========================================
 // CONFIGURACIÓN DEL RESUMEN — INDEPENDIENTE
@@ -572,13 +606,10 @@ function esDiaLectivo(fecha) {
     if (anio === 2026) {
 
     // DÍAS EXCEPCIONALES SIN CLASES
-    const diasNoLectivos = [
-        "2026-08-28"
-    ];
-
-    if (diasNoLectivos.includes(fecha)) {
-        return false;
-    }
+// DÍAS NO LECTIVOS REGISTRADOS EN SUPABASE
+if (diasNoLectivosCache.includes(fecha)) {
+    return false;
+}
 
     // Inicio del control de asistencia
     if (fecha < "2026-08-24") {
@@ -770,7 +801,7 @@ async function generarResumen() {
 
     const contenedor = document.getElementById("resultadoResumen");
     if (!contenedor) return;
-
+await cargarDiasNoLectivos();
     const grado = document.getElementById("gradoResumen").value;
     const seccion = document.getElementById("seccionResumen").value;
     const anio = Number(document.getElementById("anioResumen").value);
@@ -1862,7 +1893,7 @@ window.consultar = async function() {
 
         const hasta =
             document.getElementById("hasta").value;
-
+await cargarDiasNoLectivos();
         const estado =
             document.getElementById("estado").value;
 
@@ -2133,7 +2164,52 @@ window.consultar = async function() {
 
         datosActuales = datosFiltrados;
 
-        mostrar(datosActuales);
+const suspensiones = diasNoLectivosCache.filter(
+    fecha => fecha >= desde && fecha <= hasta
+);
+
+if (datosActuales.length > 0) {
+    mostrar(datosActuales);
+} else {
+    resultado.innerHTML = "";
+}
+
+if (suspensiones.length > 0) {
+
+    resultado.innerHTML += suspensiones.map(fecha => {
+
+        const motivo =
+            motivosDiasNoLectivos.get(fecha) ||
+            "Suspensión de clases";
+
+        const fechaMostrar =
+            fecha.split("-").reverse().join("/");
+
+        return `
+            <div style="
+                margin: 15px 0;
+                padding: 15px;
+                border: 2px solid #c62828;
+                border-radius: 8px;
+                background: #ffebee;
+                text-align: center;
+                font-weight: bold;
+            ">
+                📅 ${fechaMostrar}<br>
+                SUSPENSIÓN DE CLASES<br>
+                <span style="font-weight: normal;">
+                    Motivo: ${motivo}
+                </span>
+            </div>
+        `;
+
+    }).join("");
+}
+
+if (!datosActuales.length && !suspensiones.length) {
+    resultado.innerHTML =
+        "<p>❌ No se encontraron registros.</p>";
+}
 console.log("====================================");
 console.log("PRUEBA DE FALTAS");
 console.log("Fechas lectivas:", fechasLectivas);
