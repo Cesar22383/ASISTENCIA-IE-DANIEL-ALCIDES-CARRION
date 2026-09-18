@@ -2749,13 +2749,13 @@ async function previsualizarControlMensual() {
         const jsPDFClase =
             window.jspdf.jsPDF;
 
-        const guardarOriginal =
-            jsPDFClase.prototype.save;
+const guardarOriginal =
+    jsPDFClase.API.save;
 
         let pdfBlob = null;
         let nombreArchivo = "Control_Mensual.pdf";
 
-        jsPDFClase.prototype.save = function(nombre) {
+      jsPDFClase.API.save = function(nombre) {
 
             nombreArchivo =
                 nombre ||
@@ -2778,8 +2778,8 @@ await descargarPDFControlMensual();
 finally {
 
             // Restaurar la función original
-            jsPDFClase.prototype.save =
-                guardarOriginal;
+jsPDFClase.API.save =
+    guardarOriginal;
 
     // Desactivar modo vista previa
         }
