@@ -2771,7 +2771,6 @@ async function previsualizarControlMensual() {
 
             // Utilizamos la función que ya genera
 // Activar modo vista previa para evitar la descarga automática
-window.modoVistaPreviaControlMensual = true;
 
 await descargarPDFControlMensual();
 
@@ -2783,7 +2782,6 @@ finally {
                 guardarOriginal;
 
     // Desactivar modo vista previa
-    window.modoVistaPreviaControlMensual = false;
         }
 
         if (!pdfBlob) {
@@ -4487,9 +4485,9 @@ async function descargarPDFControlMensual() {
         const nombreArchivo =
             `Control_Mensual_Asistencia_${nombreMes}_${anio}.pdf`;
 
-if (!window.modoVistaPreviaControlMensual) {
-    doc.save(nombreArchivo);
-}
+doc.save(
+    nombreArchivo
+);
 
         alert(
             "✅ Control Mensual de Asistencia generado correctamente.\n\n" +
