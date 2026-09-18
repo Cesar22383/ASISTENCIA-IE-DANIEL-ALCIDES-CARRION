@@ -2770,16 +2770,20 @@ async function previsualizarControlMensual() {
         try {
 
             // Utilizamos la función que ya genera
-            // todo el contenido del PDF.
-            await descargarPDFControlMensual();
+// Activar modo vista previa para evitar la descarga automática
+window.modoVistaPreviaControlMensual = true;
 
-        }
-        finally {
+await descargarPDFControlMensual();
+
+}
+finally {
 
             // Restaurar la función original
             jsPDFClase.prototype.save =
                 guardarOriginal;
 
+    // Desactivar modo vista previa
+    window.modoVistaPreviaControlMensual = false;
         }
 
         if (!pdfBlob) {
@@ -4483,9 +4487,9 @@ async function descargarPDFControlMensual() {
         const nombreArchivo =
             `Control_Mensual_Asistencia_${nombreMes}_${anio}.pdf`;
 
-        doc.save(
-            nombreArchivo
-        );
+if (!window.modoVistaPreviaControlMensual) {
+    doc.save(nombreArchivo);
+}
 
         alert(
             "✅ Control Mensual de Asistencia generado correctamente.\n\n" +
