@@ -1,6 +1,1914 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Consulta de Asistencia</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    margin: 0;
+    padding: 20px;
+}
+
+.contenedor {
+    max-width: 1200px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    padding: 10px;
+    font-size: 15px;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+.tabla {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background: #e5e7eb;
+}
+
+.temprano {
+    background: #b6f2b6;
+    font-weight: bold;
+}
+
+.tardanza {
+    background: #fff176;
+    font-weight: bold;
+}
+
+.demasiado {
+    background: #ff8a80;
+    font-weight: bold;
+}
+
+.falto {
+    background: #d0d0d0;
+    font-weight: bold;
+}
+/* ================================
+   CABECERA INSTITUCIONAL
+   ================================ */
+
+.encabezado-institucional {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin-bottom: 25px;
+    padding: 18px 20px;
+    border-bottom: 3px solid #2563eb;
+}
+
+.insignia img {
+    width: 105px;
+    height: 105px;
+    object-fit: contain;
+}
+
+.datos-institucion {
+    text-align: center;
+}
+
+.nombre-ie {
+    color: #1d4ed8;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.ubicacion-ie {
+    margin-top: 7px;
+    color: #475569;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ================================
+   TÍTULO DEL RESUMEN
+   ================================ */
+
+.titulo-resumen {
+    text-align: center;
+    color: #1d4ed8;
+    font-size: 27px;
+    font-weight: 800;
+    margin: 25px 0 20px;
+} 
+/* ==========================================
+   PANEL DE PERIODOS DEL RESUMEN
+   ========================================== */
+
+.panel-periodos {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px 0 18px;
+}
+
+.btn-periodo {
+    padding: 11px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-periodo:hover {
+    background: #e0e7ff;
+    border-color: #2563eb;
+    color: #1d4ed8;
+}
+
+.btn-periodo.activo {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+/* ==========================================
+   SELECTORES DEL RESUMEN
+   ========================================== */
+
+.selector-resumen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.selector-resumen label {
+    font-weight: 700;
+    color: #334155;
+}
+
+.selector-resumen select {
+    min-width: 130px;
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: white;
+    font-size: 15px;
+}
+
+.btn-generar-resumen {
+    padding: 10px 18px;
+    border-radius: 7px;
+    background: #1d4ed8;
+    color: white;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-generar-resumen:hover {
+    background: #1e40af;
+}
+
+
+/* ==========================================
+   NUEVO RESUMEN INDEPENDIENTE
+   ========================================== */
+.resumen-filtros-nuevo{
+    display:flex;flex-wrap:wrap;align-items:end;gap:12px;
+    padding:16px;background:#f8fafc;border:1px solid #dbe4f0;
+    border-radius:12px;margin:10px 0 18px;
+}
+.resumen-filtro{display:flex;flex-direction:column;gap:5px;min-width:150px}
+.resumen-filtro label{font-size:13px;font-weight:700;color:#334155}
+.resumen-filtro select{padding:10px 12px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font-size:14px}
+.btn-resumen-consultar{background:#1d4ed8!important;color:#fff!important;padding:10px 16px;border-radius:7px;font-weight:700}
+.btn-resumen-limpiar{background:#fff!important;color:#334155!important;border:1px solid #cbd5e1!important;padding:10px 16px;border-radius:7px;font-weight:700}
+.btn-resumen-consultar:hover{background:#1e40af!important}.btn-resumen-limpiar:hover{background:#f1f5f9!important}
+
+.btn-registrar-justificacion{
+    background:#7c3aed!important;
+    color:#fff!important;
+    padding:10px 16px;
+    border-radius:7px;
+    font-weight:700;
+}
+.btn-registrar-justificacion:hover{background:#6d28d9!important}
+.modal-justificacion{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.58);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+    padding:20px;
+}
+.ventana-justificacion{
+    width:430px;
+    max-width:100%;
+    background:#fff;
+    border-radius:14px;
+    padding:22px;
+    box-shadow:0 15px 45px rgba(0,0,0,.25);
+}
+.ventana-justificacion h3{
+    margin:0 0 6px;
+    color:#1d4ed8;
+}
+.ventana-justificacion .ayuda{
+    margin:0 0 16px;
+    color:#64748b;
+    font-size:13px;
+}
+.form-just{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-bottom:13px;
+}
+.form-just label{
+    font-weight:700;
+    color:#334155;
+    font-size:14px;
+}
+.form-just input,.form-just select,.form-just textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:10px 11px;
+    border:1px solid #cbd5e1;
+    border-radius:7px;
+    background:#fff;
+    font-size:14px;
+}
+.form-just textarea{min-height:75px;resize:vertical}
+.botones-just{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+}
+.botones-just button{
+    flex:1;
+}
+.btn-guardar-just{background:#1d4ed8!important}
+.btn-cancelar-just{background:#64748b!important}
+.justificacion-aviso{
+    padding:9px 11px;
+    background:#f5f3ff;
+    border:1px solid #ddd6fe;
+    border-radius:8px;
+    color:#6d28d9;
+    font-size:12px;
+}
+.resumen-profesional-nuevo{border:1px solid #dbe4f0;border-radius:14px;background:#fff;padding:18px;margin-top:12px}
+.resumen-titulo-nuevo{display:flex;justify-content:space-between;gap:15px;align-items:center;border-bottom:2px solid #e2e8f0;padding-bottom:12px;margin-bottom:14px}
+.resumen-titulo-nuevo h3{margin:0;color:#1d4ed8;font-size:22px}.resumen-titulo-nuevo p{margin:4px 0 0;color:#64748b}
+.resumen-total-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 18px;text-align:center;color:#1d4ed8}
+.resumen-total-box strong{display:block;font-size:25px}
+.resumen-cuerpo{display:grid;grid-template-columns:minmax(250px,1fr) minmax(420px,1.7fr) minmax(260px,1fr);gap:14px}
+.resumen-card-nuevo{border:1px solid #e2e8f0;border-radius:12px;padding:14px;background:#fff}
+.resumen-card-nuevo h4{margin:0 0 12px;color:#1e3a8a;font-size:16px}
+.estado-linea{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px solid #eef2f7}
+.estado-linea:last-child{border-bottom:0}.estado-num{font-weight:800;font-size:18px}.estado-pct{font-size:13px;color:#64748b}
+.estado-verde{color:#15803d}.estado-amarillo{color:#a16207}.estado-naranja{color:#c2410c}.estado-rojo{color:#b91c1c}.estado-morado{color:#7c3aed}
+.just-total{margin-top:12px;padding:12px;border-radius:9px;background:#f5f3ff;border:1px solid #ddd6fe;color:#6d28d9}
+.just-total strong{font-size:22px}
+.just-tabla{width:100%;border-collapse:collapse;font-size:13px}.just-tabla th,.just-tabla td{border:1px solid #e2e8f0;padding:7px}.just-tabla th{background:#f1f5f9;color:#334155}.just-tabla tfoot td{font-weight:800;background:#f5f3ff}
+.chart-wrap{height:330px;position:relative}.chart-svg{width:100%;height:100%;display:block}.chart-legend{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:6px;font-size:12px;color:#475569}.legend-item{display:flex;align-items:center;gap:5px}.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.just-list{max-height:330px;overflow:auto}.just-row{padding:8px 0;border-bottom:1px solid #eef2f7}.just-row:last-child{border-bottom:0}.just-row strong{display:block;color:#1e293b}.just-row span{display:block;font-size:12px;color:#64748b;margin-top:2px}.just-badge{display:inline-block;padding:2px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-weight:700;font-size:11px;margin-top:4px}
+.resumen-nota{margin-top:14px;padding:11px 13px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;color:#334155;font-size:13px}
+.sin-datos{padding:20px;text-align:center;background:#f8fafc;border-radius:10px;color:#64748b}
+.justificado{background:#ede9fe!important;color:#6d28d9!important;border:1px solid #c4b5fd;}
+.justificado small{color:#5b21b6;}
+@media(max-width:950px){.resumen-cuerpo{grid-template-columns:1fr}.chart-wrap{height:280px}.resumen-titulo-nuevo{align-items:flex-start;flex-direction:column}}
+
+
+/* ==========================================================
+   MEJORAS DEL MÓDULO DE JUSTIFICACIONES
+   ========================================================== */
+.ventana-justificacion input:focus,
+.ventana-justificacion select:focus,
+.ventana-justificacion textarea:focus{
+    outline:2px solid #c4b5fd;
+    border-color:#7c3aed;
+}
+.justificacion-ayuda-final{
+    margin-top:10px;
+    padding:10px 12px;
+    border-radius:8px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    font-size:12px;
+    color:#475569;
+}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>    
+</head>
+
+<body>
+<div class="encabezado-institucional">
+
+    <div class="insignia">
+        <img src="insignia.png" alt="Insignia I.E. Daniel Alcides Carrión">
+    </div>
+
+    <div class="datos-institucion">
+        <div class="nombre-ie">
+            I.E. DANIEL ALCIDES CARRIÓN
+        </div>
+
+        <div class="ubicacion-ie">
+            CENTRO POBLADO DE SANTA CRUZ - QUERECOTILLO
+        </div>
+    </div>
+
+</div>
+<div class="contenedor">
+
+<h1>📊 Consulta de Asistencia</h1>
+
+<div class="filtros">
+
+<input
+    type="text"
+    id="buscar"
+    placeholder="Nombre o DNI"
+>
+
+<select id="grado">
+    <option value="">Todos los grados</option>
+    <option value="Primero">Primero</option>
+    <option value="Segundo">Segundo</option>
+    <option value="Tercero">Tercero</option>
+    <option value="Cuarto">Cuarto</option>
+    <option value="Quinto">Quinto</option>
+</select>
+
+<select id="seccion">
+    <option value="">Todas las secciones</option>
+    <option value="A">A</option>
+    <option value="B">B</option>
+</select>
+
+<label>
+Desde
+<input type="date" id="desde">
+</label>
+
+<label>
+Hasta
+<input type="date" id="hasta">
+</label>
+
+<select id="estado">
+    <option value="">Todos los estados</option>
+    <option value="TEMPRANO">TEMPRANO</option>
+    <option value="TARDANZA">TARDANZA</option>
+    <option value="DEMASIADO TARDE">DEMASIADO TARDE</option>
+    <option value="FALTO">FALTO</option>
+</select>
+
+<button onclick="consultar()">
+🔎 Consultar
+</button>
+
+<button onclick="limpiarConsulta()">
+🧹 Limpiar
+</button>
+
+<button onclick="descargar()">
+📥 Descargar Excel
+</button>
+
+<button onclick="descargarPDF()">
+📄 Descargar PDF
+</button>
+    
+<button onclick="abrirDiasNoLectivos()">
+📅 Días no lectivos
+</button>
+
+</div>
+<h2 class="titulo-resumen">
+    📊 RESUMEN DE ASISTENCIA
+</h2>
+
+<div class="panel-periodos">
+    <button class="btn-periodo activo" onclick="seleccionarPeriodo('mensual')">📅 Mensual</button>
+    <button class="btn-periodo" onclick="seleccionarPeriodo('bimestral')">📘 Bimestral</button>
+    <button class="btn-periodo" onclick="seleccionarPeriodo('trimestral')">📚 Trimestral</button>
+    <button class="btn-periodo" onclick="seleccionarPeriodo('semestral')">📊 Semestral</button>
+    <button class="btn-periodo" onclick="seleccionarPeriodo('anual')">🗓️ Anual</button>
+</div>
+
+<div class="resumen-filtros-nuevo">
+    <div class="resumen-filtro">
+        <label for="gradoResumen">Grado:</label>
+        <select id="gradoResumen">
+            <option value="">Seleccione grado</option>
+            <option value="Primero">Primero</option>
+            <option value="Segundo">Segundo</option>
+            <option value="Tercero">Tercero</option>
+            <option value="Cuarto">Cuarto</option>
+            <option value="Quinto">Quinto</option>
+        </select>
+    </div>
+    <div class="resumen-filtro">
+        <label for="seccionResumen">Sección:</label>
+        <select id="seccionResumen">
+            <option value="">Seleccione sección</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+    </div>
+    <div class="resumen-filtro">
+        <label for="anioResumen">Año:</label>
+        <select id="anioResumen">
+            <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
+            <option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option>
+            <option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option><option value="2035">2035</option>
+        </select>
+    </div>
+    <div class="resumen-filtro">
+        <label for="periodoResumen">Período:</label>
+        <select id="periodoResumen"></select>
+    </div>
+    <button class="btn-resumen-consultar" onclick="generarResumen()">🔎 Consultar resumen</button>
+    <button class="btn-resumen-limpiar" onclick="limpiarResumen()">🧹 Limpiar</button>
+<button class="btn-registrar-justificacion" onclick="abrirRegistrarJustificacion()">📝 Registrar justificación</button>
+<button onclick="previsualizarControlMensual()">
+    📋 Control Mensual de Asistencia (PDF)
+</button>
+</div>
+    
+<!-- VISTA PREVIA DEL CONTROL MENSUAL -->
+<div id="vistaPreviaControlMensual" style="display:none; margin-top:20px;"></div>
+    
+<div id="resultadoResumen"></div>
+<div id="resultado">
+    Selecciona los filtros y pulsa <b>Consultar</b>.
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+"https://glgmttpaqheuvqplbjrl.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_MX3PWni7cZ3hF7JqtFXb9A_Ee0iwIIb";
+
+let datosActuales = [];
+let diasNoLectivosCache = [];
+let motivosDiasNoLectivos = new Map();
+
+async function cargarDiasNoLectivos() {
+    const respuesta = await fetch(
+        SUPABASE_URL +
+        "/rest/v1/dias_no_lectivos?select=fecha,motivo&order=fecha.asc",
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            }
+        }
+    );
+
+    if (!respuesta.ok) {
+        throw new Error("No se pudieron consultar los días no lectivos.");
+    }
+
+    const filas = await respuesta.json();
+
+    diasNoLectivosCache = filas
+        .map(r => String(r.fecha || "").substring(0, 10))
+        .filter(Boolean);
+
+    motivosDiasNoLectivos = new Map(
+        filas
+            .filter(r => r.fecha)
+            .map(r => [
+                String(r.fecha).substring(0, 10),
+                String(r.motivo || "Suspensión de clases")
+            ])
+    );
+}
+// ==========================================
+// ==========================================
+// CONFIGURACIÓN DEL RESUMEN — INDEPENDIENTE
+// ==========================================
+let periodoSeleccionado = "mensual";
+const mesesResumen = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+window.seleccionarPeriodo = function(tipo) {
+    periodoSeleccionado = tipo;
+    document.querySelectorAll(".btn-periodo").forEach(boton => boton.classList.remove("activo"));
+    const botonActivo = document.querySelector(`.btn-periodo[onclick="seleccionarPeriodo('${tipo}')"]`);
+    if (botonActivo) botonActivo.classList.add("activo");
+
+    const periodo = document.getElementById("periodoResumen");
+    if (!periodo) return;
+    periodo.innerHTML = "";
+
+    let opciones = [];
+    if (tipo === "mensual") {
+        opciones = mesesResumen.map((mes, i) => ({valor:i+1, texto:mes}));
+    } else if (tipo === "bimestral") {
+        opciones = [
+            {valor:1,texto:"1.er Bimestre (Enero - Febrero)"},{valor:2,texto:"2.º Bimestre (Marzo - Abril)"},
+            {valor:3,texto:"3.er Bimestre (Mayo - Junio)"},{valor:4,texto:"4.º Bimestre (Julio - Agosto)"},
+            {valor:5,texto:"5.º Bimestre (Septiembre - Octubre)"},{valor:6,texto:"6.º Bimestre (Noviembre - Diciembre)"}
+        ];
+    } else if (tipo === "trimestral") {
+        opciones = [
+            {valor:1,texto:"1.er Trimestre (Enero - Marzo)"},{valor:2,texto:"2.º Trimestre (Abril - Junio)"},
+            {valor:3,texto:"3.er Trimestre (Julio - Septiembre)"},{valor:4,texto:"4.º Trimestre (Octubre - Diciembre)"}
+        ];
+    } else if (tipo === "semestral") {
+        opciones = [{valor:1,texto:"1.er Semestre (Enero - Junio)"},{valor:2,texto:"2.º Semestre (Julio - Diciembre)"}];
+    } else {
+        opciones = [{valor:1,texto:"Año completo (Enero - Diciembre)"}];
+    }
+    opciones.forEach(o => {
+        const option=document.createElement("option"); option.value=o.valor; option.textContent=o.texto; periodo.appendChild(option);
+    });
+};
+
+// ==========================================================
+// CALENDARIO ESCOLAR
+// PIURA - AÑO 2026
+// ==========================================================
+
+function esDiaLectivo(fecha) {
+
+    if (!fecha) return false;
+
+    const fechaObj =
+        new Date(fecha + "T12:00:00");
+
+    if (isNaN(fechaObj.getTime())) {
+        return false;
+    }
+
+    const anio =
+        fechaObj.getFullYear();
+
+    // ======================================================
+    // CALENDARIO EXCEPCIONAL PIURA 2026
+    // ======================================================
+
+    if (anio === 2026) {
+
+    // DÍAS EXCEPCIONALES SIN CLASES
+// DÍAS NO LECTIVOS REGISTRADOS EN SUPABASE
+if (diasNoLectivosCache.includes(fecha)) {
+    return false;
+}
+
+    // Inicio del control de asistencia
+    if (fecha < "2026-08-24") {
+        return false;
+    }
+
+    // Fin de clases
+    if (fecha > "2026-11-27") {
+        return false;
+    }
+
+    // Sábado y domingo no cuentan
+        // Inicio del control de asistencia
+        if (fecha < "2026-08-24") {
+            return false;
+        }
+
+        // Fin de clases
+        if (fecha > "2026-11-27") {
+            return false;
+        }
+
+        // Sábado y domingo no cuentan
+        const diaSemana =
+            fechaObj.getDay();
+
+        if (diaSemana === 0 || diaSemana === 6) {
+            return false;
+        }
+
+        // III BIMESTRE
+        if (
+            fecha >= "2026-08-24" &&
+            fecha <= "2026-10-02"
+        ) {
+            return true;
+        }
+
+        // IV BIMESTRE
+        if (
+            fecha >= "2026-10-05" &&
+            fecha <= "2026-11-27"
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // ======================================================
+    // OTROS AÑOS - CALENDARIO NORMAL
+    // ======================================================
+
+    const diaSemana =
+        fechaObj.getDay();
+
+    if (diaSemana === 0 || diaSemana === 6) {
+        return false;
+    }
+
+    return true;
+}
+
+// ==========================================================
+// FUNCIONES AUXILIARES COMPARTIDAS
+// (usadas tanto por generarResumen() como por consultar()
+//  para que ambas pantallas calculen exactamente igual)
+// ==========================================================
+
+function obtenerFechaHoyPeru() {
+    const ahoraPeru = new Date();
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Lima",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(ahoraPeru);
+}
+
+function puedeContarseFaltaHoyFn() {
+    const ahoraPeru = new Date();
+    const horaPeru = Number(
+        new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Lima",
+            hour: "2-digit",
+            hour12: false
+        }).format(ahoraPeru)
+    );
+    return horaPeru >= 11;
+}
+
+function generarFechasLectivas(fechaInicio, fechaFin) {
+
+    const FECHA_INICIO_ASISTENCIA = "2026-08-24";
+
+    // Fecha actual en Perú
+    const fechaHoyPeru = obtenerFechaHoyPeru();
+
+    const hoy = new Date(fechaHoyPeru + "T00:00:00");
+
+    const inicioAsistencia =
+        new Date(FECHA_INICIO_ASISTENCIA + "T00:00:00");
+
+    const fechasLectivas = [];
+
+    let cursor =
+        new Date(fechaInicio + "T12:00:00");
+
+    const finRango =
+        new Date(fechaFin + "T12:00:00");
+
+    while (cursor <= finRango) {
+
+        const f =
+            cursor.toISOString().split("T")[0];
+
+        const fechaActual =
+            new Date(f + "T00:00:00");
+
+        const diaSemana =
+            fechaActual.getDay();
+
+        // Sábado o domingo
+        const esFinDeSemana =
+            diaSemana === 0 || diaSemana === 6;
+
+        // La fecha todavía no ha llegado
+        const esFuturo =
+            fechaActual > hoy;
+
+        // Antes del inicio del sistema
+        const antesDeInicio =
+            fechaActual < inicioAsistencia;
+
+        // Es el día de hoy
+        const esHoy =
+            f === fechaHoyPeru;
+
+        // Después de las 11:00 se puede considerar falta
+        const puedeContarseFaltaHoy =
+            puedeContarseFaltaHoyFn();
+
+        const esHoySinHabilitar =
+            esHoy && !puedeContarseFaltaHoy;
+
+        console.log(
+            "FECHA:", f,
+            "| HOY:", fechaHoyPeru,
+            "| FUTURO:", esFuturo,
+            "| FIN DE SEMANA:", esFinDeSemana,
+            "| DÍA:", diaSemana
+        );
+
+        if (
+            !esFinDeSemana &&
+            esDiaLectivo(f) &&
+            !esFuturo &&
+            !esHoySinHabilitar &&
+            !antesDeInicio
+        ) {
+
+            fechasLectivas.push(f);
+        }
+
+        cursor.setDate(
+            cursor.getDate() + 1
+        );
+    }
+
+    console.log(
+        "FECHAS LECTIVAS FINALES:",
+        fechasLectivas
+    );
+
+    return fechasLectivas;
+}
+
+function deduplicarEstudiantesPorDni(lista) {
+    const dniVistos = new Set();
+    return lista.filter(e => {
+        const dni = String(e.dni || "").trim();
+        if (!dni || dniVistos.has(dni)) return false;
+        dniVistos.add(dni);
+        return true;
+    });
+}
+
+async function generarResumen() {
+
+    const contenedor = document.getElementById("resultadoResumen");
+    if (!contenedor) return;
+await cargarDiasNoLectivos();
+    const grado = document.getElementById("gradoResumen").value;
+    const seccion = document.getElementById("seccionResumen").value;
+    const anio = Number(document.getElementById("anioResumen").value);
+    const periodo = Number(document.getElementById("periodoResumen").value);
+
+    if (!grado || !seccion || !periodo) {
+        contenedor.innerHTML =
+            `<div class="sin-datos">⚠️ Selecciona <b>grado, sección y período</b>.</div>`;
+        return;
+    }
+
+    contenedor.innerHTML =
+        `<div class="sin-datos">⏳ Generando informe de ${grado} ${seccion}...</div>`;
+
+    try {
+
+        // ----------------------------------------------------------
+        // RANGO DEL PERÍODO SELECCIONADO
+        // ----------------------------------------------------------
+        let mesInicio = 1, mesFin = 12;
+
+        if (periodoSeleccionado === "mensual") {
+            mesInicio = periodo;
+            mesFin = periodo;
+        }
+        else if (periodoSeleccionado === "bimestral") {
+            mesInicio = (periodo - 1) * 2 + 1;
+            mesFin = mesInicio + 1;
+        }
+        else if (periodoSeleccionado === "trimestral") {
+            mesInicio = (periodo - 1) * 3 + 1;
+            mesFin = mesInicio + 2;
+        }
+        else if (periodoSeleccionado === "semestral") {
+            mesInicio = periodo === 1 ? 1 : 7;
+            mesFin = periodo === 1 ? 6 : 12;
+        }
+
+        const fechaInicio =
+            `${anio}-${String(mesInicio).padStart(2, "0")}-01`;
+
+        const ultimoDia =
+            new Date(anio, mesFin, 0).getDate();
+
+        const fechaFin =
+            `${anio}-${String(mesFin).padStart(2, "0")}-${String(ultimoDia).padStart(2, "0")}`;
+
+        const headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+        };
+
+        // ----------------------------------------------------------
+        // CONSULTAS INDEPENDIENTES
+        // ----------------------------------------------------------
+        const [ra, re, rj] = await Promise.all([
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/asistencia?select=dni,fecha,hora,estado&fecha=gte." +
+                encodeURIComponent(fechaInicio) +
+                "&fecha=lte." +
+                encodeURIComponent(fechaFin) +
+                "&limit=10000",
+                { headers }
+            ),
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/estudiantes?select=*&grado=eq." +
+                encodeURIComponent(grado) +
+                "&seccion=eq." +
+                encodeURIComponent(seccion) +
+                "&order=orden.asc",
+                { headers }
+            ),
+
+            fetch(
+                SUPABASE_URL +
+                "/rest/v1/justificaciones?select=*&fecha=gte." +
+                encodeURIComponent(fechaInicio) +
+                "&fecha=lte." +
+                encodeURIComponent(fechaFin),
+                { headers }
+            )
+        ]);
+
+        if (!ra.ok)
+            throw new Error("No se pudieron consultar los registros de asistencia.");
+
+        if (!re.ok)
+            throw new Error("No se pudo consultar la lista de estudiantes.");
+
+        const asistencias = await ra.json();
+
+        const estudiantes =
+            deduplicarEstudiantesPorDni(await re.json());
+
+        // Si la tabla de justificaciones todavía no existe,
+        // el resumen de asistencia sigue funcionando.
+        let justificaciones = [];
+        let justificacionesDisponible = true;
+
+        if (rj.ok) {
+            justificaciones = await rj.json();
+        } else {
+            justificacionesDisponible = false;
+        }
+
+        // ----------------------------------------------------------
+        // FECHAS LECTIVAS
+        // ----------------------------------------------------------
+        const fechasLectivas =
+            generarFechasLectivas(fechaInicio, fechaFin);
+
+        // ----------------------------------------------------------
+        // MAPA DE ASISTENCIAS
+        // ----------------------------------------------------------
+        const asistenciaMap = new Map();
+
+        asistencias.forEach(r => {
+
+            const dni =
+                String(r.dni || "").trim();
+
+            const fecha =
+                String(r.fecha || "").substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            const clave = dni + "|" + fecha;
+            const estadoRegistro =
+                String(r.estado || "").trim().toUpperCase();
+
+            if (!asistenciaMap.has(clave)) {
+                asistenciaMap.set(clave, r);
+            } else if (
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ].includes(estadoRegistro)
+            ) {
+                asistenciaMap.set(clave, r);
+            }
+        });
+
+        // ----------------------------------------------------------
+        // MAPA DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const justMap = new Map();
+
+        justificaciones.forEach(j => {
+
+            const dni =
+                String(j.dni || j.DNI || "").trim();
+
+            const fecha =
+                String(j.fecha || j.Fecha || "").substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            justMap.set(dni + "|" + fecha, j);
+        });
+
+        const normalizarEstado = r =>
+            String(r?.estado || "").trim().toUpperCase();
+
+        // ----------------------------------------------------------
+        // CONSTRUIR RESULTADO FINAL
+        //
+        // REGLA CORRECTA:
+        // - TEMPRANO -> TEMPRANO
+        // - TARDANZA -> TARDANZA
+        // - DEMASIADO TARDE -> DEMASIADO TARDE
+        // - FALTO -> FALTO
+        // - SI EXISTE JUSTIFICACIÓN -> JUSTIFICADA
+        //
+        // Una justificación NUNCA se convierte en TEMPRANO,
+        // ni se suma como TARDANZA, DEMASIADO TARDE o FALTA.
+        // La situación original se conserva en "original".
+        // ----------------------------------------------------------
+        const registros = [];
+
+        estudiantes.forEach(e => {
+
+            const dni =
+                String(e.dni || "").trim();
+
+            fechasLectivas.forEach(fecha => {
+
+                const originalRegistro =
+                    asistenciaMap.get(dni + "|" + fecha);
+
+                const original =
+                    originalRegistro
+                        ? normalizarEstado(originalRegistro)
+                        : "";
+
+                const just =
+                    justMap.get(dni + "|" + fecha);
+
+                const estadoFinal =
+                    just ? "JUSTIFICADA" : original;
+
+                registros.push({
+                    dni,
+                    nombre: e.nombre || "",
+                    grado: e.grado || grado,
+                    seccion: e.seccion || seccion,
+                    fecha,
+                    original,
+                    estado: estadoFinal,
+                    just: Boolean(just),
+                    justData: just || null
+                });
+
+            });
+        });
+
+        // ----------------------------------------------------------
+        // RESUMEN FINAL
+        // Las justificaciones quedan FUERA de estos cuatro
+        // indicadores y se contabilizan únicamente como J.
+        // Un día sin registro NO se considera falta.
+        // ----------------------------------------------------------
+        const resumen = {
+            TEMPRANO: 0,
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0
+        };
+
+        registros.forEach(r => {
+
+            if (r.just) return;
+
+            if (r.original === "TEMPRANO")
+                resumen.TEMPRANO++;
+
+            if (r.original === "TARDANZA")
+                resumen.TARDANZA++;
+
+            if (r.original === "DEMASIADO TARDE")
+                resumen["DEMASIADO TARDE"]++;
+
+            if (r.original === "FALTO")
+                resumen.FALTO++;
+        });
+
+        const justRegistros =
+            registros.filter(r => r.just);
+
+        const totalFinal =
+            Object.values(resumen).reduce((a, b) => a + b, 0);
+
+        const porcentajeFinal = n =>
+            totalFinal ? (n / totalFinal * 100) : 0;
+
+        // ----------------------------------------------------------
+        // JUSTIFICACIONES POR TIPO
+        // ----------------------------------------------------------
+        const justPorTipo = {
+            TARDANZA: 0,
+            "DEMASIADO TARDE": 0,
+            FALTO: 0
+        };
+
+        justRegistros.forEach(r => {
+
+            if (Object.prototype.hasOwnProperty.call(
+                justPorTipo,
+                r.original
+            )) {
+                justPorTipo[r.original]++;
+            }
+        });
+
+        const totalJust =
+            justRegistros.length;
+
+        const porcentajeJust = n =>
+            totalJust ? (n / totalJust * 100) : 0;
+
+        // ----------------------------------------------------------
+        // NOMBRE DEL PERÍODO
+        // ----------------------------------------------------------
+        let nombrePeriodo = "";
+
+        if (periodoSeleccionado === "mensual")
+            nombrePeriodo = mesesResumen[periodo - 1];
+
+        else if (periodoSeleccionado === "bimestral")
+            nombrePeriodo = `${periodo}° Bimestre`;
+
+        else if (periodoSeleccionado === "trimestral")
+            nombrePeriodo = `${periodo}° Trimestre`;
+
+        else if (periodoSeleccionado === "semestral")
+            nombrePeriodo = `${periodo}° Semestre`;
+
+        else
+            nombrePeriodo = "Año completo";
+
+        // ----------------------------------------------------------
+        // DATOS DIARIOS DE ASISTENCIA
+        // ----------------------------------------------------------
+        const diario = fechasLectivas.map(fecha => {
+
+            const rs =
+                registros.filter(r => r.fecha === fecha);
+
+            return {
+                fecha,
+
+                TEMPRANO:
+                    rs.filter(r => r.estado === "TEMPRANO").length,
+
+                TARDANZA:
+                    rs.filter(r => r.estado === "TARDANZA").length,
+
+                "DEMASIADO TARDE":
+                    rs.filter(r => r.estado === "DEMASIADO TARDE").length,
+
+                FALTO:
+                    rs.filter(r => r.estado === "FALTO").length
+            };
+        });
+
+        // ----------------------------------------------------------
+        // DATOS DIARIOS DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const diarioJust = fechasLectivas.map(fecha => {
+
+            const rs =
+                justRegistros.filter(r => r.fecha === fecha);
+
+            return {
+                fecha,
+
+                TARDANZA:
+                    rs.filter(r => r.original === "TARDANZA").length,
+
+                "DEMASIADO TARDE":
+                    rs.filter(r => r.original === "DEMASIADO TARDE").length,
+
+                FALTO:
+                    rs.filter(r => r.original === "FALTO").length
+            };
+        });
+
+        // ----------------------------------------------------------
+        // FUNCIONES DE SEGURIDAD HTML
+        // ----------------------------------------------------------
+        function esc(v) {
+
+            return String(v ?? "")
+                .replace(/[&<>\"]/g, m => ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;"
+                }[m]));
+        }
+
+        function colorEstado(s) {
+
+            if (s === "TEMPRANO") return "#16a34a";
+            if (s === "TARDANZA") return "#eab308";
+            if (s === "DEMASIADO TARDE") return "#f97316";
+            return "#ef4444";
+        }
+
+        function colorJust(s) {
+
+            if (s === "TARDANZA") return "#7c3aed";
+            if (s === "DEMASIADO TARDE") return "#9333ea";
+            return "#a855f7";
+        }
+
+        // ----------------------------------------------------------
+        // CREAR GRÁFICO POLIGONAL SVG
+        // ----------------------------------------------------------
+        function crearGraficoPoligonal(datos, series, colores) {
+
+            const W = 760;
+            const H = 300;
+
+            const ML = 48;
+            const MR = 18;
+            const MT = 18;
+            const MB = 42;
+
+            const pw = W - ML - MR;
+            const ph = H - MT - MB;
+
+            const maxVal =
+                Math.max(
+                    1,
+                    ...datos.flatMap(d =>
+                        series.map(s => Number(d[s] || 0))
+                    )
+                );
+
+            const yMax =
+                Math.max(5, Math.ceil(maxVal / 5) * 5);
+
+            const xAt = i =>
+                datos.length <= 1
+                    ? ML + pw / 2
+                    : ML + (i / (datos.length - 1)) * pw;
+
+            const yAt = v =>
+                MT + ph - (v / yMax) * ph;
+
+            let svg =
+                `<svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+
+            // Cuadrícula
+            for (let k = 0; k <= 5; k++) {
+
+                const v =
+                    Math.round(yMax * k / 5);
+
+                const y =
+                    yAt(v);
+
+                svg += `
+                    <line
+                        x1="${ML}" y1="${y}"
+                        x2="${W - MR}" y2="${y}"
+                        stroke="#e2e8f0"
+                    />
+                    <text
+                        x="${ML - 8}" y="${y + 4}"
+                        text-anchor="end"
+                        font-size="11"
+                        fill="#64748b"
+                    >${v}</text>
+                `;
+            }
+
+            // Líneas
+            series.forEach((s, indice) => {
+
+                const puntos =
+                    datos.map((d, i) =>
+                        `${xAt(i)},${yAt(Number(d[s] || 0))}`
+                    ).join(" ");
+
+                svg += `
+                    <polyline
+                        points="${puntos}"
+                        fill="none"
+                        stroke="${colores[indice]}"
+                        stroke-width="3"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                    />
+                `;
+
+                datos.forEach((d, i) => {
+
+                    svg += `
+                        <circle
+                            cx="${xAt(i)}"
+                            cy="${yAt(Number(d[s] || 0))}"
+                            r="3.5"
+                            fill="${colores[indice]}"
+                        >
+                            <title>
+                                ${esc(s)} — ${esc(d.fecha)}:
+                                ${Number(d[s] || 0)}
+                            </title>
+                        </circle>
+                    `;
+                });
+            });
+
+            const paso =
+                Math.max(1, Math.ceil(datos.length / 8));
+
+            datos.forEach((d, i) => {
+
+                if (i % paso === 0 || i === datos.length - 1) {
+
+                    svg += `
+                        <text
+                            x="${xAt(i)}"
+                            y="${H - 14}"
+                            text-anchor="middle"
+                            font-size="10"
+                            fill="#64748b"
+                        >${d.fecha.substring(8, 10)}/${d.fecha.substring(5, 7)}</text>
+                    `;
+                }
+            });
+
+            svg += `</svg>`;
+
+            return svg;
+        }
+
+        // ----------------------------------------------------------
+        // TENDENCIA DE JUSTIFICACIONES
+        // Primera mitad vs segunda mitad del período.
+        // ----------------------------------------------------------
+        function calcularTendenciaJustificaciones() {
+
+            if (!diarioJust.length)
+                return {
+                    primera: 0,
+                    segunda: 0,
+                    porcentaje: 0,
+                    texto: "Sin datos"
+                };
+
+            const mitad =
+                Math.ceil(diarioJust.length / 2);
+
+            const primera =
+                diarioJust
+                    .slice(0, mitad)
+                    .reduce(
+                        (s, d) =>
+                            s +
+                            d.TARDANZA +
+                            d["DEMASIADO TARDE"] +
+                            d.FALTO,
+                        0
+                    );
+
+            const segunda =
+                diarioJust
+                    .slice(mitad)
+                    .reduce(
+                        (s, d) =>
+                            s +
+                            d.TARDANZA +
+                            d["DEMASIADO TARDE"] +
+                            d.FALTO,
+                        0
+                    );
+
+            if (primera === 0 && segunda === 0) {
+
+                return {
+                    primera,
+                    segunda,
+                    porcentaje: 0,
+                    texto: "Sin justificaciones"
+                };
+            }
+
+            if (primera === 0) {
+
+                return {
+                    primera,
+                    segunda,
+                    porcentaje: 100,
+                    texto: "📈 Incremento"
+                };
+            }
+
+            const porcentaje =
+                ((segunda - primera) / primera) * 100;
+
+            return {
+                primera,
+                segunda,
+                porcentaje,
+                texto:
+                    porcentaje > 0
+                        ? "📈 Incremento"
+                        : porcentaje < 0
+                            ? "📉 Disminución"
+                            : "➡️ Sin variación"
+            };
+        }
+
+        const tendencia =
+            calcularTendenciaJustificaciones();
+
+        // ----------------------------------------------------------
+        // LISTADO DE JUSTIFICACIONES
+        // ----------------------------------------------------------
+        const justRows =
+            justRegistros
+                .slice()
+                .sort(
+                    (a, b) =>
+                        a.fecha.localeCompare(b.fecha) ||
+                        a.nombre.localeCompare(b.nombre)
+                );
+
+        const justHtml =
+            justRows.length
+                ? justRows.map(r => {
+
+                    const j =
+                        r.justData || {};
+
+                    const motivo =
+                        j.motivo ||
+                        j.Motivo ||
+                        "";
+
+                    const tipo =
+                        r.original === "FALTO"
+                            ? "Falta justificada"
+                            : r.original === "TARDANZA"
+                                ? "Tardanza justificada"
+                                : "Demasiado tarde justificado";
+
+                    return `
+                        <div class="just-row">
+                            <strong>
+                                ${esc(r.fecha)} — ${esc(r.nombre)}
+                            </strong>
+
+                            <span>
+                                DNI: ${esc(r.dni)}
+                            </span>
+
+                            <span>
+                                ${esc(r.grado)} ${esc(r.seccion)}
+                            </span>
+
+                            <span class="just-badge">
+                                ${esc(tipo)}
+                            </span>
+
+                            ${
+                                motivo
+                                    ? `<span>Motivo: ${esc(motivo)}</span>`
+                                    : ""
+                            }
+                        </div>
+                    `;
+
+                }).join("")
+
+                : `
+                    <div class="sin-datos">
+                        No hay justificaciones registradas en este período.
+                    </div>
+                `;
+
+        // ----------------------------------------------------------
+        // GRÁFICOS
+        // ----------------------------------------------------------
+        const svgAsistencia =
+            crearGraficoPoligonal(
+                diario,
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ],
+                [
+                    "#16a34a",
+                    "#eab308",
+                    "#f97316",
+                    "#ef4444"
+                ]
+            );
+
+        const svgJustificaciones =
+            crearGraficoPoligonal(
+                diarioJust,
+                [
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ],
+                [
+                    "#7c3aed",
+                    "#9333ea",
+                    "#a855f7"
+                ]
+            );
+
+        // ----------------------------------------------------------
+        // INFORME
+        // ----------------------------------------------------------
+        contenedor.innerHTML = `
+
+            <div class="resumen-profesional-nuevo">
+
+                <div class="resumen-titulo-nuevo">
+
+                    <div>
+                        <h3>
+                            📊 ${esc(grado)} ${esc(seccion)}
+                            — INFORME DE ASISTENCIA
+                        </h3>
+
+                        <p>
+                            <b>${esc(nombrePeriodo)}</b>
+                            · ${anio}
+                            · ${fechaInicio} al ${fechaFin}
+                        </p>
+                    </div>
+
+                    <div class="resumen-total-box">
+                        REGISTROS
+                        <strong>${totalFinal}</strong>
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     ASISTENCIA FINAL
+                     ================================================== -->
+
+                <div class="resumen-cuerpo">
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>📌 RESULTADO FINAL</h4>
+
+                        <div class="estado-linea estado-verde">
+                            <span>🟢 Temprano</span>
+                            <span class="estado-num">
+                                ${resumen.TEMPRANO}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.TEMPRANO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-amarillo">
+                            <span>🟡 Tardanza</span>
+                            <span class="estado-num">
+                                ${resumen.TARDANZA}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.TARDANZA).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-naranja">
+                            <span>🟠 Demasiado tarde</span>
+                            <span class="estado-num">
+                                ${resumen["DEMASIADO TARDE"]}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen["DEMASIADO TARDE"]).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-rojo">
+                            <span>🔴 Falta</span>
+                            <span class="estado-num">
+                                ${resumen.FALTO}
+                            </span>
+                            <span class="estado-pct">
+                                ${porcentajeFinal(resumen.FALTO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="just-total">
+
+                            📌 <b>JUSTIFICACIONES ACEPTADAS</b>
+
+                            <br>
+
+                            <strong>${totalJust}</strong>
+
+                            <span>
+                                (${totalFinal
+                                    ? (totalJust / (totalFinal + totalJust) * 100).toFixed(1)
+                                    : "0.0"}% de las incidencias originales)
+                            </span>
+
+                        </div>
+
+                        <p style="
+                            font-size:12px;
+                            color:#64748b;
+                            margin:10px 0 0;
+                        ">
+                            Las justificaciones no se contabilizan como
+                            temprano, tardanza, demasiado tarde ni falta.
+                            Toda justificación se registra exclusivamente
+                            como JUSTIFICADO (J) y se muestra aparte.
+                        </p>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         POLIGONAL DE ASISTENCIA
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            📈 EVOLUCIÓN DIARIA DE ASISTENCIA
+                        </h4>
+
+                        <div class="chart-wrap">
+                            ${svgAsistencia}
+                        </div>
+
+                        <div class="chart-legend">
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#16a34a"
+                                ></i>
+                                Temprano
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#eab308"
+                                ></i>
+                                Tardanza
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#f97316"
+                                ></i>
+                                Dem. tarde
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#ef4444"
+                                ></i>
+                                Faltas
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==================================================
+                     JUSTIFICACIONES
+                     ================================================== -->
+
+                <div
+                    class="resumen-cuerpo"
+                    style="margin-top:14px;"
+                >
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>📝 RESUMEN DE JUSTIFICACIONES</h4>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Tardanza justificada
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo.TARDANZA}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo.TARDANZA).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Demasiado tarde justificado
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo["DEMASIADO TARDE"]}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo["DEMASIADO TARDE"]).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="estado-linea estado-morado">
+                            <span>
+                                Falta justificada
+                            </span>
+
+                            <span class="estado-num">
+                                ${justPorTipo.FALTO}
+                            </span>
+
+                            <span class="estado-pct">
+                                ${porcentajeJust(justPorTipo.FALTO).toFixed(1)}%
+                            </span>
+                        </div>
+
+                        <div class="just-total">
+
+                            <b>TOTAL JUSTIFICADAS</b>
+
+                            <br>
+
+                            <strong>${totalJust}</strong>
+
+                            <span>
+                                (${totalJust ? "100.0" : "0.0"}%)
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         POLIGONAL DE JUSTIFICACIONES
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            📈 EVOLUCIÓN DE JUSTIFICACIONES
+                        </h4>
+
+                        <div class="chart-wrap">
+                            ${svgJustificaciones}
+                        </div>
+
+                        <div class="chart-legend">
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#7c3aed"
+                                ></i>
+                                Tardanza
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#9333ea"
+                                ></i>
+                                Dem. tarde
+                            </span>
+
+                            <span class="legend-item">
+                                <i
+                                    class="legend-dot"
+                                    style="background:#a855f7"
+                                ></i>
+                                Falta
+                            </span>
+
+                        </div>
+
+                        <div style="
+                            margin-top:12px;
+                            padding:10px;
+                            border-radius:9px;
+                            background:#faf5ff;
+                            border:1px solid #e9d5ff;
+                            color:#6b21a8;
+                            font-size:13px;
+                        ">
+
+                            <b>${tendencia.texto}</b>
+
+                            ${
+                                tendencia.primera || tendencia.segunda
+                                    ? `
+                                        · Primera parte:
+                                        <b>${tendencia.primera}</b>
+                                        · Segunda parte:
+                                        <b>${tendencia.segunda}</b>
+                                        · Variación:
+                                        <b>
+                                            ${
+                                                tendencia.porcentaje > 0
+                                                    ? "+"
+                                                    : ""
+                                            }${tendencia.porcentaje.toFixed(1)}%
+                                        </b>
+                                      `
+                                    : ""
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         DETALLE DE JUSTIFICACIONES
+                         ================================================== -->
+
+                    <div class="resumen-card-nuevo">
+
+                        <h4>
+                            👥 DETALLE DE JUSTIFICACIONES
+                        </h4>
+
+                        <div class="just-list">
+                            ${justHtml}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="resumen-nota">
+
+                    ℹ️ <b>${esc(grado)} ${esc(seccion)}</b>:
+                    este informe corresponde exclusivamente a la
+                    sección seleccionada.
+
+                    ${
+                        justificacionesDisponible
+                            ? "Las justificaciones aceptadas se muestran aparte y no incrementan las incidencias finales."
+                            : "No se pudo consultar la tabla de justificaciones; se muestra el resultado sin aplicar justificaciones."
+                    }
+
+                </div>
+
+            </div>
+        `;
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        contenedor.innerHTML =
+            `<div style="
+                padding:18px;
+                color:#b91c1c;
+                background:#fee2e2;
+                border-radius:10px;
+            ">
+                <b>❌ Error al generar el resumen</b>
+                <br><br>
+                ${esc(error.message)}
+            </div>`;
+    }
+}
+
+function limpiarResumen(){
+    const grado=document.getElementById("gradoResumen");
+    const seccion=document.getElementById("seccionResumen");
+    if(grado) grado.value="";
+    if(seccion) seccion.value="";
+    if(document.getElementById("anioResumen")) {
+        document.getElementById("anioResumen").value="2026";
+    }
+
+    periodoSeleccionado="mensual";
+    seleccionarPeriodo("mensual");
+
+    if(document.getElementById("resultadoResumen")) {
+        document.getElementById("resultadoResumen").innerHTML="";
+    }
+
+    const vista =
+        document.getElementById("vistaPreviaControlMensual");
+
+    if (vista) {
+        vista.style.display = "none";
+        vista.innerHTML = "";
+    }
+
+    if (window._urlVistaPreviaControlMensual) {
+        URL.revokeObjectURL(
+            window._urlVistaPreviaControlMensual
+        );
+        window._urlVistaPreviaControlMensual = null;
+    }
+
+    window._pdfBlobControlMensual = null;
+    window._nombrePDFControlMensual = null;
+}
+
+// ==========================================
+// INICIALIZAR RESUMEN
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    seleccionarPeriodo("mensual");
+});
+
 window.consultar = async function() {
 
-    const resultado = document.getElementById("resultado");
+    const resultado =
+        document.getElementById("resultado");
 
     resultado.innerHTML =
         "⏳ Consultando asistencia...";
@@ -18,7 +1926,7 @@ window.consultar = async function() {
 
         const hasta =
             document.getElementById("hasta").value;
-
+await cargarDiasNoLectivos();
         const estado =
             document.getElementById("estado").value;
 
@@ -28,36 +1936,30 @@ window.consultar = async function() {
         if (!grado || !seccion || !desde || !hasta) {
 
             resultado.innerHTML =
-                "<p style='color:red'>" +
-                "⚠️ Selecciona grado, sección y las fechas." +
-                "</p>";
+                "<p style='color:red'>⚠️ Selecciona grado, sección y las fechas.</p>";
 
             return;
         }
 
-        await cargarDiasNoLectivos();
+        // ==========================================
+        // CONSULTAR ASISTENCIAS DEL RANGO
+        // ==========================================
 
-        // =====================================================
-        // 1. CONSULTAR SOLO LOS REGISTROS REALES DE ASISTENCIA
-        // =====================================================
-
+        // ==========================================================
+        // CONSULTA DE ASISTENCIA DEL DETALLE
+        // ==========================================================
+        // La tabla "asistencia" no contiene grado ni sección.
+        // El grado y la sección pertenecen al estudiante y se
+        // relacionan mediante DNI. Por eso aquí usamos la vista
+        // "vista_asistencia", que ya contiene esa relación.
         let url =
             SUPABASE_URL +
-            "/rest/v1/vista_asistencia?select=*";
-
-        url +=
-            "&grado=eq." +
-            encodeURIComponent(grado);
-
-        url +=
+            "/rest/v1/vista_asistencia?select=*&grado=eq." +
+            encodeURIComponent(grado) +
             "&seccion=eq." +
-            encodeURIComponent(seccion);
-
-        url +=
+            encodeURIComponent(seccion) +
             "&fecha=gte." +
-            encodeURIComponent(desde);
-
-        url +=
+            encodeURIComponent(desde) +
             "&fecha=lte." +
             encodeURIComponent(hasta);
 
@@ -80,66 +1982,1148 @@ window.consultar = async function() {
                 await respuesta.text();
 
             resultado.innerHTML =
-                "<p style='color:red'>" +
-                "<b>❌ Error de Supabase:</b><br>" +
+                "<p style='color:red'><b>❌ Error de Supabase:</b><br>" +
                 errorTexto +
                 "</p>";
 
             return;
         }
 
-        const asistencias =
-            await respuesta.json();
+        const asistencias = await respuesta.json();
 
-
-        // =====================================================
-        // 2. CONSULTAR JUSTIFICACIONES
-        // =====================================================
+        // ==========================================
+        // OBTENER JUSTIFICACIONES DEL MISMO RANGO
+        // ==========================================
 
         const urlJustificaciones =
             SUPABASE_URL +
-            "/rest/v1/justificaciones?select=*" +
-            "&fecha=gte." +
+            "/rest/v1/justificaciones?select=*&fecha=gte." +
             encodeURIComponent(desde) +
             "&fecha=lte." +
             encodeURIComponent(hasta);
 
-        const respuestaJustificaciones =
-            await fetch(
-                urlJustificaciones,
-                {
-                    method: "GET",
+        const respuestaJustificaciones = await fetch(urlJustificaciones, {
+            method: "GET",
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            }
+        });
 
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization":
-                            "Bearer " + SUPABASE_KEY
-                    }
-                }
-            );
-
-        let justificaciones =
-            [];
+        let justificacionesDetalle = [];
 
         if (respuestaJustificaciones.ok) {
+            justificacionesDetalle = await respuestaJustificaciones.json();
+        } else {
+            console.warn("No se pudieron consultar las justificaciones para el detalle.");
+        }
 
+        const justificacionPorClaveDetalle = new Map();
+
+        justificacionesDetalle.forEach(j => {
+            const dniJ = String(j.dni || j.DNI || "").trim();
+            const fechaJ = String(j.fecha || j.Fecha || "").substring(0, 10);
+            if (dniJ && fechaJ) {
+                justificacionPorClaveDetalle.set(dniJ + "|" + fechaJ, j);
+            }
+        });
+
+        // ==========================================
+        // OBTENER ESTUDIANTES DEL GRADO Y SECCIÓN
+        // (DEDUPLICADOS POR DNI)
+        // ==========================================
+
+        let urlEstudiantes =
+            SUPABASE_URL +
+            "/rest/v1/estudiantes?select=*&grado=eq." +
+            encodeURIComponent(grado) +
+            "&seccion=eq." +
+            encodeURIComponent(seccion) +
+            "&order=orden.asc";
+
+        const respuestaEstudiantes = await fetch(urlEstudiantes, {
+            method: "GET",
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            }
+        });
+
+        const estudiantesRaw = await respuestaEstudiantes.json();
+
+        let estudiantes =
+            deduplicarEstudiantesPorDni(estudiantesRaw);
+
+        const estudiantesMostrar = buscar
+            ? estudiantes.filter(estudiante =>
+                String(estudiante.dni).trim() === String(buscar).trim()
+              )
+            : estudiantes;
+
+        // ==========================================
+        // FECHAS LECTIVAS DEL RANGO
+        // (misma función que usa el resumen)
+        // ==========================================
+
+        const fechasLectivas =
+            generarFechasLectivas(desde, hasta);
+
+        const dias = [
+            "domingo",
+            "lunes",
+            "martes",
+            "miércoles",
+            "jueves",
+            "viernes",
+            "sábado"
+        ];
+
+        // ==========================================
+        // MAPA ÚNICO dni|fecha -> registro
+        // ==========================================
+
+        const asistenciaPorClave = new Map();
+
+        asistencias.forEach(registro => {
+
+            const dni =
+                String(registro.dni || "").trim();
+
+            const fecha =
+                String(registro.fecha || "")
+                    .substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            const clave = dni + "|" + fecha;
+
+            if (!asistenciaPorClave.has(clave)) {
+                asistenciaPorClave.set(clave, registro);
+            }
+        });
+
+        // ==========================================
+        // UN REGISTRO POR ESTUDIANTE x FECHA LECTIVA
+        // (misma fuente única de verdad que el resumen)
+        // ==========================================
+
+        const datos = [];
+
+        estudiantesMostrar.forEach(estudiante => {
+
+            const dni =
+                String(estudiante.dni || "").trim();
+
+            fechasLectivas.forEach(fecha => {
+
+                const clave = dni + "|" + fecha;
+                const registro = asistenciaPorClave.get(clave);
+
+                const fechaObj =
+                    new Date(fecha + "T12:00:00");
+
+                const estadoOriginal = registro
+                    ? String(registro.estado || "").trim().toUpperCase()
+                    : "";
+
+                const justificacion =
+                    justificacionPorClaveDetalle.get(clave) || null;
+
+                let estadoMostrar = estadoOriginal;
+                let tipoJustificacion = "";
+
+                // En DETALLE se conserva visible la situación original
+                // y se agrega explícitamente que fue justificada.
+                if (justificacion) {
+                    if (estadoOriginal === "TARDANZA") {
+                        estadoMostrar = "TARDANZA JUSTIFICADA";
+                        tipoJustificacion = "Tardanza justificada";
+                    } else if (estadoOriginal === "DEMASIADO TARDE") {
+                        estadoMostrar = "DEMASIADO TARDE JUSTIFICADO";
+                        tipoJustificacion = "Demasiado tarde justificado";
+                    } else if (estadoOriginal === "FALTO") {
+                        estadoMostrar = "FALTA JUSTIFICADA";
+                        tipoJustificacion = "Falta justificada";
+                    }
+                }
+
+                datos.push({
+                    grado: estudiante.grado,
+                    seccion: estudiante.seccion,
+                    orden: estudiante.orden,
+                    nombre: estudiante.nombre,
+                    dni: estudiante.dni,
+                    fecha: fecha,
+                    dia: dias[fechaObj.getDay()],
+                    hora: registro ? (registro.hora || "") : "",
+                    estado: estadoMostrar,
+                    estadoOriginal: estadoOriginal,
+                    justificada: Boolean(justificacion),
+                    tipoJustificacion: tipoJustificacion,
+                    motivoJustificacion: justificacion
+                        ? (justificacion.motivo || justificacion.Motivo || "")
+                        : ""
+                });
+            });
+        });
+
+        // ==========================================
+        // ORDENAR Y FILTRAR POR ESTADO
+        // ==========================================
+
+        datos.sort((a, b) => {
+            return String(a.fecha).localeCompare(String(b.fecha)) ||
+                   Number(a.orden || 0) - Number(b.orden || 0);
+        });
+
+        const datosFiltrados = estado
+            ? datos.filter(e => {
+                // Si el usuario selecciona FALTO, también se muestran
+                // las faltas justificadas, pero con su etiqueta propia.
+                if (estado === "FALTO") {
+                    return e.estadoOriginal === "FALTO";
+                }
+                if (estado === "TARDANZA") {
+                    return e.estadoOriginal === "TARDANZA";
+                }
+                if (estado === "DEMASIADO TARDE") {
+                    return e.estadoOriginal === "DEMASIADO TARDE";
+                }
+                return e.estado === estado;
+              })
+            : datos;
+
+        datosActuales = datosFiltrados;
+
+const suspensiones = diasNoLectivosCache.filter(
+    fecha => fecha >= desde && fecha <= hasta
+);
+
+if (datosActuales.length > 0) {
+    mostrar(datosActuales);
+} else {
+    resultado.innerHTML = "";
+}
+
+if (suspensiones.length > 0) {
+
+    resultado.innerHTML += suspensiones.map(fecha => {
+
+        const motivo =
+            motivosDiasNoLectivos.get(fecha) ||
+            "Suspensión de clases";
+
+        const fechaMostrar =
+            fecha.split("-").reverse().join("/");
+
+        return `
+            <div style="
+                margin: 15px 0;
+                padding: 15px;
+                border: 2px solid #c62828;
+                border-radius: 8px;
+                background: #ffebee;
+                text-align: center;
+                font-weight: bold;
+            ">
+                📅 ${fechaMostrar}<br>
+                SUSPENSIÓN DE CLASES<br>
+                <span style="font-weight: normal;">
+                    Motivo: ${motivo}
+                </span>
+            </div>
+        `;
+
+    }).join("");
+}
+
+if (!datosActuales.length && !suspensiones.length) {
+    resultado.innerHTML =
+        "<p>❌ No se encontraron registros.</p>";
+}
+console.log("====================================");
+console.log("PRUEBA DE FALTAS");
+console.log("Fechas lectivas:", fechasLectivas);
+console.log("Cantidad de estudiantes:", estudiantesMostrar.length);
+console.log("Cantidad de datos generados:", datos.length);
+console.log("Cantidad de FALTOS:", datosFiltrados.length);
+
+console.table(
+    datosFiltrados.map(r => ({
+        DNI: r.dni,
+        Nombre: r.nombre,
+        Fecha: r.fecha,
+        Día: r.dia,
+        Estado: r.estado
+    }))
+);
+console.log("====================================");
+    } catch (error) {
+
+        console.error(error);
+
+        resultado.innerHTML =
+            "<p style='color:red'><b>❌ Error:</b><br>" +
+            error.message +
+            "</p>";
+    }
+}
+
+function mostrar(datos) {
+
+    const resultado =
+        document.getElementById("resultado");
+
+    if (!datos.length) {
+
+        resultado.innerHTML =
+            "<p>❌ No se encontraron registros.</p>";
+
+        return;
+    }
+
+    let html = `
+    <div class="tabla">
+
+    <table>
+
+    <thead>
+
+    <tr>
+        <th>Grado</th>
+        <th>Sección</th>
+        <th>Orden</th>
+        <th>Apellidos y nombres</th>
+        <th>DNI</th>
+        <th>Fecha</th>
+        <th>Día</th>
+        <th>Hora</th>
+        <th>Estado</th>
+    </tr>
+
+    </thead>
+
+    <tbody>
+    `;
+
+    datos.forEach(e => {
+
+        let clase = "";
+
+        if (e.estado === "TEMPRANO")
+            clase = "temprano";
+
+        if (e.estado === "TARDANZA")
+            clase = "tardanza";
+
+        if (e.estado === "DEMASIADO TARDE")
+            clase = "demasiado";
+
+        if (e.estado === "FALTO")
+            clase = "falto";
+
+        if (e.justificada)
+            clase = "justificado";
+
+        html += `
+        <tr>
+
+            <td>${e.grado ?? ""}</td>
+
+            <td>${e.seccion ?? ""}</td>
+
+            <td>${e.orden ?? ""}</td>
+
+            <td>${e.nombre ?? ""}</td>
+
+            <td>${e.dni ?? ""}</td>
+
+            <td>${e.fecha ?? ""}</td>
+
+            <td>${e.dia ?? ""}</td>
+
+            <td>${e.hora ?? ""}</td>
+
+            <td class="${clase}">
+                <strong>${e.estado ?? ""}</strong>
+                ${e.justificada && e.motivoJustificacion
+                    ? `<br><small style="font-weight:400">Motivo: ${e.motivoJustificacion}</small>`
+                    : ""}
+            </td>
+
+        </tr>
+        `;
+    });
+
+    html += `
+    </tbody>
+    </table>
+
+    </div>
+
+    <p>
+        <b>Total:</b> ${datos.length} registros
+    </p>
+    `;
+
+    resultado.innerHTML = html;
+}
+
+function descargar() {
+
+    if (!datosActuales.length) {
+
+        alert("Primero realiza una consulta.");
+
+        return;
+    }
+
+    let csv =
+        "Grado,Sección,Orden,Apellidos y nombres,DNI,Fecha,Día,Hora,Estado\n";
+
+    datosActuales.forEach(e => {
+
+        csv += [
+            e.grado,
+            e.seccion,
+            e.orden,
+            `"${e.nombre}"`,
+            e.dni,
+            e.fecha,
+            e.dia,
+            e.hora,
+            e.estado
+        ].join(",") + "\n";
+
+    });
+
+    const blob =
+        new Blob([csv], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+    const enlace =
+        document.createElement("a");
+
+    enlace.href =
+        URL.createObjectURL(blob);
+
+    enlace.download =
+        "reporte_asistencia.csv";
+
+    enlace.click();
+}
+function descargarPDF() {
+
+    if (!datosActuales.length) {
+        alert("Primero realiza una consulta.");
+        return;
+    }
+
+    try {
+
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+        });
+
+        const margen = 10;
+
+        // ENCABEZADO
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+
+        doc.text(
+            "I.E. DANIEL ALCIDES CARRIÓN",
+            148.5,
+            13,
+            { align: "center" }
+        );
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+
+        doc.text(
+            "CENTRO POBLADO DE SANTA CRUZ - QUERECOTILLO",
+            148.5,
+            19,
+            { align: "center" }
+        );
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+
+        doc.text(
+            "REPORTE DE ASISTENCIA",
+            148.5,
+            28,
+            { align: "center" }
+        );
+
+        // FILTROS UTILIZADOS
+        const gradoPDF =
+            document.getElementById("grado").value || "Todos";
+
+        const seccionPDF =
+            document.getElementById("seccion").value || "Todas";
+
+        const desdePDF =
+            document.getElementById("desde").value || "—";
+
+        const hastaPDF =
+            document.getElementById("hasta").value || "—";
+
+        const estadoPDF =
+            document.getElementById("estado").value || "Todos";
+
+        const buscarPDF =
+            document.getElementById("buscar").value.trim() || "Todos";
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+
+        doc.text(`Grado: ${gradoPDF}`, margen, 36);
+        doc.text(`Sección: ${seccionPDF}`, 65, 36);
+        doc.text(`Desde: ${desdePDF}`, 105, 36);
+        doc.text(`Hasta: ${hastaPDF}`, 150, 36);
+        doc.text(`Estado: ${estadoPDF}`, 195, 36);
+        doc.text(`Búsqueda: ${buscarPDF}`, 240, 36);
+
+        // TABLA
+        const filas = datosActuales.map(e => [
+
+            e.grado ?? "",
+            e.seccion ?? "",
+            e.orden ?? "",
+            e.nombre ?? "",
+            e.dni ?? "",
+            e.fecha ?? "",
+            e.dia ?? "",
+            e.hora ?? "",
+            e.estado ?? ""
+
+        ]);
+
+        doc.autoTable({
+
+            startY: 42,
+
+            head: [[
+                "Grado",
+                "Sección",
+                "Orden",
+                "Apellidos y nombres",
+                "DNI",
+                "Fecha",
+                "Día",
+                "Hora",
+                "Estado"
+            ]],
+
+            body: filas,
+
+            theme: "grid",
+
+            styles: {
+                font: "helvetica",
+                fontSize: 7,
+                cellPadding: 2,
+                overflow: "linebreak",
+                valign: "middle"
+            },
+
+            headStyles: {
+                fontStyle: "bold",
+                halign: "center"
+            },
+
+            columnStyles: {
+
+                0: { cellWidth: 18 },
+                1: { cellWidth: 17 },
+                2: { cellWidth: 13, halign: "center" },
+                3: { cellWidth: 65 },
+                4: { cellWidth: 25, halign: "center" },
+                5: { cellWidth: 25, halign: "center" },
+                6: { cellWidth: 25, halign: "center" },
+                7: { cellWidth: 23, halign: "center" },
+                8: { cellWidth: 38 }
+
+            },
+
+            margin: {
+                left: margen,
+                right: margen
+            }
+
+        });
+
+        // PIE DE PÁGINA
+        const totalPaginas =
+            doc.getNumberOfPages();
+
+        for (
+            let pagina = 1;
+            pagina <= totalPaginas;
+            pagina++
+        ) {
+
+            doc.setPage(pagina);
+
+            const alto =
+                doc.internal.pageSize.getHeight();
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+
+            doc.text(
+                `Total: ${datosActuales.length} registros`,
+                margen,
+                alto - 8
+            );
+
+            doc.text(
+                `Página ${pagina} de ${totalPaginas}`,
+                287,
+                alto - 8,
+                { align: "right" }
+            );
+
+        }
+
+        const fechaArchivo =
+            new Date()
+                .toISOString()
+                .slice(0, 10);
+
+        doc.save(
+            `reporte_asistencia_${fechaArchivo}.pdf`
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Error al generar PDF:",
+            error
+        );
+
+        alert(
+            "❌ No se pudo generar el PDF.\n\n" +
+            "Verifique que tenga conexión a Internet y vuelva a intentarlo."
+        );
+
+    }
+
+}
+
+// ==========================================================
+// CONTROL MENSUAL DE ASISTENCIA - PDF
+// GENERA TODAS LAS SECCIONES DEL MES SELECCIONADO
+// ==========================================================
+// =========================================================
+// MODO VISTA PREVIA DEL CONTROL MENSUAL
+// =========================================================
+let modoVistaPreviaControlMensual = false;
+
+// =========================================================
+// VISTA PREVIA DEL CONTROL MENSUAL
+// =========================================================
+async function previsualizarControlMensual() {
+
+    const gradoElemento =
+        document.getElementById("gradoResumen");
+
+    const seccionElemento =
+        document.getElementById("seccionResumen");
+
+    const anioElemento =
+        document.getElementById("anioResumen");
+
+    const periodoElemento =
+        document.getElementById("periodoResumen");
+
+    const contenedor =
+        document.getElementById("vistaPreviaControlMensual");
+
+    if (!gradoElemento || !seccionElemento ||
+        !anioElemento || !periodoElemento || !contenedor) {
+        alert("❌ No se encontraron los controles necesarios.");
+        return;
+    }
+
+    const grado = gradoElemento.value;
+    const seccion = seccionElemento.value;
+    const anio = anioElemento.value;
+    const periodo = periodoElemento.value;
+
+    if (!grado || !seccion || !anio || !periodo) {
+        alert(
+            "⚠️ Primero selecciona:\n\n" +
+            "• Grado\n" +
+            "• Sección\n" +
+            "• Año\n" +
+            "• Período"
+        );
+        return;
+    }
+
+    if (periodoSeleccionado !== "mensual") {
+        alert(
+            "⚠️ Para el Control Mensual de Asistencia debes " +
+            "seleccionar el período MENSUAL."
+        );
+        return;
+    }
+
+    contenedor.style.display = "block";
+    contenedor.innerHTML = `
+        <div style="
+            background:#fff;
+            border:2px solid #1d4ed8;
+            border-radius:10px;
+            padding:15px;
+            margin-top:20px;
+        ">
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:10px;
+                flex-wrap:wrap;
+                margin-bottom:12px;
+            ">
+                <div>
+                    <h3 style="margin:0;color:#123b78;">
+                        👁️ Vista previa del Control Mensual
+                    </h3>
+                    <div style="margin-top:5px;color:#555;font-size:14px;">
+                        ${grado} ${seccion} —
+                        ${periodoElemento.options[periodoElemento.selectedIndex].text}
+                        ${anio}
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <button
+                        onclick="descargarControlMensualDesdeVistaPrevia()"
+                        style="
+                            background:#166534;
+                            color:#fff;
+                            border:none;
+                            border-radius:7px;
+                            padding:10px 16px;
+                            font-weight:bold;
+                            cursor:pointer;
+                        "
+                    >
+                        💾 Descargar PDF
+                    </button>
+
+                    <button
+                        onclick="limpiarVistaPreviaControlMensual()"
+                        style="
+                            background:#64748b;
+                            color:#fff;
+                            border:none;
+                            border-radius:7px;
+                            padding:10px 16px;
+                            font-weight:bold;
+                            cursor:pointer;
+                        "
+                    >
+                        🧹 Limpiar vista previa
+                    </button>
+                </div>
+            </div>
+
+            <div style="
+                background:#f3f4f6;
+                border:1px solid #d1d5db;
+                border-radius:6px;
+                padding:8px;
+            ">
+                <iframe
+                    id="iframeVistaPreviaControlMensual"
+                    title="Vista previa del Control Mensual"
+                    style="
+                        width:100%;
+                        height:850px;
+                        border:1px solid #9ca3af;
+                        background:#fff;
+                    "
+                ></iframe>
+            </div>
+        </div>
+    `;
+
+    try {
+
+        window._pdfBlobControlMensual = null;
+        window._nombrePDFControlMensual = "Control_Mensual.pdf";
+
+        modoVistaPreviaControlMensual = true;
+
+        await descargarPDFControlMensual();
+
+        modoVistaPreviaControlMensual = false;
+
+        if (!window._pdfBlobControlMensual) {
+            throw new Error(
+                "No se pudo generar el PDF para la vista previa."
+            );
+        }
+
+        if (window._urlVistaPreviaControlMensual) {
+            URL.revokeObjectURL(
+                window._urlVistaPreviaControlMensual
+            );
+        }
+
+        const urlPDF =
+            URL.createObjectURL(
+                window._pdfBlobControlMensual
+            );
+
+        window._urlVistaPreviaControlMensual = urlPDF;
+
+        const iframe =
+            document.getElementById(
+                "iframeVistaPreviaControlMensual"
+            );
+
+        if (!iframe) {
+            throw new Error(
+                "No se encontró el visor de la vista previa."
+            );
+        }
+
+        iframe.src = urlPDF;
+
+        contenedor.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    } catch (error) {
+
+        modoVistaPreviaControlMensual = false;
+
+        console.error(
+            "Error en vista previa:",
+            error
+        );
+
+        alert(
+            "❌ No se pudo generar la vista previa.\n\n" +
+            error.message
+        );
+    }
+}
+
+// =========================================================
+// LIMPIAR LA VISTA PREVIA DEL CONTROL MENSUAL
+// =========================================================
+function limpiarVistaPreviaControlMensual() {
+
+    const contenedor =
+        document.getElementById("vistaPreviaControlMensual");
+
+    if (window._urlVistaPreviaControlMensual) {
+        try {
+            URL.revokeObjectURL(
+                window._urlVistaPreviaControlMensual
+            );
+        } catch (e) {}
+    }
+
+    window._urlVistaPreviaControlMensual = null;
+    window._pdfBlobControlMensual = null;
+    window._nombrePDFControlMensual = null;
+    modoVistaPreviaControlMensual = false;
+
+    if (contenedor) {
+        contenedor.innerHTML = "";
+        contenedor.style.display = "none";
+    }
+}
+
+// =========================================================
+// DESCARGAR EL PDF DESDE LA VISTA PREVIA
+// =========================================================
+function descargarControlMensualDesdeVistaPrevia() {
+
+    try {
+
+        if (!window._pdfBlobControlMensual) {
+
+            alert(
+                "⚠️ Primero debes generar la vista previa."
+            );
+
+            return;
+        }
+
+        const enlace =
+            document.createElement("a");
+
+        const url =
+            URL.createObjectURL(
+                window._pdfBlobControlMensual
+            );
+
+        enlace.href = url;
+
+        enlace.download =
+            window._nombrePDFControlMensual ||
+            "Control_Mensual.pdf";
+
+        document.body.appendChild(enlace);
+
+        enlace.click();
+
+        document.body.removeChild(enlace);
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+
+    }
+    catch (error) {
+
+        console.error(
+            "Error al descargar PDF:",
+            error
+        );
+
+        alert(
+            "❌ No se pudo descargar el PDF.\n\n" +
+            error.message
+        );
+
+    }
+
+}
+async function descargarPDFControlMensual() {
+
+    try {
+
+        // ==================================================
+        // 1. FILTROS DEL RESUMEN
+        // ==================================================
+        const gradoElemento =
+            document.getElementById("gradoResumen");
+
+        const seccionElemento =
+            document.getElementById("seccionResumen");
+
+        const anioElemento =
+            document.getElementById("anioResumen");
+
+        const periodoElemento =
+            document.getElementById("periodoResumen");
+
+        if (!gradoElemento || !seccionElemento ||
+            !anioElemento || !periodoElemento) {
+            throw new Error(
+                "No se encontraron los controles del resumen."
+            );
+        }
+
+        if (periodoSeleccionado !== "mensual") {
+            throw new Error(
+                "Para generar el Control Mensual debes seleccionar el período MENSUAL."
+            );
+        }
+
+        const gradoSeleccionado =
+            String(gradoElemento.value || "").trim();
+
+        const seccionSeleccionada =
+            String(seccionElemento.value || "").trim();
+
+        const anio =
+            Number(anioElemento.value);
+
+        const mes =
+            Number(periodoElemento.value);
+
+        if (!gradoSeleccionado ||
+            !seccionSeleccionada ||
+            !anio ||
+            !mes) {
+            throw new Error(
+                "Selecciona Grado, Sección, Año y Mes en RESUMEN DE ASISTENCIA."
+            );
+        }
+
+        await cargarDiasNoLectivos();
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error(
+                "No se pudo cargar la biblioteca jsPDF."
+            );
+        }
+
+        const { jsPDF } = window.jspdf;
+
+        // ==================================================
+        // 2. CONFIGURACIÓN DEL MES
+        // ==================================================
+        const nombresMeses = [
+            "ENERO", "FEBRERO", "MARZO", "ABRIL",
+            "MAYO", "JUNIO", "JULIO", "AGOSTO",
+            "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"
+        ];
+
+        const nombreMes =
+            nombresMeses[mes - 1];
+
+        const ultimoDia =
+            new Date(anio, mes, 0).getDate();
+
+        const fechaInicio =
+            `${anio}-${String(mes).padStart(2, "0")}-01`;
+
+        const fechaFin =
+            `${anio}-${String(mes).padStart(2, "0")}-${String(ultimoDia).padStart(2, "0")}`;
+
+        const headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+        };
+
+        // ==================================================
+        // 3. CONSULTAR SOLO LA SECCIÓN SELECCIONADA
+        // ==================================================
+        const urlEstudiantes =
+            SUPABASE_URL +
+            "/rest/v1/estudiantes?select=*" +
+            "&grado=eq." +
+            encodeURIComponent(gradoSeleccionado) +
+            "&seccion=eq." +
+            encodeURIComponent(seccionSeleccionada) +
+            "&order=orden.asc&limit=10000";
+
+        const respuestaEstudiantes =
+            await fetch(urlEstudiantes, { headers });
+
+        if (!respuestaEstudiantes.ok) {
+            throw new Error(
+                "No se pudo consultar la lista de estudiantes."
+            );
+        }
+
+        const estudiantes =
+            deduplicarEstudiantesPorDni(
+                await respuestaEstudiantes.json()
+            );
+
+        if (!estudiantes.length) {
+            throw new Error(
+                `No hay estudiantes registrados para ${gradoSeleccionado} ${seccionSeleccionada}.`
+            );
+        }
+
+        // ==================================================
+        // 4. CONSULTAR ASISTENCIAS
+        // ==================================================
+        // IMPORTANTE:
+        // El detalle de asistencia y el Control Mensual deben partir
+        // de la misma tabla de asistencia. No se filtra por grado/sección
+        // aquí porque la tabla asistencia se relaciona con el estudiante
+        // mediante DNI. Luego el mapa se cruza únicamente con los DNIs
+        // de la sección seleccionada.
+        const urlAsistencia =
+            SUPABASE_URL +
+            "/rest/v1/asistencia?select=dni,fecha,hora,estado" +
+            "&fecha=gte." +
+            encodeURIComponent(fechaInicio) +
+            "&fecha=lte." +
+            encodeURIComponent(fechaFin) +
+            "&limit=10000";
+
+        const respuestaAsistencia =
+            await fetch(urlAsistencia, { headers });
+
+        if (!respuestaAsistencia.ok) {
+            throw new Error(
+                "No se pudieron consultar las asistencias."
+            );
+        }
+
+        const asistencias =
+            await respuestaAsistencia.json();
+
+        // ==================================================
+        // 5. CONSULTAR JUSTIFICACIONES
+        // ==================================================
+        const urlJustificaciones =
+            SUPABASE_URL +
+            "/rest/v1/justificaciones?select=*" +
+            "&fecha=gte." +
+            encodeURIComponent(fechaInicio) +
+            "&fecha=lte." +
+            encodeURIComponent(fechaFin) +
+            "&limit=10000";
+
+        const respuestaJustificaciones =
+            await fetch(urlJustificaciones, { headers });
+
+        let justificaciones = [];
+
+        if (respuestaJustificaciones.ok) {
             justificaciones =
                 await respuestaJustificaciones.json();
-
         } else {
-
             console.warn(
                 "No se pudieron consultar las justificaciones."
             );
         }
 
+        // ==================================================
+        // 6. MAPAS
+        // ==================================================
+        const mapaAsistencia = new Map();
 
-        // =====================================================
-        // 3. MAPA DE JUSTIFICACIONES DNI|FECHA
-        // =====================================================
+        asistencias.forEach(r => {
 
-        const justificacionPorClave =
-            new Map();
+            const dni =
+                String(r.dni || "").trim();
+
+            const fecha =
+                String(r.fecha || "").substring(0, 10);
+
+            if (!dni || !fecha) return;
+
+            const clave =
+                dni + "|" + fecha;
+
+            const estadoRegistro =
+                String(r.estado || "").trim().toUpperCase();
+
+            // Si existen varios registros para el mismo DNI y fecha,
+            // conservar el que tenga un estado válido.
+            if (!mapaAsistencia.has(clave)) {
+                mapaAsistencia.set(clave, r);
+            } else if (
+                estadoRegistro &&
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ].includes(estadoRegistro)
+            ) {
+                mapaAsistencia.set(clave, r);
+            }
+        });
+
+        const mapaJustificacion = new Map();
 
         justificaciones.forEach(j => {
 
@@ -157,470 +3141,1377 @@ window.consultar = async function() {
                     ""
                 ).substring(0, 10);
 
-            if (dni && fecha) {
+            if (!dni || !fecha) return;
 
-                justificacionPorClave.set(
-                    dni + "|" + fecha,
-                    j
+            mapaJustificacion.set(
+                dni + "|" + fecha,
+                j
+            );
+        });
+
+        // ==================================================
+        // 7. FUNCIONES AUXILIARES
+        // ==================================================
+        function obtenerFecha(dia) {
+            return (
+                `${anio}-` +
+                `${String(mes).padStart(2, "0")}-` +
+                `${String(dia).padStart(2, "0")}`
+            );
+        }
+
+        function nombreGrado(grado) {
+            const nombres = {
+                "Primero": "PRIMERO",
+                "Segundo": "SEGUNDO",
+                "Tercero": "TERCERO",
+                "Cuarto": "CUARTO",
+                "Quinto": "QUINTO"
+            };
+
+            return nombres[grado] ||
+                String(grado).toUpperCase();
+        }
+
+        function esFinDeSemana(fecha) {
+            const fechaObj =
+                new Date(fecha + "T12:00:00");
+
+            const dia =
+                fechaObj.getDay();
+
+            return dia === 0 || dia === 6;
+        }
+
+        function esFechaFutura(fecha) {
+            return fecha > obtenerFechaHoyPeru();
+        }
+
+        // ==================================================
+        // 8. DOCUMENTO
+        // ==================================================
+        const doc =
+            new jsPDF({
+                orientation: "landscape",
+                unit: "mm",
+                format: "a4"
+            });
+
+        // ==================================================
+        // 9. RESUMEN GENERAL DE LA SECCIÓN
+        // ==================================================
+        const resumenSeccion = {
+            temprano: 0,
+            tardanza: 0,
+            faltas: 0,
+            justificados: 0
+        };
+
+        // ==================================================
+        // 10. GRÁFICO POLIGONAL
+        // ==================================================
+        function dibujarPoligonal(
+            doc,
+            x,
+            y,
+            ancho,
+            alto,
+            datos
+        ) {
+
+            const valores = [
+                datos.temprano,
+                datos.tardanza,
+                datos.faltas,
+                datos.justificados
+            ];
+
+            const etiquetas = [
+                "Temprano",
+                "Tardanza",
+                "Faltas",
+                "Justificados"
+            ];
+
+            const maximo =
+                Math.max(1, ...valores);
+
+            const margenIzq = 13;
+            const margenDer = 5;
+            const margenSup = 9;
+            const margenInf = 17;
+
+            const anchoGrafico =
+                ancho - margenIzq - margenDer;
+
+            const altoGrafico =
+                alto - margenSup - margenInf;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
+
+            doc.text(
+                "GRÁFICO POLIGONAL",
+                x + ancho / 2,
+                y + 4,
+                { align: "center" }
+            );
+
+            doc.setDrawColor(120, 120, 120);
+            doc.setLineWidth(0.3);
+
+            doc.line(
+                x + margenIzq,
+                y + margenSup,
+                x + margenIzq,
+                y + margenSup + altoGrafico
+            );
+
+            doc.line(
+                x + margenIzq,
+                y + margenSup + altoGrafico,
+                x + ancho - margenDer,
+                y + margenSup + altoGrafico
+            );
+
+            for (let i = 0; i <= 4; i++) {
+
+                const yy =
+                    y +
+                    margenSup +
+                    altoGrafico -
+                    (i / 4) * altoGrafico;
+
+                doc.setDrawColor(220, 220, 220);
+
+                doc.line(
+                    x + margenIzq,
+                    yy,
+                    x + ancho - margenDer,
+                    yy
+                );
+
+                const valor =
+                    Math.round(maximo * i / 4);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(5);
+                doc.setTextColor(80, 80, 80);
+
+                doc.text(
+                    String(valor),
+                    x + margenIzq - 2,
+                    yy + 1.5,
+                    { align: "right" }
                 );
             }
 
-        });
+            const puntos =
+                valores.map((valor, indice) => {
 
+                    const xx =
+                        x +
+                        margenIzq +
+                        (
+                            indice /
+                            (valores.length - 1)
+                        ) *
+                        anchoGrafico;
 
-        // =====================================================
-        // 4. OBTENER ESTUDIANTES DEL GRADO Y SECCIÓN
-        // =====================================================
+                    const yy =
+                        y +
+                        margenSup +
+                        altoGrafico -
+                        (
+                            valor /
+                            maximo
+                        ) *
+                        altoGrafico;
 
-        let urlEstudiantes =
-            SUPABASE_URL +
-            "/rest/v1/estudiantes?select=*" +
-            "&grado=eq." +
-            encodeURIComponent(grado) +
-            "&seccion=eq." +
-            encodeURIComponent(seccion) +
-            "&order=orden.asc";
+                    return { x: xx, y: yy };
+                });
 
-        const respuestaEstudiantes =
-            await fetch(
-                urlEstudiantes,
-                {
-                    method: "GET",
+            doc.setDrawColor(37, 99, 235);
+            doc.setLineWidth(1);
 
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization":
-                            "Bearer " + SUPABASE_KEY
-                    }
-                }
-            );
+            for (let i = 0; i < puntos.length - 1; i++) {
 
-        if (!respuestaEstudiantes.ok) {
+                doc.line(
+                    puntos[i].x,
+                    puntos[i].y,
+                    puntos[i + 1].x,
+                    puntos[i + 1].y
+                );
+            }
 
-            const errorTexto =
-                await respuestaEstudiantes.text();
+            puntos.forEach((punto, indice) => {
 
-            resultado.innerHTML =
-                "<p style='color:red'>" +
-                "<b>❌ Error al consultar estudiantes:</b><br>" +
-                errorTexto +
-                "</p>";
+                doc.setFillColor(37, 99, 235);
 
-            return;
+                doc.circle(
+                    punto.x,
+                    punto.y,
+                    1.5,
+                    "F"
+                );
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(6);
+                doc.setTextColor(0, 0, 0);
+
+                doc.text(
+                    String(valores[indice]),
+                    punto.x,
+                    punto.y - 3,
+                    { align: "center" }
+                );
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(5.5);
+
+                doc.text(
+                    etiquetas[indice],
+                    punto.x,
+                    y + alto - 5,
+                    { align: "center" }
+                );
+            });
         }
 
-        const estudiantesRaw =
-            await respuestaEstudiantes.json();
+        // ==================================================
+        // 11. GRÁFICO CIRCULAR
+        // ==================================================
+        function dibujarCircular(
+            doc,
+            cx,
+            cy,
+            radio,
+            datos
+        ) {
 
-        const estudiantes =
-            typeof deduplicarEstudiantesPorDni === "function"
-                ? deduplicarEstudiantesPorDni(estudiantesRaw)
-                : estudiantesRaw;
+            const valores = [
+                datos.temprano,
+                datos.tardanza,
+                datos.faltas,
+                datos.justificados
+            ];
 
+            const etiquetas = [
+                "Temprano",
+                "Tardanza",
+                "Faltas",
+                "Justificados"
+            ];
 
-        // =====================================================
-        // 5. FILTRO DE BÚSQUEDA POR DNI
-        // =====================================================
+            const colores = [
+                [34, 197, 94],
+                [234, 179, 8],
+                [239, 68, 68],
+                [124, 58, 237]
+            ];
 
-        const estudiantesMostrar =
-            buscar
-                ? estudiantes.filter(estudiante =>
-                    String(estudiante.dni || "").trim() ===
-                    String(buscar).trim()
-                  )
-                : estudiantes;
+            const total =
+                valores.reduce(
+                    (suma, valor) => suma + valor,
+                    0
+                );
 
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.setTextColor(0, 0, 0);
 
-        // =====================================================
-        // 6. MAPA DE ASISTENCIAS REALES
-        //    DNI|FECHA -> REGISTRO
-        // =====================================================
+            doc.text(
+                "GRÁFICO CIRCULAR PORCENTUAL",
+                cx,
+                cy - radio - 8,
+                { align: "center" }
+            );
 
-        const asistenciaPorClave =
-            new Map();
+            if (!total) {
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
 
-        asistencias.forEach(registro => {
+                doc.text(
+                    "Sin registros",
+                    cx,
+                    cy + 2,
+                    { align: "center" }
+                );
 
-            const dni =
-                String(
-                    registro.dni || ""
-                ).trim();
-
-            const fecha =
-                String(
-                    registro.fecha || ""
-                ).substring(0, 10);
-
-            if (!dni || !fecha) {
                 return;
             }
 
-            const clave =
-                dni + "|" + fecha;
+            let anguloInicio = -Math.PI / 2;
 
-            if (!asistenciaPorClave.has(clave)) {
+            valores.forEach((valor, indice) => {
 
-                asistenciaPorClave.set(
-                    clave,
-                    registro
-                );
-            }
+                if (valor <= 0) return;
 
-        });
+                const angulo =
+                    (valor / total) * Math.PI * 2;
 
+                const anguloFin =
+                    anguloInicio + angulo;
 
-        // =====================================================
-        // 7. CONSTRUIR EL DETALLE
-        //
-        // IMPORTANTE:
-        // NO SE CREA FALTO CUANDO NO EXISTE REGISTRO.
-        // =====================================================
+                const pasos = 30;
 
-        const datos =
-            [];
+                const puntos = [[cx, cy]];
 
-        estudiantesMostrar.forEach(estudiante => {
+                for (let i = 0; i <= pasos; i++) {
 
-            const dni =
-                String(
-                    estudiante.dni || ""
-                ).trim();
+                    const a =
+                        anguloInicio +
+                        (
+                            anguloFin -
+                            anguloInicio
+                        ) *
+                        (i / pasos);
 
-            // Buscar solamente las asistencias reales
-            // de este estudiante.
-
-            asistencias.forEach(registro => {
-
-                const dniRegistro =
-                    String(
-                        registro.dni || ""
-                    ).trim();
-
-                if (dniRegistro !== dni) {
-                    return;
+                    puntos.push([
+                        cx + radio * Math.cos(a),
+                        cy + radio * Math.sin(a)
+                    ]);
                 }
 
-                const fecha =
-                    String(
-                        registro.fecha || ""
-                    ).substring(0, 10);
+                doc.setFillColor(
+                    colores[indice][0],
+                    colores[indice][1],
+                    colores[indice][2]
+                );
 
+                for (let i = 1; i < puntos.length - 1; i++) {
+
+                    doc.triangle(
+                        puntos[0][0],
+                        puntos[0][1],
+                        puntos[i][0],
+                        puntos[i][1],
+                        puntos[i + 1][0],
+                        puntos[i + 1][1],
+                        "F"
+                    );
+                }
+
+                anguloInicio = anguloFin;
+            });
+
+            let leyendaY =
+                cy - radio + 4;
+
+            etiquetas.forEach((etiqueta, indice) => {
+
+                const porcentaje =
+                    (valores[indice] / total) * 100;
+
+                doc.setFillColor(
+                    colores[indice][0],
+                    colores[indice][1],
+                    colores[indice][2]
+                );
+
+                doc.rect(
+                    cx + radio + 10,
+                    leyendaY - 3,
+                    3,
+                    3,
+                    "F"
+                );
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(6);
+                doc.setTextColor(0, 0, 0);
+
+                doc.text(
+                    `${etiqueta}: ${valores[indice]} (${porcentaje.toFixed(1)}%)`,
+                    cx + radio + 15,
+                    leyendaY
+                );
+
+                leyendaY += 7;
+            });
+        }
+
+        // ==================================================
+        // 12. CONSTRUIR MATRIZ DE ASISTENCIA
+        // ==================================================
+        const filas = [];
+
+        estudiantes.forEach(estudiante => {
+
+            const dni =
+                String(estudiante.dni || "").trim();
+
+            const fila = [
+                estudiante.nombre || ""
+            ];
+
+            let totalTemprano = 0;
+            let totalTardanza = 0;
+            let totalFaltas = 0;
+            let totalJustificados = 0;
+
+            for (let dia = 1; dia <= ultimoDia; dia++) {
+
+                const fecha =
+                    obtenerFecha(dia);
+
+                // Fin de semana
+                if (esFinDeSemana(fecha)) {
+                    fila.push("");
+                    continue;
+                }
+
+                // Día no lectivo, incluyendo los registrados
+                // en la tabla dias_no_lectivos
+                if (!esDiaLectivo(fecha)) {
+                    fila.push("");
+                    continue;
+                }
+
+                // Fecha futura
+                if (esFechaFutura(fecha)) {
+                    fila.push("");
+                    continue;
+                }
+
+                // Hoy antes de las 11:00
                 if (
-                    fecha < desde ||
-                    fecha > hasta
+                    fecha === obtenerFechaHoyPeru() &&
+                    !puedeContarseFaltaHoyFn()
                 ) {
-                    return;
+                    fila.push("");
+                    continue;
                 }
 
                 const clave =
                     dni + "|" + fecha;
 
                 const justificacion =
-                    justificacionPorClave.get(clave) ||
-                    null;
+                    mapaJustificacion.get(clave);
 
-                const estadoOriginal =
-                    String(
-                        registro.estado || ""
-                    )
-                    .trim()
-                    .toUpperCase();
+                const asistencia =
+                    mapaAsistencia.get(clave);
 
-                let estadoMostrar =
-                    estadoOriginal;
-
-                let tipoJustificacion =
-                    "";
-
-                // =================================================
-                // JUSTIFICACIÓN
-                // =================================================
-
+                // ==================================================
+                // JUSTIFICADO: SIEMPRE J Y SOLO SUMA EN J
+                // ==================================================
                 if (justificacion) {
 
-                    if (
-                        estadoOriginal ===
-                        "TARDANZA"
-                    ) {
+                    fila.push("J");
+                    totalJustificados++;
+                    resumenSeccion.justificados++;
 
-                        estadoMostrar =
-                            "TARDANZA JUSTIFICADA";
-
-                        tipoJustificacion =
-                            "Tardanza justificada";
-
-                    } else if (
-                        estadoOriginal ===
-                        "DEMASIADO TARDE"
-                    ) {
-
-                        estadoMostrar =
-                            "DEMASIADO TARDE JUSTIFICADO";
-
-                        tipoJustificacion =
-                            "Demasiado tarde justificado";
-
-                    } else if (
-                        estadoOriginal ===
-                        "FALTO"
-                    ) {
-
-                        estadoMostrar =
-                            "FALTA JUSTIFICADA";
-
-                        tipoJustificacion =
-                            "Falta justificada";
-                    }
+                    continue;
                 }
 
+                const estado =
+                    asistencia
+                        ? String(asistencia.estado || "").trim().toUpperCase()
+                        : "";
 
-                const fechaObj =
-                    new Date(
-                        fecha + "T12:00:00"
-                    );
+                if (estado === "TEMPRANO") {
 
-                const dias = [
-                    "domingo",
-                    "lunes",
-                    "martes",
-                    "miércoles",
-                    "jueves",
-                    "viernes",
-                    "sábado"
-                ];
+                    fila.push("✓");
+                    totalTemprano++;
+                    resumenSeccion.temprano++;
 
+                } else if (
+                    estado === "TARDANZA" ||
+                    estado === "DEMASIADO TARDE"
+                ) {
 
-                datos.push({
+                    fila.push("T");
+                    totalTardanza++;
+                    resumenSeccion.tardanza++;
 
-                    grado:
-                        estudiante.grado,
+                } else if (estado === "FALTO") {
 
-                    seccion:
-                        estudiante.seccion,
+                    fila.push("F");
+                    totalFaltas++;
+                    resumenSeccion.faltas++;
 
-                    orden:
-                        estudiante.orden,
+                } else {
 
-                    nombre:
-                        estudiante.nombre,
+                    // Sin registro de asistencia: no se inventa una falta.
+                    fila.push("");
+                }
+            }
 
-                    dni:
-                        estudiante.dni,
+            // ==================================================
+            // CUATRO COLUMNAS SOLICITADAS
+            // ==================================================
+            fila.push(
+                totalTemprano,
+                totalTardanza,
+                totalFaltas,
+                totalJustificados
+            );
 
-                    fecha:
-                        fecha,
-
-                    dia:
-                        dias[
-                            fechaObj.getDay()
-                        ],
-
-                    hora:
-                        registro.hora || "",
-
-                    estado:
-                        estadoMostrar,
-
-                    estadoOriginal:
-                        estadoOriginal,
-
-                    justificada:
-                        Boolean(justificacion),
-
-                    tipoJustificacion:
-                        tipoJustificacion,
-
-                    motivoJustificacion:
-                        justificacion
-                            ? (
-                                justificacion.motivo ||
-                                justificacion.Motivo ||
-                                ""
-                              )
-                            : ""
-                });
-
-            });
-
+            filas.push(fila);
         });
 
+        // ==================================================
+        // 13. TÍTULO
+        // ==================================================
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
 
-        // =====================================================
-        // 8. ORDENAR POR FECHA Y ORDEN DE ESTUDIANTE
-        // =====================================================
+        doc.text(
+            `CONTROL DE ASISTENCIA DEL MES DE ${nombreMes} ${nombreGrado(gradoSeleccionado)} AÑO ${seccionSeleccionada}`,
+            148.5,
+            9,
+            { align: "center" }
+        );
 
-        datos.sort((a, b) => {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
 
-            return (
-                String(a.fecha)
-                    .localeCompare(
-                        String(b.fecha)
-                    )
-                ||
-                Number(a.orden || 0) -
-                Number(b.orden || 0)
+        doc.text(
+            "✓ = TEMPRANO    T = TARDANZA / DEMASIADO TARDE    F = FALTA    J = JUSTIFICADO",
+            148.5,
+            15,
+            { align: "center" }
+        );
+
+        // ==================================================
+        // 14. CABECERA
+        // ==================================================
+        const encabezado = [
+            "Apellidos y nombres"
+        ];
+
+        for (let dia = 1; dia <= ultimoDia; dia++) {
+            encabezado.push(String(dia));
+        }
+
+        encabezado.push(
+            "Total\nTemprano",
+            "Total\nTardanza",
+            "Total\nFaltas",
+            "Total\nJustificados"
+        );
+
+        // ==================================================
+        // 15. TABLA
+        // ==================================================
+        const anchoPagina =
+            doc.internal.pageSize.getWidth();
+
+        const margenHorizontal = 7;
+
+        const anchoUtil =
+            anchoPagina -
+            margenHorizontal * 2;
+
+        const anchoNombre = 55;
+
+        const anchoTotales =
+            13 * 4;
+
+        const anchoDias =
+            Math.max(
+                4.8,
+                (anchoUtil - anchoNombre - anchoTotales) /
+                ultimoDia
             );
 
+        const columnStyles = {
+            0: {
+                cellWidth: anchoNombre,
+                halign: "left",
+                fontSize: 5.4
+            }
+        };
+
+        for (let i = 1; i <= ultimoDia; i++) {
+            columnStyles[i] = {
+                cellWidth: anchoDias,
+                halign: "center"
+            };
+        }
+
+        for (let i = 0; i < 4; i++) {
+            columnStyles[1 + ultimoDia + i] = {
+                cellWidth: 13,
+                halign: "center",
+                fontSize: 5.2,
+                fontStyle: "bold"
+            };
+        }
+
+        doc.autoTable({
+
+            startY: 19,
+
+            head: [encabezado],
+
+            body: filas,
+
+            theme: "grid",
+
+            margin: {
+                left: margenHorizontal,
+                right: margenHorizontal
+            },
+
+            styles: {
+                font: "helvetica",
+                fontSize: 5.2,
+                cellPadding: 0.9,
+                halign: "center",
+                valign: "middle",
+                lineWidth: 0.2,
+                lineColor: [120, 120, 120],
+                overflow: "linebreak"
+            },
+
+            headStyles: {
+                fontStyle: "bold",
+                fontSize: 5.2,
+                halign: "center",
+                valign: "middle",
+                fillColor: [245, 245, 245],
+                textColor: [0, 0, 0]
+            },
+
+            columnStyles,
+
+            didParseCell: function(data) {
+
+                if (data.section !== "body") {
+                    return;
+                }
+
+                // Nombre
+                if (data.column.index === 0) {
+                    return;
+                }
+
+                // Cuatro columnas de totales
+                const primeraColumnaTotal =
+                    1 + ultimoDia;
+
+                if (
+                    data.column.index >=
+                    primeraColumnaTotal
+                ) {
+                    data.cell.styles.fillColor =
+                        [238, 242, 255];
+
+                    data.cell.styles.textColor =
+                        [0, 0, 0];
+
+                    data.cell.styles.fontStyle =
+                        "bold";
+
+                    return;
+                }
+
+                // Columnas de días
+                const dia =
+                    data.column.index;
+
+                const fecha =
+                    obtenerFecha(dia);
+
+                if (
+                    esFinDeSemana(fecha) ||
+                    !esDiaLectivo(fecha)
+                ) {
+
+                    data.cell.styles.fillColor =
+                        [0, 0, 0];
+
+                    data.cell.styles.textColor =
+                        [255, 255, 255];
+
+                    data.cell.text = "";
+
+                    return;
+                }
+
+                data.cell.styles.fontStyle = "bold";
+            }
         });
 
+        // ==================================================
+        // 16. PÁGINA DE RESUMEN
+        // ==================================================
+        doc.addPage();
 
-        // =====================================================
-        // 9. FILTRAR POR ESTADO
-        // =====================================================
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
 
-        let datosFiltrados =
-            datos;
+        doc.text(
+            `RESUMEN DE ASISTENCIA - ${nombreGrado(gradoSeleccionado)} AÑO ${seccionSeleccionada}`,
+            148.5,
+            12,
+            { align: "center" }
+        );
 
-        if (estado) {
+        doc.setFontSize(9);
 
-            datosFiltrados =
-                datos.filter(e => {
+        doc.text(
+            `${nombreMes} ${anio}`,
+            148.5,
+            18,
+            { align: "center" }
+        );
 
-                    if (
-                        estado ===
-                        "FALTO"
-                    ) {
+        const total =
+            resumenSeccion.temprano +
+            resumenSeccion.tardanza +
+            resumenSeccion.faltas +
+            resumenSeccion.justificados;
 
-                        return (
-                            e.estadoOriginal ===
-                            "FALTO"
-                        );
-                    }
-
-                    if (
-                        estado ===
-                        "TARDANZA"
-                    ) {
-
-                        return (
-                            e.estadoOriginal ===
-                            "TARDANZA"
-                        );
-                    }
-
-                    if (
-                        estado ===
-                        "DEMASIADO TARDE"
-                    ) {
-
-                        return (
-                            e.estadoOriginal ===
-                            "DEMASIADO TARDE"
-                        );
-                    }
-
-                    return (
-                        e.estado ===
-                        estado
-                    );
-
-                });
-
+        function porcentaje(valor) {
+            return total
+                ? ((valor / total) * 100).toFixed(1) + "%"
+                : "0.0%";
         }
 
+        doc.autoTable({
 
-        // =====================================================
-        // 10. GUARDAR RESULTADOS ACTUALES
-        // =====================================================
+            startY: 25,
 
-        datosActuales =
-            datosFiltrados;
+            head: [[
+                "Indicador",
+                "Total",
+                "Porcentaje"
+            ]],
 
+            body: [
+                [
+                    "✓ TEMPRANO",
+                    resumenSeccion.temprano,
+                    porcentaje(resumenSeccion.temprano)
+                ],
+                [
+                    "T TARDANZA + DEMASIADO TARDE",
+                    resumenSeccion.tardanza,
+                    porcentaje(resumenSeccion.tardanza)
+                ],
+                [
+                    "F FALTAS",
+                    resumenSeccion.faltas,
+                    porcentaje(resumenSeccion.faltas)
+                ],
+                [
+                    "J JUSTIFICADOS",
+                    resumenSeccion.justificados,
+                    porcentaje(resumenSeccion.justificados)
+                ],
+                [
+                    "TOTAL",
+                    total,
+                    total ? "100.0%" : "0.0%"
+                ]
+            ],
 
-        // =====================================================
-        // 11. SUSPENSIONES DEL RANGO
-        // =====================================================
+            theme: "grid",
 
-        const suspensiones =
-            diasNoLectivosCache.filter(
-                fecha =>
-                    fecha >= desde &&
-                    fecha <= hasta
-            );
+            styles: {
+                font: "helvetica",
+                fontSize: 8,
+                cellPadding: 3,
+                halign: "center"
+            },
 
+            headStyles: {
+                fontStyle: "bold",
+                fillColor: [230, 230, 230],
+                textColor: [0, 0, 0]
+            },
 
-        // =====================================================
-        // 12. MOSTRAR RESULTADO
-        // =====================================================
+            columnStyles: {
+                0: {
+                    cellWidth: 80,
+                    halign: "left"
+                },
+                1: {
+                    cellWidth: 30
+                },
+                2: {
+                    cellWidth: 35
+                }
+            }
+        });
 
-        if (
-            datosActuales.length > 0
-        ) {
+        // ==================================================
+        // 17. GRÁFICOS
+        // ==================================================
+        dibujarPoligonal(
+            doc,
+            15,
+            85,
+            130,
+            78,
+            resumenSeccion
+        );
 
-            mostrar(
-                datosActuales
-            );
+        dibujarCircular(
+            doc,
+            220,
+            125,
+            28,
+            resumenSeccion
+        );
 
-        } else {
+        // ==================================================
+        // 18. NOTAS
+        // ==================================================
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
 
-            resultado.innerHTML =
-                "<div style='padding:20px;" +
-                "background:#fff3cd;" +
-                "border-radius:10px;" +
-                "color:#856404;'>" +
+        doc.text(
+            "✓ Temprano | T Tardanza y demasiado tarde | F Falta | J Justificado",
+            148.5,
+            195,
+            { align: "center" }
+        );
 
-                "<b>ℹ️ No se encontraron registros.</b>" +
+        doc.text(
+            "Sábados, domingos y días no lectivos: celda negra. Las justificaciones no se suman a faltas ni tardanzas.",
+            148.5,
+            201,
+            { align: "center" }
+        );
 
-                "<br><br>" +
+        // ==================================================
+        // 19. NOMBRE Y SALIDA
+        // ==================================================
+        const nombreArchivo =
+            `Control_Mensual_Asistencia_${gradoSeleccionado}_${seccionSeleccionada}_${nombreMes}_${anio}.pdf`;
 
-                "No existe una asistencia registrada " +
-                "para los filtros seleccionados." +
+        if (modoVistaPreviaControlMensual) {
 
-                "</div>";
+            window._pdfBlobControlMensual =
+                doc.output("blob");
+
+            window._nombrePDFControlMensual =
+                nombreArchivo;
+
+            return;
         }
 
+        doc.save(nombreArchivo);
 
-        // =====================================================
-        // 13. MOSTRAR DÍAS NO LECTIVOS
-        // =====================================================
+        alert(
+            "✅ Control Mensual de Asistencia generado correctamente.\n\n" +
+            `Grado: ${gradoSeleccionado}\n` +
+            `Sección: ${seccionSeleccionada}\n` +
+            `Mes: ${nombreMes} ${anio}`
+        );
 
-        if (
-            suspensiones.length > 0
-        ) {
-
-            const aviso =
-                document.createElement("div");
-
-            aviso.style.cssText =
-                "margin:15px 0;" +
-                "padding:12px;" +
-                "background:#e0f2fe;" +
-                "border-radius:8px;" +
-                "color:#075985;";
-
-            aviso.innerHTML =
-                "<b>📅 Días no lectivos:</b> " +
-                suspensiones.join(", ");
-
-            resultado.prepend(
-                aviso
-            );
-        }
-
-
-    }
-    catch (error) {
+    } catch (error) {
 
         console.error(
-            "Error en consultar():",
+            "Error al generar Control Mensual:",
             error
         );
 
-        resultado.innerHTML =
-            "<div style='padding:18px;" +
-            "color:#b91c1c;" +
-            "background:#fee2e2;" +
-            "border-radius:10px;'>" +
-
-            "<b>❌ Error al consultar asistencia</b>" +
-
-            "<br><br>" +
-
-            String(
-                error.message ||
-                error
-            ) +
-
-            "</div>";
+        if (!modoVistaPreviaControlMensual) {
+            alert(
+                "❌ No se pudo generar el PDF.\n\n" +
+                error.message
+            );
+        } else {
+            throw error;
+        }
     }
+}
+
+    function limpiarConsulta() {
+
+    // Limpiar los campos de búsqueda
+    document.getElementById("buscar").value = "";
+    document.getElementById("grado").value = "";
+    document.getElementById("seccion").value = "";
+    document.getElementById("desde").value = "";
+    document.getElementById("hasta").value = "";
+    document.getElementById("estado").value = "";
+
+    // Limpiar los resultados
+    const resultado = document.getElementById("resultado");
+    if (resultado) {
+        resultado.innerHTML =
+            "Selecciona los filtros y pulsa <b>Consultar</b>.";
+    }
+
+    // Vaciar los datos actuales
+    datosActuales = [];
+}
+
+// ==========================================================
+// REGISTRAR JUSTIFICACIÓN
+// IMPORTANTE: no modifica el cuadro DETALLE.
+// La justificación se guarda aparte y el RESUMEN la considera
+// como JUSTIFICADO, conservando la situación original.
+// ==========================================================
+window.abrirRegistrarJustificacion = function() {
+
+    const fondo = document.createElement("div");
+    fondo.className = "modal-justificacion";
+
+    const ventana = document.createElement("div");
+    ventana.className = "ventana-justificacion";
+
+    ventana.innerHTML = `
+        <h3>📝 Registrar justificación</h3>
+        <p class="ayuda">
+            Registra una justificación para un estudiante en una fecha concreta.
+            La situación original se conserva para el informe.
+        </p>
+
+        <div class="form-just">
+            <label for="justDni">DNI del estudiante</label>
+            <input id="justDni" type="text" inputmode="numeric"
+                   maxlength="12" placeholder="Ingrese el DNI">
+        </div>
+
+        <div class="form-just">
+            <label for="justFecha">Fecha</label>
+            <input id="justFecha" type="date">
+        </div>
+
+        <div class="form-just">
+            <label for="justTipo">Tipo de justificación</label>
+            <select id="justTipo">
+                <option value="">Seleccione...</option>
+                <option value="TARDANZA">Justificación de tardanza</option>
+                <option value="DEMASIADO TARDE">Justificación de demasiado tarde</option>
+                <option value="FALTO">Justificación de falta</option>
+            </select>
+        </div>
+
+        <div class="form-just">
+            <label for="justMotivo">Motivo / sustento</label>
+            <textarea id="justMotivo"
+                placeholder="Ejemplo: cita médica, enfermedad, emergencia familiar..."></textarea>
+        </div>
+
+        <div class="justificacion-aviso">
+            ℹ️ Al guardar, el registro dejará de contar como
+            <b>TEMPRANO, TARDANZA, DEMASIADO TARDE o FALTA</b>.
+            Se contabilizará únicamente como <b>JUSTIFICADO (J)</b>.
+        </div>
+
+        <div class="botones-just">
+            <button class="btn-guardar-just" id="btnGuardarJust">💾 Guardar</button>
+            <button class="btn-cancelar-just" id="btnCancelarJust">❌ Cancelar</button>
+        </div>
+    `;
+
+    fondo.appendChild(ventana);
+    document.body.appendChild(fondo);
+
+    const dniInput = document.getElementById("justDni");
+    const fechaInput = document.getElementById("justFecha");
+    const tipoInput = document.getElementById("justTipo");
+    const motivoInput = document.getElementById("justMotivo");
+
+    // Si el usuario ya seleccionó grado/sección/periodo en el resumen,
+    // se toma una fecha razonable del período actual.
+    const hoy = new Date();
+    fechaInput.value =
+        `${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,"0")}-${String(hoy.getDate()).padStart(2,"0")}`;
+
+    document.getElementById("btnCancelarJust").onclick = () => fondo.remove();
+
+    document.getElementById("btnGuardarJust").onclick = async function() {
+
+        const dni = dniInput.value.trim();
+        const fecha = fechaInput.value;
+        const tipoSeleccionado = tipoInput.value;
+        const motivo = motivoInput.value.trim();
+
+        if (!/^\d{8}$/.test(dni)) {
+            alert("⚠️ Ingresa un DNI válido de 8 dígitos.");
+            return;
+        }
+
+        if (!fecha) {
+            alert("⚠️ Selecciona la fecha.");
+            return;
+        }
+
+        if (!tipoSeleccionado) {
+            alert("⚠️ Selecciona el tipo de justificación.");
+            return;
+        }
+
+        if (!motivo) {
+            alert("⚠️ Escribe el motivo o sustento.");
+            return;
+        }
+
+        const boton = this;
+        boton.disabled = true;
+        boton.textContent = "⏳ Verificando...";
+
+        try {
+            const headers = {
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            };
+
+            // 1. Verificar estudiante y obtener su situación original.
+            const urlEstudiante =
+                SUPABASE_URL +
+                "/rest/v1/estudiantes?select=*&dni=eq." +
+                encodeURIComponent(dni);
+
+            const respuestaEstudiante =
+                await fetch(urlEstudiante, { headers });
+
+            if (!respuestaEstudiante.ok) {
+                throw new Error("No se pudo consultar el estudiante.");
+            }
+
+            const estudiantes = await respuestaEstudiante.json();
+
+            if (!estudiantes.length) {
+                alert("❌ No existe un estudiante registrado con ese DNI.");
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            // 2. Buscar el registro de asistencia de ese día.
+            const urlAsistencia =
+                SUPABASE_URL +
+                "/rest/v1/vista_asistencia?select=estado&dni=eq." +
+                encodeURIComponent(dni) +
+                "&fecha=eq." +
+                encodeURIComponent(fecha);
+
+            const respuestaAsistencia =
+                await fetch(urlAsistencia, { headers });
+
+            if (!respuestaAsistencia.ok) {
+                throw new Error("No se pudo consultar la asistencia de ese día.");
+            }
+
+            const registrosAsistencia = await respuestaAsistencia.json();
+
+            // Si no existe registro, por la lógica del sistema se considera FALTO.
+            const situacionOriginal =
+                registrosAsistencia.length
+                    ? String(registrosAsistencia[0].estado || "").trim().toUpperCase()
+                    : "FALTO";
+
+            if (!["TARDANZA", "DEMASIADO TARDE", "FALTO"].includes(situacionOriginal)) {
+                alert(
+                    "⚠️ El estudiante no tiene una tardanza, demasiado tarde o falta " +
+                    "para la fecha seleccionada.\n\n" +
+                    "Situación encontrada: " + (situacionOriginal || "SIN REGISTRO")
+                );
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            if (situacionOriginal !== tipoSeleccionado) {
+                const nombres = {
+                    "TARDANZA": "TARDANZA",
+                    "DEMASIADO TARDE": "DEMASIADO TARDE",
+                    "FALTO": "FALTA"
+                };
+
+                alert(
+                    "⚠️ El tipo seleccionado no coincide con la situación registrada.\n\n" +
+                    "Situación real del día: " + nombres[situacionOriginal] + "\n" +
+                    "Seleccionaste: " + nombres[tipoSeleccionado] + "\n\n" +
+                    "Selecciona la opción correcta."
+                );
+
+                boton.disabled = false;
+                boton.textContent = "💾 Guardar";
+                return;
+            }
+
+            boton.textContent = "⏳ Guardando...";
+
+            // 3. Guardar la justificación sin alterar la asistencia original.
+            const respuestaGuardar = await fetch(
+                SUPABASE_URL + "/rest/v1/justificaciones",
+                {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=representation"
+                    },
+                    body: JSON.stringify({
+                        dni: dni,
+                        fecha: fecha,
+                        situacion: situacionOriginal,
+                        motivo: motivo
+                    })
+                }
+            );
+
+            if (!respuestaGuardar.ok) {
+                const errorTexto = await respuestaGuardar.text();
+
+                // Error típico de Supabase cuando la tabla todavía no fue creada
+                // o todavía no aparece en el schema cache.
+                if (errorTexto.includes("PGRST205") ||
+                    errorTexto.includes("Could not find the table 'public.justificaciones'")) {
+                    throw new Error(
+                        "La tabla JUSTIFICACIONES todavía no está creada en Supabase.\n\n" +
+                        "Primero ejecuta en el Editor SQL el script " +
+                        "crear_tabla_justificaciones.sql que acompaña este archivo.\n\n" +
+                        "Después recarga la página e inténtalo nuevamente."
+                    );
+                }
+
+                if (errorTexto.includes("23505") ||
+                    errorTexto.includes("duplicate") ||
+                    errorTexto.includes("unique")) {
+                    throw new Error(
+                        "Ya existe una justificación registrada para ese estudiante y esa fecha."
+                    );
+                }
+
+                throw new Error(errorTexto || "No se pudo guardar la justificación.");
+            }
+
+            alert(
+                "✅ Justificación registrada correctamente.\n\n" +
+                "DNI: " + dni +
+                "\nFecha: " + fecha +
+                "\nSituación original: " + situacionOriginal +
+                "\n\nEn el RESUMEN dejará de contar como incidencia y quedará registrada únicamente como JUSTIFICADA."
+            );
+
+            fondo.remove();
+
+            // Si el resumen estaba visible, se actualiza automáticamente.
+            const resultadoResumen = document.getElementById("resultadoResumen");
+            if (resultadoResumen && resultadoResumen.innerHTML.trim()) {
+                setTimeout(() => generarResumen(), 250);
+            }
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "❌ No se pudo registrar la justificación.\n\n" +
+                error.message
+            );
+
+            boton.disabled = false;
+            boton.textContent = "💾 Guardar";
+        }
+    };
 };
+
+window.abrirDiasNoLectivos = function() {
+
+    const fondo = document.createElement("div");
+
+    fondo.style.position = "fixed";
+    fondo.style.top = "0";
+    fondo.style.left = "0";
+    fondo.style.width = "100%";
+    fondo.style.height = "100%";
+    fondo.style.background = "rgba(0,0,0,0.5)";
+    fondo.style.display = "flex";
+    fondo.style.alignItems = "center";
+    fondo.style.justifyContent = "center";
+    fondo.style.zIndex = "9999";
+
+    const ventana = document.createElement("div");
+
+    ventana.style.background = "white";
+    ventana.style.padding = "25px";
+    ventana.style.borderRadius = "12px";
+    ventana.style.width = "360px";
+    ventana.style.maxWidth = "90%";
+    ventana.style.boxShadow = "0 5px 20px rgba(0,0,0,0.3)";
+
+    ventana.innerHTML = `
+        <h2 style="margin-top:0; color:#1d4ed8;">
+            📅 Días no lectivos
+        </h2>
+
+        <label><b>Año:</b></label>
+        <select id="nuevoAnio" style="width:100%;padding:10px;margin:8px 0;">
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+            <option value="2029">2029</option>
+            <option value="2030">2030</option>
+        </select>
+
+        <label><b>Mes:</b></label>
+        <select id="nuevoMes" style="width:100%;padding:10px;margin:8px 0;">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+
+        <label><b>Fecha:</b></label>
+        <select id="nuevoDia" style="width:100%;padding:10px;margin:8px 0;">
+        </select>
+
+        <label><b>Motivo:</b></label>
+        <input
+            type="text"
+            id="nuevoMotivo"
+            placeholder="Ejemplo: Suspensión de clases"
+            style="width:100%;padding:10px;margin:8px 0;box-sizing:border-box;"
+        >
+
+        <div style="display:flex;gap:10px;margin-top:15px;">
+
+            <button id="btnGuardarDia"
+                style="flex:1;padding:10px;background:#1d4ed8;color:white;border:none;border-radius:7px;cursor:pointer;">
+                💾 Guardar
+            </button>
+
+            <button id="btnCancelarDia"
+                style="flex:1;padding:10px;background:#64748b;color:white;border:none;border-radius:7px;cursor:pointer;">
+                ❌ Cancelar
+            </button>
+
+        </div>
+    `;
+
+    fondo.appendChild(ventana);
+    document.body.appendChild(fondo);
+
+    const anio = document.getElementById("nuevoAnio");
+    const mes = document.getElementById("nuevoMes");
+    const dia = document.getElementById("nuevoDia");
+
+    function cargarDias() {
+
+        const año = Number(anio.value);
+        const mesSeleccionado = Number(mes.value);
+
+        const cantidadDias =
+            new Date(año, mesSeleccionado, 0).getDate();
+
+        dia.innerHTML = "";
+
+        for (let d = 1; d <= cantidadDias; d++) {
+
+            const opcion = document.createElement("option");
+
+            opcion.value =
+                String(d).padStart(2, "0");
+
+            opcion.textContent =
+                String(d).padStart(2, "0");
+
+            dia.appendChild(opcion);
+        }
+    }
+
+    anio.addEventListener("change", cargarDias);
+    mes.addEventListener("change", cargarDias);
+
+    cargarDias();
+
+    document.getElementById("btnCancelarDia").onclick =
+        function() {
+
+            fondo.remove();
+
+        };
+
+    document.getElementById("btnGuardarDia").onclick =
+        async function() {
+
+            const fecha =
+                anio.value + "-" +
+                String(mes.value).padStart(2, "0") + "-" +
+                dia.value;
+
+            const motivo =
+                document.getElementById("nuevoMotivo").value.trim();
+
+            if (!motivo) {
+
+                alert("⚠️ Escribe el motivo.");
+
+                return;
+            }
+
+            try {
+
+                const respuesta = await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/dias_no_lectivos",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization":
+                                "Bearer " + SUPABASE_KEY,
+                            "Content-Type":
+                                "application/json",
+                            "Prefer":
+                                "return=representation"
+                        },
+
+                        body: JSON.stringify({
+                            fecha: fecha,
+                            motivo: motivo
+                        })
+                    }
+                );
+
+                if (!respuesta.ok) {
+
+                    const error =
+                        await respuesta.text();
+
+                    alert(
+                        "❌ No se pudo guardar.\n\n" +
+                        error
+                    );
+
+                    return;
+                }
+
+                alert(
+                    "✅ Día no lectivo registrado.\n\n" +
+                    "Fecha: " + fecha +
+                    "\nMotivo: " + motivo
+                );
+
+                fondo.remove();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "❌ Error al guardar:\n" +
+                    error.message
+                );
+            }
+        };
+};
+</script>
+
+</body>
+</html>
