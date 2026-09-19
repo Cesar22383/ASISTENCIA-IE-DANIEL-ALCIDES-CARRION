@@ -1916,7 +1916,7 @@ window.consultar = async function() {
     try {
 
         // =====================================================
-        // 1. OBTENER FILTROS
+        // 1. FILTROS
         // =====================================================
 
         const grado =
@@ -1931,7 +1931,7 @@ window.consultar = async function() {
         const hasta =
             document.getElementById("hasta").value;
 
-        const estado =
+        const estadoFiltro =
             document.getElementById("estado").value;
 
         const buscar =
@@ -1953,65 +1953,156 @@ window.consultar = async function() {
 
 
         // =====================================================
-        // 2. CONSULTAR SOLO REGISTROS REALES DE ASISTENCIA
+        // 2. OBTENER ESTUDIANTES DEL GRADO Y SECCIÓN
         // =====================================================
 
-        let url =
+        const urlEstudiantes =
             SUPABASE_URL +
-            "/rest/v1/vista_asistencia?select=*";
-
-        url +=
+            "/rest/v1/estudiantes?select=*" +
             "&grado=eq." +
-            encodeURIComponent(grado);
-
-        url +=
+            encodeURIComponent(grado) +
             "&seccion=eq." +
-            encodeURIComponent(seccion);
-
-        url +=
-            "&fecha=gte." +
-            encodeURIComponent(desde);
-
-        url +=
-            "&fecha=lte." +
-            encodeURIComponent(hasta);
+            encodeURIComponent(seccion) +
+            "&order=orden.asc";
 
 
-        const respuesta =
-            await fetch(url, {
+        const respuestaEstudiantes =
+            await fetch(
+                urlEstudiantes,
+                {
+                    method: "GET",
 
-                method: "GET",
-
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization":
-                        "Bearer " + SUPABASE_KEY
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization":
+                            "Bearer " + SUPABASE_KEY
+                    }
                 }
+            );
 
-            });
 
-
-        if (!respuesta.ok) {
+        if (!respuestaEstudiantes.ok) {
 
             const errorTexto =
-                await respuesta.text();
+                await respuestaEstudiantes.text();
 
-            resultado.innerHTML =
-                "<p style='color:red'>" +
-                "<b>❌ Error de Supabase:</b><br>" +
-                errorTexto +
-                "</p>";
+            throw new Error(
+                "Error al consultar estudiantes: " +
+                errorTexto
+            );
+        }
 
-            return;
+
+        const estudiantesRaw =
+            await respuestaEstudiantes.json();
+
+
+        const estudiantes =
+            typeof deduplicarEstudiantesPorDni === "function"
+                ? deduplicarEstudiantesPorDni(
+                    estudiantesRaw
+                  )
+                : estudiantesRaw;
+
+
+        // =====================================================
+        // 3. FILTRAR POR DNI SI SE ESCRIBIÓ UNO
+        // =====================================================
+
+        const estudiantesMostrar =
+            buscar
+                ? estudiantes.filter(
+                    estudiante =>
+                        String(
+                            estudiante.dni || ""
+                        ).trim() ===
+                        String(
+                            buscar
+                        ).trim()
+                  )
+                : estudiantes;
+
+
+        // =====================================================
+        // 4. CREAR MAPA DE ESTUDIANTES POR DNI
+        // =====================================================
+
+        const estudiantesPorDni =
+            new Map();
+
+
+        estudiantesMostrar.forEach(
+            estudiante => {
+
+                const dni =
+                    String(
+                        estudiante.dni || ""
+                    ).trim();
+
+                if (dni) {
+
+                    estudiantesPorDni.set(
+                        dni,
+                        estudiante
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =====================================================
+        // 5. CONSULTAR ASISTENCIA REAL
+        //
+        // IMPORTANTE:
+        // Aquí NO se consulta grado ni sección porque esas
+        // columnas pertenecen a estudiantes.
+        // =====================================================
+
+        const urlAsistencia =
+            SUPABASE_URL +
+            "/rest/v1/asistencia?select=*" +
+            "&fecha=gte." +
+            encodeURIComponent(desde) +
+            "&fecha=lte." +
+            encodeURIComponent(hasta) +
+            "&limit=10000";
+
+
+        const respuestaAsistencia =
+            await fetch(
+                urlAsistencia,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization":
+                            "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+
+        if (!respuestaAsistencia.ok) {
+
+            const errorTexto =
+                await respuestaAsistencia.text();
+
+            throw new Error(
+                "Error al consultar asistencia: " +
+                errorTexto
+            );
         }
 
 
         const asistencias =
-            await respuesta.json();
+            await respuestaAsistencia.json();
 
 
         // =====================================================
-        // 3. CONSULTAR JUSTIFICACIONES
+        // 6. CONSULTAR JUSTIFICACIONES
         // =====================================================
 
         const urlJustificaciones =
@@ -2020,7 +2111,8 @@ window.consultar = async function() {
             "&fecha=gte." +
             encodeURIComponent(desde) +
             "&fecha=lte." +
-            encodeURIComponent(hasta);
+            encodeURIComponent(hasta) +
+            "&limit=10000";
 
 
         const respuestaJustificaciones =
@@ -2050,309 +2142,252 @@ window.consultar = async function() {
 
 
         // =====================================================
-        // 4. MAPA DE JUSTIFICACIONES
+        // 7. MAPA DE JUSTIFICACIONES
+        // DNI|FECHA
         // =====================================================
 
         const mapaJustificaciones =
             new Map();
 
 
-        justificaciones.forEach(j => {
+        justificaciones.forEach(
+            justificacion => {
 
-            const dni =
-                String(
-                    j.dni ||
-                    j.DNI ||
-                    ""
-                ).trim();
+                const dni =
+                    String(
+                        justificacion.dni ||
+                        justificacion.DNI ||
+                        ""
+                    ).trim();
 
-            const fecha =
-                String(
-                    j.fecha ||
-                    j.Fecha ||
-                    ""
-                ).substring(0, 10);
+                const fecha =
+                    String(
+                        justificacion.fecha ||
+                        justificacion.Fecha ||
+                        ""
+                    ).substring(0, 10);
 
 
-            if (dni && fecha) {
+                if (
+                    dni &&
+                    fecha
+                ) {
 
-                mapaJustificaciones.set(
-                    dni + "|" + fecha,
-                    j
-                );
+                    mapaJustificaciones.set(
+                        dni + "|" + fecha,
+                        justificacion
+                    );
+
+                }
 
             }
-
-        });
+        );
 
 
         // =====================================================
-        // 5. CREAR DATOS SOLO CON REGISTROS EXISTENTES
+        // 8. CONSTRUIR SOLO REGISTROS REALES
         // =====================================================
 
         const datos = [];
 
 
-        asistencias.forEach(registro => {
+        asistencias.forEach(
+            registro => {
 
-            const dni =
-                String(
-                    registro.dni || ""
-                ).trim();
-
-            const fecha =
-                String(
-                    registro.fecha || ""
-                ).substring(0, 10);
+                const dni =
+                    String(
+                        registro.dni || ""
+                    ).trim();
 
 
-            if (!dni || !fecha) {
-                return;
-            }
+                // Si el DNI no pertenece al grado/sección
+                // seleccionado, se ignora.
+                const estudiante =
+                    estudiantesPorDni.get(dni);
 
 
-            // -------------------------------------------------
-            // FILTRO POR DNI
-            // -------------------------------------------------
-
-            if (
-                buscar &&
-                dni !== String(buscar).trim()
-            ) {
-                return;
-            }
+                if (!estudiante) {
+                    return;
+                }
 
 
-            // -------------------------------------------------
-            // JUSTIFICACIÓN
-            // -------------------------------------------------
+                const fecha =
+                    String(
+                        registro.fecha || ""
+                    ).substring(0, 10);
 
-            const clave =
-                dni + "|" + fecha;
-
-            const justificacion =
-                mapaJustificaciones.get(clave) ||
-                null;
-
-
-            const estadoOriginal =
-                String(
-                    registro.estado || ""
-                )
-                .trim()
-                .toUpperCase();
-
-
-            let estadoMostrar =
-                estadoOriginal;
-
-            let tipoJustificacion =
-                "";
-
-
-            // =================================================
-            // SI EXISTE JUSTIFICACIÓN
-            // =================================================
-
-            if (justificacion) {
 
                 if (
-                    estadoOriginal ===
-                    "FALTO"
+                    !fecha ||
+                    fecha < desde ||
+                    fecha > hasta
                 ) {
-
-                    estadoMostrar =
-                        "FALTA JUSTIFICADA";
-
-                    tipoJustificacion =
-                        "Falta justificada";
-
+                    return;
                 }
 
-                else if (
-                    estadoOriginal ===
-                    "TARDANZA"
-                ) {
 
-                    estadoMostrar =
-                        "TARDANZA JUSTIFICADA";
-
-                    tipoJustificacion =
-                        "Tardanza justificada";
-
-                }
-
-                else if (
-                    estadoOriginal ===
-                    "DEMASIADO TARDE"
-                ) {
-
-                    estadoMostrar =
-                        "DEMASIADO TARDE JUSTIFICADO";
-
-                    tipoJustificacion =
-                        "Demasiado tarde justificado";
-
-                }
-
-            }
+                const clave =
+                    dni + "|" + fecha;
 
 
-            // =================================================
-            // FECHA Y DÍA
-            // =================================================
-
-            const fechaObj =
-                new Date(
-                    fecha + "T12:00:00"
-                );
+                const justificacion =
+                    mapaJustificaciones.get(
+                        clave
+                    ) || null;
 
 
-            const dias = [
-                "domingo",
-                "lunes",
-                "martes",
-                "miércoles",
-                "jueves",
-                "viernes",
-                "sábado"
-            ];
+                const estadoOriginal =
+                    String(
+                        registro.estado || ""
+                    )
+                    .trim()
+                    .toUpperCase();
 
 
-            // =================================================
-            // AGREGAR SOLO EL REGISTRO REAL
-            // =================================================
-
-            datos.push({
-
-                grado:
-                    registro.grado ||
-                    grado,
-
-                seccion:
-                    registro.seccion ||
-                    seccion,
-
-                orden:
-                    registro.orden ||
-                    "",
-
-                nombre:
-                    registro.nombre ||
-                    registro.apellidos_nombres ||
-                    registro.apellidos ||
-                    "",
-
-                dni:
-                    registro.dni,
-
-                fecha:
-                    fecha,
-
-                dia:
-                    dias[
-                        fechaObj.getDay()
-                    ],
-
-                hora:
-                    registro.hora ||
-                    "",
-
-                estado:
-                    estadoMostrar,
-
-                estadoOriginal:
-                    estadoOriginal,
-
-                justificada:
-                    Boolean(
-                        justificacion
-                    ),
-
-                tipoJustificacion:
-                    tipoJustificacion,
-
-                motivoJustificacion:
-                    justificacion
-                        ? (
-                            justificacion.motivo ||
-                            justificacion.Motivo ||
-                            ""
-                          )
-                        : ""
-
-            });
-
-        });
+                let estadoMostrar =
+                    estadoOriginal;
 
 
-        // =====================================================
-        // 6. FILTRAR POR ESTADO
-        // =====================================================
-
-        let datosFiltrados =
-            datos;
+                let tipoJustificacion =
+                    "";
 
 
-        if (estado) {
+                // =================================================
+                // JUSTIFICACIÓN
+                // =================================================
 
-            datosFiltrados =
-                datos.filter(e => {
+                if (justificacion) {
 
                     if (
-                        estado ===
+                        estadoOriginal ===
                         "FALTO"
                     ) {
 
-                        return (
-                            e.estadoOriginal ===
-                            "FALTO"
-                        );
+                        estadoMostrar =
+                            "FALTA JUSTIFICADA";
+
+                        tipoJustificacion =
+                            "Falta justificada";
 
                     }
 
-
-                    if (
-                        estado ===
+                    else if (
+                        estadoOriginal ===
                         "TARDANZA"
                     ) {
 
-                        return (
-                            e.estadoOriginal ===
-                            "TARDANZA"
-                        );
+                        estadoMostrar =
+                            "TARDANZA JUSTIFICADA";
+
+                        tipoJustificacion =
+                            "Tardanza justificada";
 
                     }
 
-
-                    if (
-                        estado ===
+                    else if (
+                        estadoOriginal ===
                         "DEMASIADO TARDE"
                     ) {
 
-                        return (
-                            e.estadoOriginal ===
-                            "DEMASIADO TARDE"
-                        );
+                        estadoMostrar =
+                            "DEMASIADO TARDE JUSTIFICADO";
+
+                        tipoJustificacion =
+                            "Demasiado tarde justificado";
 
                     }
 
+                }
 
-                    return (
-                        e.estado ===
-                        estado
+
+                // =================================================
+                // DÍA
+                // =================================================
+
+                const fechaObj =
+                    new Date(
+                        fecha +
+                        "T12:00:00"
                     );
+
+
+                const dias = [
+                    "domingo",
+                    "lunes",
+                    "martes",
+                    "miércoles",
+                    "jueves",
+                    "viernes",
+                    "sábado"
+                ];
+
+
+                // =================================================
+                // AGREGAR REGISTRO
+                // =================================================
+
+                datos.push({
+
+                    grado:
+                        estudiante.grado,
+
+                    seccion:
+                        estudiante.seccion,
+
+                    orden:
+                        estudiante.orden,
+
+                    nombre:
+                        estudiante.nombre,
+
+                    dni:
+                        estudiante.dni,
+
+                    fecha:
+                        fecha,
+
+                    dia:
+                        dias[
+                            fechaObj.getDay()
+                        ],
+
+                    hora:
+                        registro.hora || "",
+
+                    estado:
+                        estadoMostrar,
+
+                    estadoOriginal:
+                        estadoOriginal,
+
+                    justificada:
+                        Boolean(
+                            justificacion
+                        ),
+
+                    tipoJustificacion:
+                        tipoJustificacion,
+
+                    motivoJustificacion:
+                        justificacion
+                            ? (
+                                justificacion.motivo ||
+                                justificacion.Motivo ||
+                                ""
+                              )
+                            : ""
 
                 });
 
-        }
+            }
+        );
 
 
         // =====================================================
-        // 7. ORDENAR
+        // 9. ORDENAR
         // =====================================================
 
-        datosFiltrados.sort(
+        datos.sort(
             (a, b) => {
 
                 return (
@@ -2370,7 +2405,71 @@ window.consultar = async function() {
 
 
         // =====================================================
-        // 8. GUARDAR DATOS ACTUALES
+        // 10. FILTRAR POR ESTADO
+        // =====================================================
+
+        let datosFiltrados =
+            datos;
+
+
+        if (estadoFiltro) {
+
+            datosFiltrados =
+                datos.filter(
+                    registro => {
+
+                        if (
+                            estadoFiltro ===
+                            "FALTO"
+                        ) {
+
+                            return (
+                                registro.estadoOriginal ===
+                                "FALTO"
+                            );
+
+                        }
+
+
+                        if (
+                            estadoFiltro ===
+                            "TARDANZA"
+                        ) {
+
+                            return (
+                                registro.estadoOriginal ===
+                                "TARDANZA"
+                            );
+
+                        }
+
+
+                        if (
+                            estadoFiltro ===
+                            "DEMASIADO TARDE"
+                        ) {
+
+                            return (
+                                registro.estadoOriginal ===
+                                "DEMASIADO TARDE"
+                            );
+
+                        }
+
+
+                        return (
+                            registro.estado ===
+                            estadoFiltro
+                        );
+
+                    }
+                );
+
+        }
+
+
+        // =====================================================
+        // 11. GUARDAR RESULTADO ACTUAL
         // =====================================================
 
         datosActuales =
@@ -2378,7 +2477,7 @@ window.consultar = async function() {
 
 
         // =====================================================
-        // 9. MOSTRAR RESULTADO
+        // 12. MOSTRAR RESULTADOS
         // =====================================================
 
         if (
@@ -2413,7 +2512,7 @@ window.consultar = async function() {
 
 
         // =====================================================
-        // 10. MOSTRAR DÍAS NO LECTIVOS
+        // 13. MOSTRAR DÍAS NO LECTIVOS
         // =====================================================
 
         const suspensiones =
@@ -2428,7 +2527,7 @@ window.consultar = async function() {
             suspensiones.length > 0
         ) {
 
-            const aviso =
+            const avisos =
                 suspensiones.map(
                     fecha => {
 
@@ -2469,13 +2568,13 @@ window.consultar = async function() {
 
 
             resultado.innerHTML +=
-                aviso;
+                avisos;
 
         }
 
 
         // =====================================================
-        // 11. INFORMACIÓN PARA DEPURACIÓN
+        // 14. CONSOLA PARA COMPROBAR LOS DATOS
         // =====================================================
 
         console.log(
@@ -2507,8 +2606,18 @@ window.consultar = async function() {
         );
 
         console.log(
-            "Registros reales encontrados:",
+            "Estudiantes de la sección:",
+            estudiantesMostrar.length
+        );
+
+        console.log(
+            "Registros reales de asistencia:",
             asistencias.length
+        );
+
+        console.log(
+            "Registros correspondientes a la sección:",
+            datos.length
         );
 
         console.log(
@@ -2518,22 +2627,22 @@ window.consultar = async function() {
 
         console.table(
             datosFiltrados.map(
-                r => ({
+                registro => ({
 
                     DNI:
-                        r.dni,
+                        registro.dni,
 
                     Nombre:
-                        r.nombre,
+                        registro.nombre,
 
                     Fecha:
-                        r.fecha,
+                        registro.fecha,
 
                     Estado:
-                        r.estado,
+                        registro.estado,
 
                     Justificada:
-                        r.justificada
+                        registro.justificada
 
                 })
             )
