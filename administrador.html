@@ -1962,6 +1962,19 @@ window.consultar = async function() {
         }
 
         const registros = await respuesta.json();
+        console.log("===== ESTADOS REALES DE SUPABASE =====");
+
+console.table(
+    registros.map(r => ({
+        DNI: r.dni,
+        Fecha: r.fecha,
+        Estado: r.estado,
+        EstadoAsistencia: r.estado_asistencia,
+        TodosLosCampos: Object.keys(r).join(", ")
+    }))
+);
+
+console.log("======================================");
 
         console.log("REGISTROS DEVUELTOS:", registros.length);
         console.table(registros);
