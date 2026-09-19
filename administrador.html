@@ -3546,14 +3546,14 @@ async function descargarPDFControlMensual() {
         // aquí porque la tabla asistencia se relaciona con el estudiante
         // mediante DNI. Luego el mapa se cruza únicamente con los DNIs
         // de la sección seleccionada.
-        const urlAsistencia =
-            SUPABASE_URL +
-            "/rest/v1/asistencia?select=dni,fecha,hora,estado" +
-            "&fecha=gte." +
-            encodeURIComponent(fechaInicio) +
-            "&fecha=lte." +
-            encodeURIComponent(fechaFin) +
-            "&limit=10000";
+const urlAsistencia =
+    SUPABASE_URL +
+    "/rest/v1/vista_asistencia?select=dni,fecha,hora,estado" +
+    "&fecha=gte." +
+    encodeURIComponent(fechaInicio) +
+    "&fecha=lte." +
+    encodeURIComponent(fechaFin) +
+    "&limit=10000";
 
         const respuestaAsistencia =
             await fetch(urlAsistencia, { headers });
