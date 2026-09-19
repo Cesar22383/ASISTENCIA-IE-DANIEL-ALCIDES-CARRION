@@ -867,14 +867,11 @@ await cargarDiasNoLectivos();
 
             fetch(
                 SUPABASE_URL +
-                "/rest/v1/vista_asistencia?select=*&fecha=gte." +
+                "/rest/v1/asistencia?select=dni,fecha,hora,estado&fecha=gte." +
                 encodeURIComponent(fechaInicio) +
                 "&fecha=lte." +
                 encodeURIComponent(fechaFin) +
-                "&grado=eq." +
-                encodeURIComponent(grado) +
-                "&seccion=eq." +
-                encodeURIComponent(seccion),
+                "&limit=10000",
                 { headers }
             ),
 
@@ -941,7 +938,22 @@ await cargarDiasNoLectivos();
 
             if (!dni || !fecha) return;
 
-            asistenciaMap.set(dni + "|" + fecha, r);
+            const clave = dni + "|" + fecha;
+            const estadoRegistro =
+                String(r.estado || "").trim().toUpperCase();
+
+            if (!asistenciaMap.has(clave)) {
+                asistenciaMap.set(clave, r);
+            } else if (
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ].includes(estadoRegistro)
+            ) {
+                asistenciaMap.set(clave, r);
+            }
         });
 
         // ----------------------------------------------------------
@@ -3021,17 +3033,19 @@ async function descargarPDFControlMensual() {
         // ==================================================
         // 4. CONSULTAR ASISTENCIAS
         // ==================================================
+        // IMPORTANTE:
+        // El detalle de asistencia y el Control Mensual deben partir
+        // de la misma tabla de asistencia. No se filtra por grado/sección
+        // aquí porque la tabla asistencia se relaciona con el estudiante
+        // mediante DNI. Luego el mapa se cruza únicamente con los DNIs
+        // de la sección seleccionada.
         const urlAsistencia =
             SUPABASE_URL +
-            "/rest/v1/vista_asistencia?select=*" +
+            "/rest/v1/asistencia?select=dni,fecha,hora,estado" +
             "&fecha=gte." +
             encodeURIComponent(fechaInicio) +
             "&fecha=lte." +
             encodeURIComponent(fechaFin) +
-            "&grado=eq." +
-            encodeURIComponent(gradoSeleccionado) +
-            "&seccion=eq." +
-            encodeURIComponent(seccionSeleccionada) +
             "&limit=10000";
 
         const respuestaAsistencia =
@@ -3090,7 +3104,22 @@ async function descargarPDFControlMensual() {
             const clave =
                 dni + "|" + fecha;
 
+            const estadoRegistro =
+                String(r.estado || "").trim().toUpperCase();
+
+            // Si existen varios registros para el mismo DNI y fecha,
+            // conservar el que tenga un estado válido.
             if (!mapaAsistencia.has(clave)) {
+                mapaAsistencia.set(clave, r);
+            } else if (
+                estadoRegistro &&
+                [
+                    "TEMPRANO",
+                    "TARDANZA",
+                    "DEMASIADO TARDE",
+                    "FALTO"
+                ].includes(estadoRegistro)
+            ) {
                 mapaAsistencia.set(clave, r);
             }
         });
