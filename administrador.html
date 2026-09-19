@@ -1945,23 +1945,21 @@ await cargarDiasNoLectivos();
         // CONSULTAR ASISTENCIAS DEL RANGO
         // ==========================================
 
+        // ==========================================================
+        // CONSULTA DE ASISTENCIA DEL DETALLE
+        // ==========================================================
+        // La tabla "asistencia" no contiene grado ni sección.
+        // El grado y la sección pertenecen al estudiante y se
+        // relacionan mediante DNI. Por eso aquí usamos la vista
+        // "vista_asistencia", que ya contiene esa relación.
         let url =
             SUPABASE_URL +
-            "/rest/v1/asistencia?select=dni,fecha,hora,estado";
-
-        url +=
-            "&grado=eq." +
-            encodeURIComponent(grado);
-
-        url +=
+            "/rest/v1/vista_asistencia?select=*&grado=eq." +
+            encodeURIComponent(grado) +
             "&seccion=eq." +
-            encodeURIComponent(seccion);
-
-        url +=
+            encodeURIComponent(seccion) +
             "&fecha=gte." +
-            encodeURIComponent(desde);
-
-        url +=
+            encodeURIComponent(desde) +
             "&fecha=lte." +
             encodeURIComponent(hasta);
 
