@@ -3569,6 +3569,12 @@ const urlAsistencia =
 
         const asistencias =
             await respuestaAsistencia.json();
+console.log("===== FALTO EN CONTROL MENSUAL =====");
+console.log(
+    asistencias.filter(
+        r => String(r.estado || "").trim().toUpperCase() === "FALTO"
+    )
+);
         console.log("======================================");
 console.log("CONTROL MENSUAL - ASISTENCIAS");
 console.log("Fecha inicio:", fechaInicio);
