@@ -4247,6 +4247,51 @@ const clave =
 
                             fontSize:
                                 5.7
+                        },
+
+                        // Totales por estudiante
+                        [ultimoDia + 1]: {
+                            cellWidth:
+                                16,
+
+                            halign:
+                                "center",
+
+                            fontSize:
+                                5.2
+                        },
+
+                        [ultimoDia + 2]: {
+                            cellWidth:
+                                16,
+
+                            halign:
+                                "center",
+
+                            fontSize:
+                                5.2
+                        },
+
+                        [ultimoDia + 3]: {
+                            cellWidth:
+                                16,
+
+                            halign:
+                                "center",
+
+                            fontSize:
+                                5.2
+                        },
+
+                        [ultimoDia + 4]: {
+                            cellWidth:
+                                16,
+
+                            halign:
+                                "center",
+
+                            fontSize:
+                                5.2
                         }
                     },
 
@@ -4264,6 +4309,31 @@ const clave =
                                 data.column.index ===
                                 0
                             ) {
+                                return;
+                            }
+
+                            // =================================================
+                            // LAS 4 COLUMNAS FINALES SON TOTALES
+                            // NO SON DÍAS DEL MES.
+                            // DEBEN QUEDAR SIEMPRE BLANCAS Y VISIBLES.
+                            // =================================================
+                            if (
+                                data.column.index >
+                                ultimoDia
+                            ) {
+
+                                data.cell.styles.fillColor =
+                                    [255, 255, 255];
+
+                                data.cell.styles.textColor =
+                                    [0, 0, 0];
+
+                                data.cell.styles.fontStyle =
+                                    "bold";
+
+                                data.cell.styles.halign =
+                                    "center";
+
                                 return;
                             }
 
