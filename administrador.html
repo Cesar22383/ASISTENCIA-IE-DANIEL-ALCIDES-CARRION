@@ -1006,7 +1006,7 @@ await cargarDiasNoLectivos();
                 const original =
                     originalRegistro
                         ? normalizarEstado(originalRegistro)
-                        : "FALTO";
+                        : "";
 
                 const just =
                     justMap.get(dni + "|" + fecha);
@@ -1033,6 +1033,7 @@ await cargarDiasNoLectivos();
         // RESUMEN FINAL
         // Las justificaciones quedan FUERA de estos cuatro
         // indicadores y se contabilizan únicamente como J.
+        // Un día sin registro NO se considera falta.
         // ----------------------------------------------------------
         const resumen = {
             TEMPRANO: 0,
@@ -2125,7 +2126,7 @@ await cargarDiasNoLectivos();
 
                 const estadoOriginal = registro
                     ? String(registro.estado || "").trim().toUpperCase()
-                    : "FALTO";
+                    : "";
 
                 const justificacion =
                     justificacionPorClaveDetalle.get(clave) || null;
@@ -3607,12 +3608,9 @@ async function descargarPDFControlMensual() {
                 }
 
                 const estado =
-                    String(
-                        asistencia?.estado ||
-                        "FALTO"
-                    )
-                    .trim()
-                    .toUpperCase();
+                    asistencia
+                        ? String(asistencia.estado || "").trim().toUpperCase()
+                        : "";
 
                 if (estado === "TEMPRANO") {
 
@@ -3629,11 +3627,16 @@ async function descargarPDFControlMensual() {
                     totalTardanza++;
                     resumenSeccion.tardanza++;
 
-                } else {
+                } else if (estado === "FALTO") {
 
                     fila.push("F");
                     totalFaltas++;
                     resumenSeccion.faltas++;
+
+                } else {
+
+                    // Sin registro de asistencia: no se inventa una falta.
+                    fila.push("");
                 }
             }
 
