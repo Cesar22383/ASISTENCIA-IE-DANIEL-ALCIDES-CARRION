@@ -965,6 +965,44 @@ await cargarDiasNoLectivos();
         const normalizarEstado = r =>
             String(r?.estado || "").trim().toUpperCase();
 
+        // ==========================================================
+        // ESTADO ÚNICO PARA TODOS LOS INFORMES
+        // ==========================================================
+        // Regla común:
+        // 1. JUSTIFICACIÓN tiene prioridad sobre la asistencia.
+        // 2. TARDANZA y DEMASIADO TARDE se conservan como TARDANZA
+        //    únicamente cuando NO están justificadas.
+        // 3. FALTO solo existe si hay un registro real FALTO.
+        // 4. Si no existe registro de asistencia, queda vacío.
+        function clasificarEstadoInforme(asistencia, justificacion) {
+
+            if (justificacion) {
+                return "JUSTIFICADO";
+            }
+
+            const estado =
+                String(asistencia?.estado || "")
+                    .trim()
+                    .toUpperCase();
+
+            if (estado === "TEMPRANO") {
+                return "TEMPRANO";
+            }
+
+            if (
+                estado === "TARDANZA" ||
+                estado === "DEMASIADO TARDE"
+            ) {
+                return "TARDANZA";
+            }
+
+            if (estado === "FALTO") {
+                return "FALTO";
+            }
+
+            return "";
+        }
+
         // ----------------------------------------------------------
         // CONSTRUIR RESULTADO FINAL
         //
@@ -990,29 +1028,16 @@ await cargarDiasNoLectivos();
                 const original =
                     originalRegistro
                         ? normalizarEstado(originalRegistro)
-                        : "FALTO";
+                        : "";
 
                 const just =
                     justMap.get(dni + "|" + fecha);
 
-                let estadoFinal = original;
-
-                if (just) {
-
-                    // Para el resumen, toda justificación aceptada
-                    // deja de contar como incidencia.
-                    if (
-                        original === "TARDANZA" ||
-                        original === "DEMASIADO TARDE"
-                    ) {
-                        estadoFinal = "TEMPRANO";
-                    }
-                    else if (original === "FALTO") {
-                        // Una falta justificada no es una falta final.
-                        // Se conserva aparte como "Falta justificada".
-                        estadoFinal = "JUSTIFICADA";
-                    }
-                }
+                const estadoFinal =
+                    clasificarEstadoInforme(
+                        originalRegistro,
+                        just
+                    );
 
                 registros.push({
                     dni,
@@ -1046,9 +1071,6 @@ await cargarDiasNoLectivos();
 
             if (r.estado === "TARDANZA")
                 resumen.TARDANZA++;
-
-            if (r.estado === "DEMASIADO TARDE")
-                resumen["DEMASIADO TARDE"]++;
 
             if (r.estado === "FALTO")
                 resumen.FALTO++;
@@ -2099,7 +2121,7 @@ await cargarDiasNoLectivos();
 
                 const estadoOriginal = registro
                     ? String(registro.estado || "").trim().toUpperCase()
-                    : "FALTO";
+                    : "";
 
                 const justificacion =
                     justificacionPorClaveDetalle.get(clave) || null;
@@ -2156,13 +2178,13 @@ await cargarDiasNoLectivos();
                 // Si el usuario selecciona FALTO, también se muestran
                 // las faltas justificadas, pero con su etiqueta propia.
                 if (estado === "FALTO") {
-                    return e.estadoOriginal === "FALTO";
+                    return e.estadoOriginal === "FALTO" && !e.justificada;
                 }
                 if (estado === "TARDANZA") {
-                    return e.estadoOriginal === "TARDANZA";
+                    return e.estadoOriginal === "TARDANZA" && !e.justificada;
                 }
                 if (estado === "DEMASIADO TARDE") {
-                    return e.estadoOriginal === "DEMASIADO TARDE";
+                    return e.estadoOriginal === "DEMASIADO TARDE" && !e.justificada;
                 }
                 return e.estado === estado;
               })
@@ -3030,10 +3052,21 @@ const seccionElemento =
         // ==================================================
         // 6. CONSULTAR ESTUDIANTES
         // ==================================================
+        const gradoSeleccionado =
+            String(gradoElemento.value || "").trim();
+
+        const seccionSeleccionada =
+            String(seccionElemento.value || "").trim();
+
         const respuestaEstudiantes =
             await fetch(
                 SUPABASE_URL +
-                "/rest/v1/estudiantes?select=*&order=grado.asc,seccion.asc,orden.asc&limit=10000",
+                "/rest/v1/estudiantes?select=*" +
+                "&grado=eq." +
+                encodeURIComponent(gradoSeleccionado) +
+                "&seccion=eq." +
+                encodeURIComponent(seccionSeleccionada) +
+                "&order=orden.asc&limit=10000",
                 {
                     method: "GET",
                     headers
@@ -3074,7 +3107,11 @@ const seccionElemento =
         const respuestaAsistencia =
             await fetch(
                 SUPABASE_URL +
-                "/rest/v1/vista_asistencia?select=*" +
+                "/rest/v1/vista_asistencia?select=dni,fecha,hora,estado" +
+                "&grado=eq." +
+                encodeURIComponent(gradoSeleccionado) +
+                "&seccion=eq." +
+                encodeURIComponent(seccionSeleccionada) +
                 "&fecha=gte." +
                 encodeURIComponent(fechaInicio) +
                 "&fecha=lte." +
@@ -3921,7 +3958,7 @@ const clave =
                 );
 
                 doc.text(
-                    "✓ = TEMPRANO    T = TARDANZA / DEMASIADO TARDE    F = FALTA    J = JUSTIFICADO",
+                    "✓ = TEMPRANO    T = TARDANZA / DEMASIADO TARDE    F = FALTA REAL    J = JUSTIFICADO",
                     148.5,
                     15,
                     {
@@ -3946,6 +3983,13 @@ const clave =
                         String(dia)
                     );
                 }
+
+                encabezado.push(
+                    "Total\nTemprano",
+                    "Total\nTardanza",
+                    "Total\nFaltas",
+                    "Total\nJustificados"
+                );
 
                 // ------------------------------------------
                 // RESUMEN DE LA SECCIÓN
@@ -3972,6 +4016,11 @@ const clave =
                             const fila = [
                                 estudiante.nombre || ""
                             ];
+
+                            let totalTemprano = 0;
+                            let totalTardanza = 0;
+                            let totalFaltas = 0;
+                            let totalJustificados = 0;
 
                             for (
                                 let dia = 1;
@@ -4073,6 +4122,7 @@ const clave =
                                     );
 
                                     resumenSeccion.justificados++;
+                                    totalJustificados++;
 
                                     continue;
                                 }
@@ -4080,52 +4130,50 @@ const clave =
                                 // --------------------------------
                                 // ESTADO
                                 // --------------------------------
-                                const estado =
-                                    String(
-                                        asistencia?.estado ||
-                                        "FALTO"
-                                    )
-                                        .trim()
-                                        .toUpperCase();
-
-                                // TEMPRANO
-                                if (
-                                    estado ===
-                                    "TEMPRANO"
-                                ) {
-
-                                    fila.push(
-                                        "✓"
+                                const estadoInforme =
+                                    clasificarEstadoInforme(
+                                        asistencia,
+                                        justificacion
                                     );
 
+                                if (estadoInforme === "JUSTIFICADO") {
+
+                                    fila.push("J");
+                                    resumenSeccion.justificados++;
+                                    totalJustificados++;
+
+                                } else if (estadoInforme === "TEMPRANO") {
+
+                                    fila.push("✓");
                                     resumenSeccion.temprano++;
-                                }
+                                    totalTemprano++;
 
-                                // TARDANZA
-                                else if (
-                                    estado ===
-                                    "TARDANZA" ||
-                                    estado ===
-                                    "DEMASIADO TARDE"
-                                ) {
+                                } else if (estadoInforme === "TARDANZA") {
 
-                                    fila.push(
-                                        "T"
-                                    );
-
+                                    fila.push("T");
                                     resumenSeccion.tardanza++;
-                                }
+                                    totalTardanza++;
 
-                                // FALTA
-                                else {
+                                } else if (estadoInforme === "FALTO") {
 
-                                    fila.push(
-                                        "F"
-                                    );
-
+                                    fila.push("F");
                                     resumenSeccion.faltas++;
+                                    totalFaltas++;
+
+                                } else {
+
+                                    // SIN REGISTRO = CELDA VACÍA.
+                                    // Nunca se inventa una falta.
+                                    fila.push("");
                                 }
                             }
+
+                            fila.push(
+                                totalTemprano,
+                                totalTardanza,
+                                totalFaltas,
+                                totalJustificados
+                            );
 
                             return fila;
                         }
