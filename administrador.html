@@ -13,7 +13,7 @@ body {
     margin: 0;
     padding: 20px;
 }
-
+descargarPDFControlMensual()
 .contenedor {
     max-width: 1200px;
     margin: auto;
@@ -3575,6 +3575,13 @@ async function descargarPDFControlMensual() {
 
         const asistencias =
             await respuestaAsistencia.json();
+        console.log("======================================");
+console.log("CONTROL MENSUAL - ASISTENCIAS");
+console.log("Fecha inicio:", fechaInicio);
+console.log("Fecha fin:", fechaFin);
+console.log("Cantidad de asistencias:", asistencias.length);
+console.table(asistencias);
+console.log("======================================");
 
         // ==================================================
         // 5. CONSULTAR JUSTIFICACIONES
