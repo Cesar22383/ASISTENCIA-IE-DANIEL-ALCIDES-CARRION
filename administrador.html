@@ -4134,38 +4134,58 @@ console.log("======================================");
                     continue;
                 }
 
-                const estado =
-                    asistencia
-                        ? String(asistencia.estado || "").trim().toUpperCase()
-                        : "";
+const estado =
+    asistencia
+        ? String(asistencia.estado || "").trim().toUpperCase()
+        : "";
 
-                if (estado === "TEMPRANO") {
+if (estado === "TEMPRANO") {
 
-                    fila.push("✓");
-                    totalTemprano++;
-                    resumenSeccion.temprano++;
+    fila.push("✓");
+    totalTemprano++;
+    resumenSeccion.temprano++;
 
-                } else if (
-                    estado === "TARDANZA" ||
-                    estado === "DEMASIADO TARDE"
-                ) {
+} else if (
+    estado === "TARDANZA" ||
+    estado === "DEMASIADO TARDE"
+) {
 
-                    fila.push("T");
-                    totalTardanza++;
-                    resumenSeccion.tardanza++;
+    fila.push("T");
+    totalTardanza++;
+    resumenSeccion.tardanza++;
 
-                } else if (estado === "FALTO") {
+} else if (estado === "FALTO") {
 
-                    fila.push("F");
-                    totalFaltas++;
-                    resumenSeccion.faltas++;
+    fila.push("F");
+    totalFaltas++;
+    resumenSeccion.faltas++;
 
-                } else {
+} else {
 
-                    // Sin registro de asistencia: no se inventa una falta.
-                    fila.push("");
-                }
-            }
+    // No existe registro de asistencia.
+    // Se considera FALTO únicamente si el día ya puede contabilizarse.
+    const hoy = obtenerFechaHoyPeru();
+
+    let puedeContarFalta = false;
+
+    if (fecha < hoy) {
+        puedeContarFalta = true;
+    } else if (fecha === hoy && puedeContarseFaltaHoyFn()) {
+        puedeContarFalta = true;
+    }
+
+    if (puedeContarFalta) {
+
+        fila.push("F");
+        totalFaltas++;
+        resumenSeccion.faltas++;
+
+    } else {
+
+        fila.push("");
+
+    }
+}
 
             // ==================================================
             // CUATRO COLUMNAS SOLICITADAS
