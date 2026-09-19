@@ -2217,49 +2217,64 @@ window.consultar = async function() {
         let datosFiltrados = datos;
 
 
-        if (estadoFiltro) {
+if (estadoFiltro) {
 
-            datosFiltrados =
-                datos.filter(e => {
+    datosFiltrados =
+        datos.filter(e => {
 
-                    if (
-                        estadoFiltro ===
-                        "FALTO"
-                    ) {
-                        return (
-                            e.estadoOriginal ===
-                            "FALTO"
-                        );
-                    }
+            const estado =
+                String(
+                    e.estadoOriginal || ""
+                )
+                .trim()
+                .toUpperCase();
 
-                    if (
-                        estadoFiltro ===
-                        "TARDANZA"
-                    ) {
-                        return (
-                            e.estadoOriginal ===
-                            "TARDANZA"
-                        );
-                    }
+            // FALTO
+            if (
+                estadoFiltro === "FALTO"
+            ) {
 
-                    if (
-                        estadoFiltro ===
-                        "DEMASIADO TARDE"
-                    ) {
-                        return (
-                            e.estadoOriginal ===
-                            "DEMASIADO TARDE"
-                        );
-                    }
+                return (
+                    estado === "FALTO" ||
+                    estado === "FALTA" ||
+                    estado === "AUSENTE"
+                );
 
-                    return (
-                        e.estado ===
-                        estadoFiltro
-                    );
+            }
 
-                });
+            // TARDANZA
+            if (
+                estadoFiltro === "TARDANZA"
+            ) {
 
-        }
+                return (
+                    estado === "TARDANZA" ||
+                    estado === "TARDE"
+                );
+
+            }
+
+            // DEMASIADO TARDE
+            if (
+                estadoFiltro === "DEMASIADO TARDE"
+            ) {
+
+                return (
+                    estado === "DEMASIADO TARDE" ||
+                    estado === "MUY TARDE"
+                );
+
+            }
+
+            // Cualquier otro estado
+            return (
+                e.estado ===
+                estadoFiltro
+            );
+
+        });
+
+}
 
 
         // =====================================================
