@@ -3548,16 +3548,13 @@ async function descargarPDFControlMensual() {
         // de la misma tabla de asistencia. No se filtra por grado/sección
         // aquí porque la tabla asistencia se relaciona con el estudiante
         // mediante DNI. Luego el mapa se cruza únicamente con los DNIs
-const dnisSeleccionados = estudiantes
-    .map(e => String(e.dni || "").trim())
-    .filter(Boolean);
-
 const urlAsistencia =
     SUPABASE_URL +
-    "/rest/v1/asistencia?select=dni,fecha,hora,estado" +
-    "&dni=in.(" +
-    dnisSeleccionados.join(",") +
-    ")" +
+    "/rest/v1/vista_asistencia?select=dni,fecha,hora,estado" +
+    "&grado=eq." +
+    encodeURIComponent(gradoSeleccionado) +
+    "&seccion=eq." +
+    encodeURIComponent(seccionSeleccionada) +
     "&fecha=gte." +
     encodeURIComponent(fechaInicio) +
     "&fecha=lte." +
