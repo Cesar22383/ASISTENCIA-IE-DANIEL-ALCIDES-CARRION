@@ -2219,45 +2219,49 @@ window.consultar = async function() {
 
 if (estadoFiltro) {
 
+    const filtro =
+        String(estadoFiltro)
+            .trim()
+            .toUpperCase();
+
     datosFiltrados =
         datos.filter(e => {
 
             const estado =
                 String(
-                    e.estadoOriginal || ""
+                    e.estadoOriginal ||
+                    e.estado ||
+                    ""
                 )
                 .trim()
                 .toUpperCase();
 
-            // FALTO
-            if (
-                estadoFiltro === "FALTO"
-            ) {
+            if (filtro === "FALTO") {
 
                 return (
                     estado === "FALTO" ||
                     estado === "FALTA" ||
-                    estado === "AUSENTE"
+                    estado === "F" ||
+                    estado === "AUSENTE" ||
+                    estado === "AUSENCIA" ||
+                    estado === "INASISTENCIA" ||
+                    estado.includes("FALTO") ||
+                    estado.includes("FALTA")
                 );
 
             }
 
-            // TARDANZA
-            if (
-                estadoFiltro === "TARDANZA"
-            ) {
+            if (filtro === "TARDANZA") {
 
                 return (
                     estado === "TARDANZA" ||
-                    estado === "TARDE"
+                    estado === "TARDE" ||
+                    estado === "T"
                 );
 
             }
 
-            // DEMASIADO TARDE
-            if (
-                estadoFiltro === "DEMASIADO TARDE"
-            ) {
+            if (filtro === "DEMASIADO TARDE") {
 
                 return (
                     estado === "DEMASIADO TARDE" ||
@@ -2266,11 +2270,7 @@ if (estadoFiltro) {
 
             }
 
-            // Cualquier otro estado
-            return (
-                e.estado ===
-                estadoFiltro
-            );
+            return estado === filtro;
 
         });
 
