@@ -2917,6 +2917,11 @@ async function descargarPDFControlMensual() {
 
         const periodoElemento =
             document.getElementById("periodoResumen");
+        const gradoElemento =
+    document.getElementById("gradoResumen");
+
+const seccionElemento =
+    document.getElementById("seccionResumen");
 
         const periodoTipo =
             periodoSeleccionado;
@@ -3198,12 +3203,20 @@ async function descargarPDFControlMensual() {
                     estudiante.seccion || ""
                 ).trim();
 
-            if (!grado || !seccion) {
-                return;
-            }
+if (!grado || !seccion) {
+    return;
+}
 
-            const clave =
-                grado + "|" + seccion;
+// Filtrar únicamente el grado y sección seleccionados
+if (
+    grado !== gradoElemento.value ||
+    seccion !== seccionElemento.value
+) {
+    return;
+}
+
+const clave =
+    grado + "|" + seccion;
 
             if (!grupos.has(clave)) {
                 grupos.set(
