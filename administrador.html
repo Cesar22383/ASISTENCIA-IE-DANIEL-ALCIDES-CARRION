@@ -2057,50 +2057,41 @@ window.consultar = async function() {
         // =====================================================
 
         const urlAsistencia =
-            SUPABASE_URL +
-            "/rest/v1/vista_asistencia?select=*" +
-            "&grado=eq." +
-            encodeURIComponent(grado) +
-            "&seccion=eq." +
-            encodeURIComponent(seccion) +
-            "&fecha=gte." +
-            encodeURIComponent(desde) +
-            "&fecha=lte." +
-            encodeURIComponent(hasta);
+    SUPABASE_URL +
+    "/rest/v1/vista_asistencia?select=*&" +
+    "grado=eq." +
+    encodeURIComponent(gradoSeleccionado) +
+    "&seccion=eq." +
+    encodeURIComponent(seccionSeleccionada) +
+    "&fecha=gte." +
+    encodeURIComponent(fechaInicio) +
+    "&fecha=lte." +
+    encodeURIComponent(fechaFin) +
+    "&limit=10000";
 
+const respuestaAsistencia =
+    await fetch(urlAsistencia, { headers });
 
-        const respuestaAsistencia =
-            await fetch(
-                urlAsistencia,
-                {
-                    method: "GET",
+if (!respuestaAsistencia.ok) {
 
-                    headers: {
-                        "apikey":
-                            SUPABASE_KEY,
+    const errorTexto =
+        await respuestaAsistencia.text();
 
-                        "Authorization":
-                            "Bearer " +
-                            SUPABASE_KEY
-                    }
-                }
-            );
+    throw new Error(
+        "No se pudieron consultar las asistencias: " +
+        errorTexto
+    );
+}
 
+const asistencias =
+    await respuestaAsistencia.json();
 
-        if (!respuestaAsistencia.ok) {
+console.log(
+    "CONTROL MENSUAL - ASISTENCIAS:",
+    asistencias.length
+);
 
-            const errorTexto =
-                await respuestaAsistencia.text();
-
-            throw new Error(
-                "Error al consultar asistencia: " +
-                errorTexto
-            );
-        }
-
-
-        const asistencias =
-            await respuestaAsistencia.json();
+console.table(asistencias);
 
 
         // =====================================================
