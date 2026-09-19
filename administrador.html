@@ -3572,11 +3572,13 @@ const urlAsistencia =
 
         const asistencias =
             await respuestaAsistencia.json();
-console.log("===== FALTO EN CONTROL MENSUAL =====");
+console.log("===== ESTADOS EN CONTROL MENSUAL =====");
 console.log(
-    asistencias.filter(
-        r => String(r.estado || "").trim().toUpperCase() === "FALTO"
-    )
+    [...new Set(
+        asistencias.map(
+            r => String(r.estado || "").trim().toUpperCase()
+        )
+    )]
 );
         console.log("======================================");
 console.log("CONTROL MENSUAL - ASISTENCIAS");
