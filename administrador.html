@@ -3361,6 +3361,7 @@ const clave =
             const valores = [
                 datos.temprano,
                 datos.tardanza,
+                datos.demasiadoTarde,
                 datos.faltas,
                 datos.justificados
             ];
@@ -3368,6 +3369,7 @@ const clave =
             const etiquetas = [
                 "Temprano",
                 "Tardanza",
+                "Demasiado tarde",
                 "Faltas",
                 "Justificados"
             ];
@@ -3629,6 +3631,7 @@ const clave =
             const valores = [
                 datos.temprano,
                 datos.tardanza,
+                datos.demasiadoTarde,
                 datos.faltas,
                 datos.justificados
             ];
@@ -3636,6 +3639,7 @@ const clave =
             const etiquetas = [
                 "Temprano",
                 "Tardanza",
+                "Demasiado tarde",
                 "Faltas",
                 "Justificados"
             ];
@@ -3643,6 +3647,7 @@ const clave =
             const colores = [
                 [34, 197, 94],
                 [234, 179, 8],
+                [249, 115, 22],
                 [239, 68, 68],
                 [124, 58, 237]
             ];
@@ -3936,7 +3941,7 @@ const clave =
                 );
 
                 doc.text(
-                    "✓ = TEMPRANO    T = TARDANZA / DEMASIADO TARDE    F = FALTA    J = JUSTIFICADO",
+                    "✓ = TEMPRANO    T = TARDANZA    DT = DEMASIADO TARDE    F = FALTA    J = JUSTIFICADO",
                     148.5,
                     15,
                     {
@@ -3965,6 +3970,7 @@ const clave =
                 encabezado.push(
                     "Total\nTemprano",
                     "Total\nTardanza",
+                    "Total\nDemasiado\nTarde",
                     "Total\nFaltas",
                     "Total\nJustificados"
                 );
@@ -3975,6 +3981,7 @@ const clave =
                 const resumenSeccion = {
                     temprano: 0,
                     tardanza: 0,
+                    demasiadoTarde: 0,
                     faltas: 0,
                     justificados: 0
                 };
@@ -3997,6 +4004,7 @@ const clave =
 
                             let totalTemprano = 0;
                             let totalTardanza = 0;
+                            let totalDemasiadoTarde = 0;
                             let totalFaltas = 0;
                             let totalJustificados = 0;
 
@@ -4121,14 +4129,17 @@ const clave =
                                     resumenSeccion.temprano++;
                                     totalTemprano++;
 
-                                } else if (
-                                    estado === "TARDANZA" ||
-                                    estado === "DEMASIADO TARDE"
-                                ) {
+                                } else if (estado === "TARDANZA") {
 
                                     fila.push("T");
                                     resumenSeccion.tardanza++;
                                     totalTardanza++;
+
+                                } else if (estado === "DEMASIADO TARDE") {
+
+                                    fila.push("DT");
+                                    resumenSeccion.demasiadoTarde++;
+                                    totalDemasiadoTarde++;
 
                                 } else if (estado === "FALTO") {
 
@@ -4165,6 +4176,7 @@ const clave =
                             fila.push(
                                 totalTemprano,
                                 totalTardanza,
+                                totalDemasiadoTarde,
                                 totalFaltas,
                                 totalJustificados
                             );
@@ -4240,58 +4252,59 @@ const clave =
 
                         0: {
                             cellWidth:
-                                67,
+                                62,
 
                             halign:
                                 "left",
 
                             fontSize:
-                                5.7
+                                5.5
                         },
 
-                        // Totales por estudiante
+                        // Cinco totales por estudiante
                         [ultimoDia + 1]: {
                             cellWidth:
-                                16,
-
+                                13.5,
                             halign:
                                 "center",
-
                             fontSize:
-                                5.2
+                                5.0
                         },
 
                         [ultimoDia + 2]: {
                             cellWidth:
-                                16,
-
+                                13.5,
                             halign:
                                 "center",
-
                             fontSize:
-                                5.2
+                                5.0
                         },
 
                         [ultimoDia + 3]: {
                             cellWidth:
-                                16,
-
+                                13.5,
                             halign:
                                 "center",
-
                             fontSize:
-                                5.2
+                                5.0
                         },
 
                         [ultimoDia + 4]: {
                             cellWidth:
-                                16,
-
+                                13.5,
                             halign:
                                 "center",
-
                             fontSize:
-                                5.2
+                                5.0
+                        },
+
+                        [ultimoDia + 5]: {
+                            cellWidth:
+                                13.5,
+                            halign:
+                                "center",
+                            fontSize:
+                                5.0
                         }
                     },
 
@@ -4425,6 +4438,7 @@ const clave =
                 const total =
                     resumenSeccion.temprano +
                     resumenSeccion.tardanza +
+                    resumenSeccion.demasiadoTarde +
                     resumenSeccion.faltas +
                     resumenSeccion.justificados;
 
@@ -4467,10 +4481,18 @@ const clave =
                         ],
 
                         [
-                            "T TARDANZA + DEMASIADO TARDE",
+                            "T TARDANZA",
                             resumenSeccion.tardanza,
                             porcentaje(
                                 resumenSeccion.tardanza
+                            )
+                        ],
+
+                        [
+                            "DT DEMASIADO TARDE",
+                            resumenSeccion.demasiadoTarde,
+                            porcentaje(
+                                resumenSeccion.demasiadoTarde
                             )
                         ],
 
@@ -4585,7 +4607,7 @@ const clave =
                 );
 
                 doc.text(
-                    "✓ Temprano | T Tardanza y demasiado tarde | F Falta | J Justificado",
+                    "✓ Temprano | T Tardanza | DT Demasiado tarde | F Falta | J Justificado",
                     148.5,
                     195,
                     {
