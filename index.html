@@ -486,6 +486,143 @@ async function buscarEstudiante(dni) {
    REGISTRAR ASISTENCIA
    ===================================================== */
 
+async function obtenerIncidenciaHorarioParaEstudiante(fecha, estudiante) {
+
+    try {
+
+        const respuesta =
+        await fetch(
+            SUPABASE_URL +
+            "/rest/v1/incidencias_horario" +
+            "?select=*" +
+            "&fecha=eq." + encodeURIComponent(fecha) +
+            "&activo=eq.true" +
+            "&order=id.desc",
+            {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                }
+            }
+        );
+
+        if (!respuesta.ok) {
+            console.warn(
+                "No se pudo consultar incidencias de horario:",
+                respuesta.status
+            );
+            return null;
+        }
+
+        const incidencias =
+        await respuesta.json();
+
+        if (!incidencias || incidencias.length === 0) {
+            return null;
+        }
+
+        /*
+           Se revisan las incidencias activas de la fecha.
+           Una incidencia puede aplicar:
+           1. A todo el colegio.
+           2. A una o varias combinaciones grado + sección.
+        */
+
+        for (const incidencia of incidencias) {
+
+            if (incidencia.aplica_todo_colegio === true) {
+                return incidencia;
+            }
+
+            const respuestaGrupos =
+            await fetch(
+                SUPABASE_URL +
+                "/rest/v1/incidencias_horario_grupos" +
+                "?select=id" +
+                "&incidencia_id=eq." +
+                encodeURIComponent(incidencia.id) +
+                "&grado=eq." +
+                encodeURIComponent(estudiante.grado) +
+                "&seccion=eq." +
+                encodeURIComponent(estudiante.seccion) +
+                "&limit=1",
+                {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!respuestaGrupos.ok) {
+                console.warn(
+                    "No se pudo consultar los grupos de la incidencia:",
+                    respuestaGrupos.status
+                );
+                continue;
+            }
+
+            const grupos =
+            await respuestaGrupos.json();
+
+            if (grupos && grupos.length > 0) {
+                return incidencia;
+            }
+
+        }
+
+        return null;
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Error al buscar incidencia de horario:",
+            error
+        );
+
+        /*
+           Si la consulta de incidencias falla, NO se detiene
+           el registro de asistencia. Se conserva el horario normal.
+        */
+
+        return null;
+
+    }
+
+}
+
+
+function horaASegundos(horaTexto) {
+
+    if (!horaTexto) {
+        return null;
+    }
+
+    const partes =
+    String(horaTexto).split(":");
+
+    const hora =
+    Number(partes[0] || 0);
+
+    const minuto =
+    Number(partes[1] || 0);
+
+    const segundo =
+    Number(partes[2] || 0);
+
+    return (
+        hora * 3600 +
+        minuto * 60 +
+        segundo
+    );
+
+}
+
+
 async function registrarAsistencia(estudiante) {
 
     try {
@@ -565,29 +702,136 @@ async function registrarAsistencia(estudiante) {
             segundo;
 
 
-        const inicioTemprano =
+        /*
+           BUSCAR INCIDENCIA ACTIVA PARA ESTA FECHA
+           Y PARA EL GRADO/SECCIÓN DEL ESTUDIANTE.
+        */
+
+        const incidencia =
+        await obtenerIncidenciaHorarioParaEstudiante(
+            fechaPeru,
+            estudiante
+        );
+
+
+        /*
+           HORARIO NORMAL
+           Se mantiene exactamente como estaba.
+        */
+
+        let inicioTemprano =
             7 * 3600 +
             10 * 60;
 
-
-        const inicioTardanza =
+        let inicioTardanza =
             7 * 3600 +
             31 * 60;
 
-
-        const inicioDemasiadoTarde =
+        let inicioDemasiadoTarde =
             7 * 3600 +
             36 * 60;
+
+        let finTemprano =
+            inicioTardanza - 1;
+
+        let finTardanza =
+            inicioDemasiadoTarde - 1;
+
+        let inicioFalta =
+            null;
+
+
+        /*
+           SI EXISTE UNA INCIDENCIA ACTIVA,
+           REEMPLAZAR LOS LÍMITES NORMALES
+           ÚNICAMENTE PARA ESTA FECHA Y GRUPO.
+        */
+
+        if (incidencia) {
+
+            const especialTempranoDesde =
+            horaASegundos(incidencia.temprano_desde);
+
+            const especialTempranoHasta =
+            horaASegundos(incidencia.temprano_hasta);
+
+            const especialTardanzaDesde =
+            horaASegundos(incidencia.tardanza_desde);
+
+            const especialTardanzaHasta =
+            horaASegundos(incidencia.tardanza_hasta);
+
+            const especialDemasiadoTardeDesde =
+            horaASegundos(incidencia.demasiado_tarde_desde);
+
+            const especialFalta =
+            horaASegundos(incidencia.hora_falta);
+
+
+            if (
+                especialTempranoDesde !== null &&
+                especialTempranoHasta !== null
+            ) {
+
+                inicioTemprano =
+                especialTempranoDesde;
+
+                finTemprano =
+                especialTempranoHasta;
+
+            }
+
+
+            if (
+                especialTardanzaDesde !== null &&
+                especialTardanzaHasta !== null
+            ) {
+
+                inicioTardanza =
+                especialTardanzaDesde;
+
+                finTardanza =
+                especialTardanzaHasta;
+
+            }
+
+
+            if (
+                especialDemasiadoTardeDesde !== null
+            ) {
+
+                inicioDemasiadoTarde =
+                especialDemasiadoTardeDesde;
+
+            }
+
+
+            if (
+                especialFalta !== null
+            ) {
+
+                inicioFalta =
+                especialFalta;
+
+            }
+
+
+            console.log(
+                "Incidencia de horario aplicada:",
+                incidencia.motivo,
+                incidencia.id
+            );
+
+        }
 
 
         /*
            🟢 TEMPRANO
-           07:10:00 - 07:30:59
         */
 
         if (
             segundosActuales >= inicioTemprano &&
-            segundosActuales < inicioTardanza
+            segundosActuales <= finTemprano
         ) {
 
             estado =
@@ -605,12 +849,11 @@ async function registrarAsistencia(estudiante) {
 
         /*
            🟡 TARDANZA
-           07:31:00 - 07:35:59
         */
 
         else if (
             segundosActuales >= inicioTardanza &&
-            segundosActuales < inicioDemasiadoTarde
+            segundosActuales <= finTardanza
         ) {
 
             estado =
@@ -628,8 +871,27 @@ async function registrarAsistencia(estudiante) {
 
         /*
            🔴 DEMASIADO TARDE
-           07:36:00 EN ADELANTE
+           Si la incidencia tiene una hora de falta,
+           desde esa hora el registro se clasifica como FALTO.
         */
+
+        else if (
+            inicioFalta !== null &&
+            segundosActuales >= inicioFalta
+        ) {
+
+            estado =
+            "FALTO";
+
+            mensaje =
+                "❌ REGISTRO FUERA DEL HORARIO\n" +
+                "La hora registrada corresponde a una falta.";
+
+            color =
+            "#D93025";
+
+        }
+
 
         else if (
             segundosActuales >= inicioDemasiadoTarde
@@ -649,7 +911,7 @@ async function registrarAsistencia(estudiante) {
 
 
         /*
-           ANTES DE LAS 07:10
+           ANTES DEL INICIO DE TEMPRANO
         */
 
         else {
