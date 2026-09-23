@@ -5007,7 +5007,7 @@ async function obtenerIncidenciaHorario(fecha) {
     }
 }
 
-window.abrirIncidenciasHorario = function() {
+window.abrirIncidenciasHorario = async function(idEditar = null) {
 
     const fondo = document.createElement("div");
 
@@ -5043,7 +5043,7 @@ window.abrirIncidenciasHorario = function() {
             color:#1d4ed8;
             text-align:center;
         ">
-            ⚙️ Incidencias de horario
+            ${idEditar ? "✏️ Editar incidencia de horario" : "⚙️ Incidencias de horario"}
         </h2>
 
         <p style="
@@ -5461,7 +5461,7 @@ window.abrirIncidenciasHorario = function() {
                     cursor:pointer;
                 "
             >
-                💾 Guardar incidencia
+                ${idEditar ? "💾 Guardar cambios" : "💾 Guardar incidencia"}
             </button>
         </div>
 
@@ -5792,6 +5792,46 @@ window.abrirIncidenciasHorario = function() {
 
                                 </div>
 
+                                <div style="
+                                    margin-top:12px;
+                                    display:flex;
+                                    justify-content:flex-end;
+                                    gap:8px;
+                                    flex-wrap:wrap;
+                                ">
+                                    <button
+                                        type="button"
+                                        onclick="editarIncidenciaHorario(${incidencia.id})"
+                                        style="
+                                            padding:8px 12px;
+                                            border:0;
+                                            border-radius:7px;
+                                            background:#2563eb;
+                                            color:white;
+                                            cursor:pointer;
+                                        "
+                                    >
+                                        ✏️ Editar
+                                    </button>
+
+                                    ${incidencia.activo ? `
+                                        <button
+                                            type="button"
+                                            onclick="desactivarIncidenciaHorario(${incidencia.id})"
+                                            style="
+                                                padding:8px 12px;
+                                                border:0;
+                                                border-radius:7px;
+                                                background:#6b7280;
+                                                color:white;
+                                                cursor:pointer;
+                                            "
+                                        >
+                                            ⏸️ Desactivar
+                                        </button>
+                                    ` : ""}
+                                </div>
+
                             </div>
                         `;
                     }
@@ -5833,11 +5873,87 @@ window.abrirIncidenciasHorario = function() {
             .replace(/'/g, "&#039;");
     }
 
+    // Si estamos editando, cargar los datos de la incidencia seleccionada.
+    let incidenciaEnEdicion = null;
+
+    if (idEditar !== null) {
+        try {
+            const respuestaEdicion = await fetch(
+                SUPABASE_URL +
+                "/rest/v1/incidencias_horario?id=eq." + encodeURIComponent(idEditar) +
+                "&select=*",
+                {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!respuestaEdicion.ok) {
+                throw new Error(await respuestaEdicion.text() || "No se pudo cargar la incidencia.");
+            }
+
+            const datosEdicion = await respuestaEdicion.json();
+            incidenciaEnEdicion = datosEdicion[0];
+
+            if (!incidenciaEnEdicion) {
+                throw new Error("La incidencia no existe.");
+            }
+
+            const respuestaGruposEdicion = await fetch(
+                SUPABASE_URL +
+                "/rest/v1/incidencias_horario_grupos?incidencia_id=eq." + encodeURIComponent(idEditar) +
+                "&select=grado,seccion",
+                {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": "Bearer " + SUPABASE_KEY
+                    }
+                }
+            );
+
+            if (!respuestaGruposEdicion.ok) {
+                throw new Error(await respuestaGruposEdicion.text() || "No se pudieron cargar los grupos.");
+            }
+
+            const gruposEdicion = await respuestaGruposEdicion.json();
+
+            document.getElementById("incFecha").value = incidenciaEnEdicion.fecha || "";
+            document.getElementById("incMotivo").value = incidenciaEnEdicion.motivo || "";
+            document.getElementById("incIngresoDesde").value = incidenciaEnEdicion.temprano_desde || "";
+            document.getElementById("incTempranoDesde").value = incidenciaEnEdicion.temprano_desde || "";
+            document.getElementById("incTempranoHasta").value = incidenciaEnEdicion.temprano_hasta || "";
+            document.getElementById("incTardanzaDesde").value = incidenciaEnEdicion.tardanza_desde || "";
+            document.getElementById("incTardanzaHasta").value = incidenciaEnEdicion.tardanza_hasta || "";
+            document.getElementById("incDemasiadoDesde").value = incidenciaEnEdicion.demasiado_tarde_desde || "";
+            document.getElementById("incFaltaDesde").value = incidenciaEnEdicion.hora_falta || "";
+
+            document.getElementById("incAplicaTodo").checked = !!incidenciaEnEdicion.aplica_todo_colegio;
+            document.getElementById("incAplicaGrupos").checked = !incidenciaEnEdicion.aplica_todo_colegio;
+
+            document.querySelectorAll(".incGrupoCheck").forEach(check => {
+                check.checked = gruposEdicion.some(
+                    grupo => grupo.grado === check.dataset.grado && grupo.seccion === check.dataset.seccion
+                );
+            });
+
+            actualizarAlcanceIncidencia();
+        } catch (error) {
+            console.error("Error al cargar incidencia para editar:", error);
+            alert("No se pudo cargar la incidencia para editar.\n\n" + error.message);
+            fondo.remove();
+            return;
+        }
+    }
+
     // Cargar el historial cada vez que se abre el módulo.
     cargarIncidenciasHorario();
 
     // ==========================================================
-    // GUARDAR INCIDENCIA EN SUPABASE
+    // GUARDAR / ACTUALIZAR INCIDENCIA EN SUPABASE
     // ==========================================================
     document.getElementById("btnGuardarIncidencia")
         .onclick = async () => {
@@ -5890,123 +6006,123 @@ window.abrirIncidenciasHorario = function() {
             }
 
             if (
-                !fecha ||
-                !motivo ||
-                !ingresoDesde ||
-                !tempranoDesde ||
-                !tempranoHasta ||
-                !tardanzaDesde ||
-                !tardanzaHasta ||
-                !demasiadoDesde ||
-                !faltaDesde
+                !fecha || !motivo || !ingresoDesde ||
+                !tempranoDesde || !tempranoHasta ||
+                !tardanzaDesde || !tardanzaHasta ||
+                !demasiadoDesde || !faltaDesde
             ) {
-
                 mensaje.style.color = "#b91c1c";
-
                 mensaje.innerHTML =
                     "⚠️ Completa todos los campos de la incidencia.";
-
                 return;
             }
 
-            // Validar que los rangos tengan sentido.
             if (tempranoDesde > tempranoHasta) {
                 mensaje.style.color = "#b91c1c";
-                mensaje.innerHTML =
-                    "⚠️ El horario de temprano no es válido.";
+                mensaje.innerHTML = "⚠️ El horario de temprano no es válido.";
                 return;
             }
 
             if (tardanzaDesde > tardanzaHasta) {
                 mensaje.style.color = "#b91c1c";
-                mensaje.innerHTML =
-                    "⚠️ El horario de tardanza no es válido.";
+                mensaje.innerHTML = "⚠️ El horario de tardanza no es válido.";
                 return;
             }
 
             if (tempranoHasta >= tardanzaDesde) {
                 mensaje.style.color = "#b91c1c";
-                mensaje.innerHTML =
-                    "⚠️ El horario de temprano y tardanza se superpone.";
+                mensaje.innerHTML = "⚠️ El horario de temprano y tardanza se superpone.";
                 return;
             }
 
             if (tardanzaHasta >= demasiadoDesde) {
                 mensaje.style.color = "#b91c1c";
-                mensaje.innerHTML =
-                    "⚠️ El horario de tardanza y demasiado tarde se superpone.";
+                mensaje.innerHTML = "⚠️ El horario de tardanza y demasiado tarde se superpone.";
                 return;
             }
 
             mensaje.style.color = "#1d4ed8";
-            mensaje.innerHTML =
-                "⏳ Guardando incidencia...";
+            mensaje.innerHTML = idEditar
+                ? "⏳ Guardando cambios..."
+                : "⏳ Guardando incidencia...";
+
+            const datosIncidencia = {
+                fecha: fecha,
+                motivo: motivo,
+                temprano_desde: tempranoDesde,
+                temprano_hasta: tempranoHasta,
+                tardanza_desde: tardanzaDesde,
+                tardanza_hasta: tardanzaHasta,
+                demasiado_tarde_desde: demasiadoDesde,
+                hora_falta: faltaDesde,
+                aplica_todo_colegio: aplicaTodoColegio
+            };
 
             try {
+                let incidenciaId = idEditar;
 
-                const respuesta =
-                    await fetch(
+                if (idEditar !== null) {
+                    const respuestaActualizar = await fetch(
                         SUPABASE_URL +
-                        "/rest/v1/incidencias_horario",
+                        "/rest/v1/incidencias_horario?id=eq." + encodeURIComponent(idEditar),
                         {
-                            method: "POST",
-
+                            method: "PATCH",
                             headers: {
                                 "apikey": SUPABASE_KEY,
-                                "Authorization":
-                                    "Bearer " + SUPABASE_KEY,
-                                "Content-Type":
-                                    "application/json",
-                                "Prefer":
-                                    "return=representation"
+                                "Authorization": "Bearer " + SUPABASE_KEY,
+                                "Content-Type": "application/json",
+                                "Prefer": "return=minimal"
                             },
-
-                            body: JSON.stringify({
-                                fecha: fecha,
-                                motivo: motivo,
-
-                                temprano_desde:
-                                    tempranoDesde,
-
-                                temprano_hasta:
-                                    tempranoHasta,
-
-                                tardanza_desde:
-                                    tardanzaDesde,
-
-                                tardanza_hasta:
-                                    tardanzaHasta,
-
-                                demasiado_tarde_desde:
-                                    demasiadoDesde,
-
-                                hora_falta:
-                                    faltaDesde,
-
-                                aplica_todo_colegio:
-                                    aplicaTodoColegio,
-
-                                activo: true
-                            })
+                            body: JSON.stringify(datosIncidencia)
                         }
                     );
 
-                if (!respuesta.ok) {
+                    if (!respuestaActualizar.ok) {
+                        throw new Error(await respuestaActualizar.text() || "No se pudo actualizar la incidencia.");
+                    }
 
-                    const detalle =
-                        await respuesta.text();
-
-                    throw new Error(
-                        detalle ||
-                        "No se pudo guardar la incidencia."
+                    // Reemplazar los grupos anteriores por los nuevos.
+                    const borrarGrupos = await fetch(
+                        SUPABASE_URL +
+                        "/rest/v1/incidencias_horario_grupos?incidencia_id=eq." + encodeURIComponent(idEditar),
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Authorization": "Bearer " + SUPABASE_KEY
+                            }
+                        }
                     );
-                }
 
-                const incidenciaCreada = await respuesta.json();
-                const incidenciaId = incidenciaCreada?.[0]?.id;
+                    if (!borrarGrupos.ok) {
+                        throw new Error(await borrarGrupos.text() || "No se pudieron actualizar los grupos.");
+                    }
 
-                if (!incidenciaId) {
-                    throw new Error("No se obtuvo el ID de la incidencia creada.");
+                } else {
+                    const respuesta = await fetch(
+                        SUPABASE_URL + "/rest/v1/incidencias_horario",
+                        {
+                            method: "POST",
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Authorization": "Bearer " + SUPABASE_KEY,
+                                "Content-Type": "application/json",
+                                "Prefer": "return=representation"
+                            },
+                            body: JSON.stringify({ ...datosIncidencia, activo: true })
+                        }
+                    );
+
+                    if (!respuesta.ok) {
+                        throw new Error(await respuesta.text() || "No se pudo guardar la incidencia.");
+                    }
+
+                    const incidenciaCreada = await respuesta.json();
+                    incidenciaId = incidenciaCreada?.[0]?.id;
+
+                    if (!incidenciaId) {
+                        throw new Error("No se obtuvo el ID de la incidencia creada.");
+                    }
                 }
 
                 if (!aplicaTodoColegio) {
@@ -6031,65 +6147,89 @@ window.abrirIncidenciasHorario = function() {
                     );
 
                     if (!respuestaGrupos.ok) {
-                        const detalleGrupos = await respuestaGrupos.text();
-
-                        // Evitar dejar una incidencia sin sus grupos.
-                        await fetch(
-                            SUPABASE_URL + "/rest/v1/incidencias_horario?id=eq." + encodeURIComponent(incidenciaId),
-                            {
-                                method: "DELETE",
-                                headers: {
-                                    "apikey": SUPABASE_KEY,
-                                    "Authorization": "Bearer " + SUPABASE_KEY
-                                }
-                            }
-                        );
-
                         throw new Error(
-                            detalleGrupos ||
+                            await respuestaGrupos.text() ||
                             "No se pudieron guardar los grupos de la incidencia."
                         );
                     }
                 }
 
                 mensaje.style.color = "#15803d";
+                mensaje.innerHTML = idEditar
+                    ? "✅ Incidencia actualizada correctamente."
+                    : "✅ Incidencia guardada correctamente.";
 
-                mensaje.innerHTML =
-                    "✅ Incidencia guardada correctamente.";
-
-                // Actualizar el historial inmediatamente.
                 await cargarIncidenciasHorario();
-
-                // Desactivar temporalmente el botón para evitar
-                // dobles registros por doble clic.
-                const boton =
-                    document.getElementById(
-                        "btnGuardarIncidencia"
-                    );
-
-                boton.disabled = true;
-                boton.style.opacity = "0.6";
 
                 setTimeout(() => {
                     fondo.remove();
-                }, 1200);
+                }, 900);
 
-            }
-            catch (error) {
-
+            } catch (error) {
                 console.error(
-                    "Error al guardar incidencia:",
+                    "Error al guardar/actualizar incidencia:",
                     error
                 );
-
                 mensaje.style.color = "#b91c1c";
-
                 mensaje.innerHTML =
                     "❌ No se pudo guardar la incidencia. " +
                     error.message;
             }
         };
 };
+
+// ==========================================================
+// EDITAR INCIDENCIA
+// ==========================================================
+window.editarIncidenciaHorario = function(id) {
+    window.abrirIncidenciasHorario(id);
+};
+
+// ==========================================================
+// DESACTIVAR INCIDENCIA
+// ==========================================================
+window.desactivarIncidenciaHorario = async function(id) {
+    const confirmar = confirm(
+        "¿Deseas desactivar esta incidencia?\n\n" +
+        "La incidencia permanecerá en el historial, pero dejará de aplicarse al registro de asistencia."
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const respuesta = await fetch(
+            SUPABASE_URL +
+            "/rest/v1/incidencias_horario?id=eq." + encodeURIComponent(id),
+            {
+                method: "PATCH",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify({ activo: false })
+            }
+        );
+
+        if (!respuesta.ok) {
+            throw new Error(await respuesta.text() || "No se pudo desactivar la incidencia.");
+        }
+
+        alert("✅ Incidencia desactivada correctamente.");
+
+        const modalAbierto = document.querySelector('div[style*="z-index: 10000"]');
+        if (modalAbierto) modalAbierto.remove();
+
+        // Abrir nuevamente para refrescar el historial.
+        window.abrirIncidenciasHorario();
+
+    } catch (error) {
+        console.error("Error al desactivar incidencia:", error);
+        alert("❌ No se pudo desactivar la incidencia.\n\n" + error.message);
+    }
+};
+
 
 window.abrirDiasNoLectivos = function() {
 
