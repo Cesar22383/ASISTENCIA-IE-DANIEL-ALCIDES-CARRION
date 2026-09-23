@@ -5095,6 +5095,94 @@ window.abrirIncidenciasHorario = function() {
             >
         </div>
 
+        <div style="
+            margin-bottom:18px;
+            border:1px solid #bfdbfe;
+            border-radius:10px;
+            padding:14px;
+            background:#f8fbff;
+        ">
+            <label style="display:block;margin-bottom:10px;"><b>👥 ¿A quién se aplica esta incidencia?</b></label>
+
+            <label style="display:flex;align-items:center;gap:8px;margin:8px 0;cursor:pointer;">
+                <input
+                    id="incAplicaTodo"
+                    name="incAlcance"
+                    type="radio"
+                    value="todo"
+                    checked
+                >
+                <span><b>Todo el colegio</b> — todos los grados y secciones</span>
+            </label>
+
+            <label style="display:flex;align-items:center;gap:8px;margin:8px 0;cursor:pointer;">
+                <input
+                    id="incAplicaGrupos"
+                    name="incAlcance"
+                    type="radio"
+                    value="grupos"
+                >
+                <span><b>Seleccionar grupos</b> — uno o varios grados y secciones</span>
+            </label>
+
+            <div id="incGruposContenedor" style="display:none;margin-top:12px;">
+                <div style="
+                    display:grid;
+                    grid-template-columns:1fr 1fr;
+                    gap:8px;
+                    background:#fff;
+                    border:1px solid #e5e7eb;
+                    border-radius:8px;
+                    padding:10px;
+                ">
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Primero" data-seccion="A">
+                        Primero A
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Primero" data-seccion="B">
+                        Primero B
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Segundo" data-seccion="A">
+                        Segundo A
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Segundo" data-seccion="B">
+                        Segundo B
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Tercero" data-seccion="A">
+                        Tercero A
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Tercero" data-seccion="B">
+                        Tercero B
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Cuarto" data-seccion="A">
+                        Cuarto A
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Cuarto" data-seccion="B">
+                        Cuarto B
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Quinto" data-seccion="A">
+                        Quinto A
+                    </label>
+                    <label style="display:flex;align-items:center;gap:7px;">
+                        <input type="checkbox" class="incGrupoCheck" data-grado="Quinto" data-seccion="B">
+                        Quinto B
+                    </label>
+                </div>
+
+                <div style="margin-top:8px;font-size:12px;color:#666;">
+                    Puedes seleccionar una sola sección, ambas secciones de un grado o combinaciones de diferentes grados.
+                </div>
+            </div>
+        </div>
+
         <h3 style="
             margin:18px 0 10px;
             color:#333;
@@ -5390,6 +5478,24 @@ window.abrirIncidenciasHorario = function() {
     fondo.appendChild(ventana);
     document.body.appendChild(fondo);
 
+    const incAplicaTodo = document.getElementById("incAplicaTodo");
+    const incAplicaGrupos = document.getElementById("incAplicaGrupos");
+    const incGruposContenedor = document.getElementById("incGruposContenedor");
+
+    function actualizarAlcanceIncidencia() {
+        incGruposContenedor.style.display =
+            incAplicaGrupos.checked ? "block" : "none";
+
+        if (incAplicaTodo.checked) {
+            document.querySelectorAll(".incGrupoCheck").forEach(c => {
+                c.checked = false;
+            });
+        }
+    }
+
+    incAplicaTodo.addEventListener("change", actualizarAlcanceIncidencia);
+    incAplicaGrupos.addEventListener("change", actualizarAlcanceIncidencia);
+
     document.getElementById("incFecha")
         .addEventListener("change", async () => {
 
@@ -5505,6 +5611,41 @@ window.abrirIncidenciasHorario = function() {
             const incidencias =
                 await respuesta.json();
 
+            let gruposIncidencias = [];
+
+            if (incidencias.length) {
+                const respuestaGrupos = await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/incidencias_horario_grupos?select=incidencia_id,grado,seccion&order=grado.asc,seccion.asc",
+                    {
+                        method: "GET",
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization": "Bearer " + SUPABASE_KEY
+                        }
+                    }
+                );
+
+                if (!respuestaGrupos.ok) {
+                    throw new Error(
+                        await respuestaGrupos.text() ||
+                        "No se pudieron consultar los grupos de las incidencias."
+                    );
+                }
+
+                gruposIncidencias = await respuestaGrupos.json();
+            }
+
+            const gruposPorIncidencia = new Map();
+            gruposIncidencias.forEach(grupo => {
+                if (!gruposPorIncidencia.has(grupo.incidencia_id)) {
+                    gruposPorIncidencia.set(grupo.incidencia_id, []);
+                }
+                gruposPorIncidencia.get(grupo.incidencia_id).push(
+                    `${grupo.grado} ${grupo.seccion}`
+                );
+            });
+
             if (!incidencias.length) {
 
                 contenedor.innerHTML = `
@@ -5585,6 +5726,20 @@ window.abrirIncidenciasHorario = function() {
                                         ${estado}
                                     </div>
 
+                                </div>
+
+                                <div style="
+                                    margin-top:8px;
+                                    padding:7px 9px;
+                                    background:#eff6ff;
+                                    border-radius:7px;
+                                    color:#1e3a8a;
+                                    font-size:13px;
+                                ">
+                                    👥 <b>Aplicación:</b>
+                                    ${incidencia.aplica_todo_colegio
+                                        ? "Todo el colegio"
+                                        : ((gruposPorIncidencia.get(incidencia.id) || []).join(" · ") || "Sin grupos asignados")}
                                 </div>
 
                                 <div style="
@@ -5717,6 +5872,23 @@ window.abrirIncidenciasHorario = function() {
             const faltaDesde =
                 document.getElementById("incFaltaDesde").value;
 
+            const aplicaTodoColegio =
+                document.getElementById("incAplicaTodo").checked;
+
+            const gruposSeleccionados =
+                Array.from(document.querySelectorAll(".incGrupoCheck:checked"))
+                    .map(c => ({
+                        grado: c.dataset.grado,
+                        seccion: c.dataset.seccion
+                    }));
+
+            if (!aplicaTodoColegio && gruposSeleccionados.length === 0) {
+                mensaje.style.color = "#b91c1c";
+                mensaje.innerHTML =
+                    "⚠️ Selecciona al menos un grado y sección, o elige Todo el colegio.";
+                return;
+            }
+
             if (
                 !fecha ||
                 !motivo ||
@@ -5811,6 +5983,9 @@ window.abrirIncidenciasHorario = function() {
                                 hora_falta:
                                     faltaDesde,
 
+                                aplica_todo_colegio:
+                                    aplicaTodoColegio,
+
                                 activo: true
                             })
                         }
@@ -5825,6 +6000,56 @@ window.abrirIncidenciasHorario = function() {
                         detalle ||
                         "No se pudo guardar la incidencia."
                     );
+                }
+
+                const incidenciaCreada = await respuesta.json();
+                const incidenciaId = incidenciaCreada?.[0]?.id;
+
+                if (!incidenciaId) {
+                    throw new Error("No se obtuvo el ID de la incidencia creada.");
+                }
+
+                if (!aplicaTodoColegio) {
+                    const respuestaGrupos = await fetch(
+                        SUPABASE_URL + "/rest/v1/incidencias_horario_grupos",
+                        {
+                            method: "POST",
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Authorization": "Bearer " + SUPABASE_KEY,
+                                "Content-Type": "application/json",
+                                "Prefer": "return=minimal"
+                            },
+                            body: JSON.stringify(
+                                gruposSeleccionados.map(grupo => ({
+                                    incidencia_id: incidenciaId,
+                                    grado: grupo.grado,
+                                    seccion: grupo.seccion
+                                }))
+                            )
+                        }
+                    );
+
+                    if (!respuestaGrupos.ok) {
+                        const detalleGrupos = await respuestaGrupos.text();
+
+                        // Evitar dejar una incidencia sin sus grupos.
+                        await fetch(
+                            SUPABASE_URL + "/rest/v1/incidencias_horario?id=eq." + encodeURIComponent(incidenciaId),
+                            {
+                                method: "DELETE",
+                                headers: {
+                                    "apikey": SUPABASE_KEY,
+                                    "Authorization": "Bearer " + SUPABASE_KEY
+                                }
+                            }
+                        );
+
+                        throw new Error(
+                            detalleGrupos ||
+                            "No se pudieron guardar los grupos de la incidencia."
+                        );
+                    }
                 }
 
                 mensaje.style.color = "#15803d";
