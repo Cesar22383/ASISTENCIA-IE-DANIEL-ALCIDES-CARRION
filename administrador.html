@@ -6182,6 +6182,18 @@ window.abrirIncidenciasHorario = async function(idEditar = null) {
 // EDITAR INCIDENCIA
 // ==========================================================
 window.editarIncidenciaHorario = function(id) {
+    // Cerrar el modal actual antes de abrir el de edición.
+    // Así evitamos IDs duplicados y garantizamos que los datos
+    // se carguen en el formulario que realmente está visible.
+    const boton = document.querySelector(
+        `button[onclick="editarIncidenciaHorario(${id})"]`
+    );
+    const modalActual = boton ? boton.closest('div[style*="position: fixed"]') : null;
+
+    if (modalActual) {
+        modalActual.remove();
+    }
+
     window.abrirIncidenciasHorario(id);
 };
 
