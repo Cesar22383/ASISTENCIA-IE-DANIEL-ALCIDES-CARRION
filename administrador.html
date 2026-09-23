@@ -439,6 +439,10 @@ Hasta
 📅 Días no lectivos
 </button>
 
+<button onclick="abrirIncidenciasHorario()">
+⚙️ Incidencias de horario
+</button>
+
 </div>
 <h2 class="titulo-resumen">
     📊 RESUMEN DE ASISTENCIA
@@ -4942,6 +4946,924 @@ window.abrirRegistrarJustificacion = function() {
             boton.textContent = "💾 Guardar";
         }
     };
+};
+
+
+// ==========================================================
+// INCIDENCIAS DE HORARIO
+// PASO 2: botón + formulario visual.
+// En este paso NO se modifica todavía la lógica de asistencia.
+// ==========================================================
+
+// ==========================================================
+// PASO 5: OBTENER INCIDENCIA ACTIVA DE UNA FECHA
+// ==========================================================
+async function obtenerIncidenciaHorario(fecha) {
+
+    if (!fecha) return null;
+
+    try {
+
+        const respuesta = await fetch(
+            SUPABASE_URL +
+            "/rest/v1/incidencias_horario" +
+            "?select=*" +
+            "&fecha=eq." +
+            encodeURIComponent(fecha) +
+            "&activo=eq.true" +
+            "&limit=1",
+            {
+                method: "GET",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization":
+                        "Bearer " + SUPABASE_KEY
+                }
+            }
+        );
+
+        if (!respuesta.ok) {
+            console.error(
+                "No se pudo consultar la incidencia de horario:",
+                await respuesta.text()
+            );
+            return null;
+        }
+
+        const datos = await respuesta.json();
+
+        return datos.length
+            ? datos[0]
+            : null;
+
+    } catch (error) {
+
+        console.error(
+            "Error al consultar incidencia de horario:",
+            error
+        );
+
+        return null;
+    }
+}
+
+window.abrirIncidenciasHorario = function() {
+
+    const fondo = document.createElement("div");
+
+    fondo.style.position = "fixed";
+    fondo.style.top = "0";
+    fondo.style.left = "0";
+    fondo.style.width = "100%";
+    fondo.style.height = "100%";
+    fondo.style.background = "rgba(0,0,0,0.55)";
+    fondo.style.display = "flex";
+    fondo.style.alignItems = "center";
+    fondo.style.justifyContent = "center";
+    fondo.style.zIndex = "10000";
+    fondo.style.padding = "20px";
+    fondo.style.boxSizing = "border-box";
+
+    const ventana = document.createElement("div");
+
+    ventana.style.background = "#ffffff";
+    ventana.style.borderRadius = "14px";
+    ventana.style.width = "620px";
+    ventana.style.maxWidth = "96%";
+    ventana.style.maxHeight = "92vh";
+    ventana.style.overflowY = "auto";
+    ventana.style.padding = "24px";
+    ventana.style.boxShadow = "0 10px 35px rgba(0,0,0,0.35)";
+    ventana.style.boxSizing = "border-box";
+
+    ventana.innerHTML = `
+
+        <h2 style="
+            margin:0 0 6px;
+            color:#1d4ed8;
+            text-align:center;
+        ">
+            ⚙️ Incidencias de horario
+        </h2>
+
+        <p style="
+            margin:0 0 20px;
+            color:#555;
+            text-align:center;
+        ">
+            Registra un horario especial para una fecha determinada.
+        </p>
+
+        <div style="
+            background:#eff6ff;
+            border-left:4px solid #2563eb;
+            padding:12px;
+            border-radius:8px;
+            margin-bottom:18px;
+        ">
+            <b>ℹ️ Importante:</b>
+            esta incidencia reemplazará el horario normal únicamente para la
+            fecha registrada. Los demás días conservarán el horario habitual.
+        </div>
+
+        <div style="margin-bottom:14px;">
+            <label><b>📅 Fecha de la incidencia</b></label>
+            <input
+                id="incFecha"
+                type="date"
+                style="
+                    width:100%;
+                    padding:10px;
+                    margin-top:6px;
+                    box-sizing:border-box;
+                "
+            >
+        </div>
+
+        <div style="margin-bottom:18px;">
+            <label><b>📝 Motivo del cambio de horario</b></label>
+            <input
+                id="incMotivo"
+                type="text"
+                placeholder="Ejemplo: Día de la Primavera"
+                style="
+                    width:100%;
+                    padding:10px;
+                    margin-top:6px;
+                    box-sizing:border-box;
+                "
+            >
+        </div>
+
+        <h3 style="
+            margin:18px 0 10px;
+            color:#333;
+        ">
+            ⏰ Horario especial de ingreso
+        </h3>
+
+        <div style="
+            border:1px solid #d1d5db;
+            border-radius:10px;
+            padding:14px;
+            margin-bottom:14px;
+            background:#f9fafb;
+        ">
+            <b>🕐 Inicio del ingreso</b>
+
+            <input
+                id="incIngresoDesde"
+                type="time"
+                value="07:40"
+                style="
+                    width:100%;
+                    padding:9px;
+                    margin-top:8px;
+                    box-sizing:border-box;
+                "
+            >
+
+            <p style="
+                margin:8px 0 0;
+                font-size:13px;
+                color:#666;
+            ">
+                Desde esta hora comienza el registro de ingreso para esta incidencia.
+            </p>
+        </div>
+
+        <div style="
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px;
+        ">
+
+            <div style="
+                border:1px solid #d1d5db;
+                border-radius:10px;
+                padding:14px;
+            ">
+                <b style="color:#15803d;">✓ TEMPRANO</b>
+
+                <label style="display:block;margin-top:10px;">
+                    Desde
+                </label>
+
+                <input
+                    id="incTempranoDesde"
+                    type="time"
+                    value="07:40"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <label style="display:block;margin-top:10px;">
+                    Hasta
+                </label>
+
+                <input
+                    id="incTempranoHasta"
+                    type="time"
+                    value="08:00"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+            </div>
+
+            <div style="
+                border:1px solid #d1d5db;
+                border-radius:10px;
+                padding:14px;
+            ">
+                <b style="color:#b45309;">🟡 TARDANZA</b>
+
+                <label style="display:block;margin-top:10px;">
+                    Desde
+                </label>
+
+                <input
+                    id="incTardanzaDesde"
+                    type="time"
+                    value="08:01"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <label style="display:block;margin-top:10px;">
+                    Hasta
+                </label>
+
+                <input
+                    id="incTardanzaHasta"
+                    type="time"
+                    value="08:10"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+            </div>
+
+            <div style="
+                border:1px solid #d1d5db;
+                border-radius:10px;
+                padding:14px;
+            ">
+                <b style="color:#c2410c;">🟠 DEMASIADO TARDE</b>
+
+                <label style="display:block;margin-top:10px;">
+                    Desde
+                </label>
+
+                <input
+                    id="incDemasiadoDesde"
+                    type="time"
+                    value="08:11"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <p style="
+                    margin:9px 0 0;
+                    font-size:13px;
+                    color:#666;
+                ">
+                    Desde esta hora en adelante.
+                </p>
+            </div>
+
+            <div style="
+                border:1px solid #d1d5db;
+                border-radius:10px;
+                padding:14px;
+            ">
+                <b style="color:#dc2626;">🔴 FALTO</b>
+
+                <label style="display:block;margin-top:10px;">
+                    Hora desde la que puede contabilizarse la falta
+                </label>
+
+                <input
+                    id="incFaltaDesde"
+                    type="time"
+                    value="11:00"
+                    style="
+                        width:100%;
+                        padding:9px;
+                        margin-top:4px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <p style="
+                    margin:9px 0 0;
+                    font-size:13px;
+                    color:#666;
+                ">
+                    La justificación seguirá teniendo prioridad.
+                </p>
+            </div>
+
+        </div>
+
+        <div style="
+            margin-top:18px;
+            padding:12px;
+            background:#f9fafb;
+            border-radius:8px;
+            font-size:13px;
+            color:#555;
+        ">
+            🟣 <b>JUSTIFICADO:</b>
+            se seguirá determinando mediante el registro de justificación.
+            No se configura como una hora de ingreso.
+        </div>
+
+        <div style="
+            margin-top:24px;
+            border-top:1px solid #e5e7eb;
+            padding-top:18px;
+        ">
+            <h3 style="
+                margin:0 0 10px;
+                color:#333;
+            ">
+                📋 Incidencias registradas
+            </h3>
+
+            <div
+                id="listaIncidenciasHorario"
+                style="
+                    max-height:260px;
+                    overflow-y:auto;
+                "
+            >
+                <div style="
+                    text-align:center;
+                    color:#666;
+                    padding:15px;
+                ">
+                    ⏳ Cargando incidencias...
+                </div>
+            </div>
+        </div>
+
+        <div
+            id="incidenciaHorarioPrueba"
+            style="
+                margin-top:14px;
+                padding:12px;
+                border-radius:8px;
+                background:#f9fafb;
+                color:#555;
+                font-size:13px;
+            "
+        >
+            Selecciona una fecha para comprobar si tiene una incidencia activa.
+        </div>
+
+        <div style="
+            display:flex;
+            justify-content:flex-end;
+            gap:10px;
+            margin-top:22px;
+        ">
+            <button
+                type="button"
+                id="btnCerrarIncidencia"
+                style="
+                    padding:10px 16px;
+                    border:0;
+                    border-radius:8px;
+                    background:#6b7280;
+                    color:white;
+                    cursor:pointer;
+                "
+            >
+                ✖ Cerrar
+            </button>
+
+            <button
+                type="button"
+                id="btnGuardarIncidencia"
+                style="
+                    padding:10px 16px;
+                    border:0;
+                    border-radius:8px;
+                    background:#2563eb;
+                    color:white;
+                    cursor:pointer;
+                "
+            >
+                💾 Guardar incidencia
+            </button>
+        </div>
+
+        <div
+            id="incidenciaMensaje"
+            style="
+                margin-top:12px;
+                text-align:center;
+                font-weight:bold;
+            "
+        ></div>
+    `;
+
+    fondo.appendChild(ventana);
+    document.body.appendChild(fondo);
+
+    document.getElementById("incFecha")
+        .addEventListener("change", async () => {
+
+            const fecha =
+                document.getElementById("incFecha").value;
+
+            const aviso =
+                document.getElementById(
+                    "incidenciaHorarioPrueba"
+                );
+
+            if (!fecha) {
+                aviso.innerHTML =
+                    "Selecciona una fecha para comprobar si tiene una incidencia activa.";
+                return;
+            }
+
+            aviso.innerHTML =
+                "⏳ Consultando horario especial...";
+
+            const incidencia =
+                await obtenerIncidenciaHorario(fecha);
+
+            if (!incidencia) {
+
+                aviso.style.background = "#f9fafb";
+                aviso.style.color = "#555";
+
+                aviso.innerHTML =
+                    "ℹ️ No existe una incidencia activa para esta fecha. " +
+                    "Se utilizará el horario normal.";
+
+                return;
+            }
+
+            aviso.style.background = "#ecfdf5";
+            aviso.style.color = "#166534";
+
+            aviso.innerHTML = `
+                <b>⚙️ Incidencia activa:</b>
+                ${escapeHtmlIncidencia(incidencia.motivo || "")}
+                <br>
+                ✓ Temprano:
+                <b>${incidencia.temprano_desde}–${incidencia.temprano_hasta}</b>
+                &nbsp; | &nbsp;
+                🟡 Tardanza:
+                <b>${incidencia.tardanza_desde}–${incidencia.tardanza_hasta}</b>
+                &nbsp; | &nbsp;
+                🟠 Demasiado tarde:
+                <b>${incidencia.demasiado_tarde_desde}+</b>
+                <br>
+                🔴 Falta desde:
+                <b>${incidencia.hora_falta || "--:--"}</b>
+            `;
+        });
+
+    document.getElementById("btnCerrarIncidencia")
+        .onclick = () => fondo.remove();
+
+
+    // ==========================================================
+    // PASO 4: HISTORIAL DE INCIDENCIAS
+    // ==========================================================
+    async function cargarIncidenciasHorario() {
+
+        const contenedor =
+            document.getElementById(
+                "listaIncidenciasHorario"
+            );
+
+        if (!contenedor) return;
+
+        contenedor.innerHTML = `
+            <div style="
+                text-align:center;
+                color:#666;
+                padding:15px;
+            ">
+                ⏳ Cargando incidencias...
+            </div>
+        `;
+
+        try {
+
+            const respuesta =
+                await fetch(
+                    SUPABASE_URL +
+                    "/rest/v1/incidencias_horario" +
+                    "?select=*" +
+                    "&order=fecha.desc",
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization":
+                                "Bearer " + SUPABASE_KEY
+                        }
+                    }
+                );
+
+            if (!respuesta.ok) {
+
+                const detalle =
+                    await respuesta.text();
+
+                throw new Error(
+                    detalle ||
+                    "No se pudieron consultar las incidencias."
+                );
+            }
+
+            const incidencias =
+                await respuesta.json();
+
+            if (!incidencias.length) {
+
+                contenedor.innerHTML = `
+                    <div style="
+                        text-align:center;
+                        color:#666;
+                        padding:20px;
+                        background:#f9fafb;
+                        border-radius:8px;
+                    ">
+                        📭 No hay incidencias registradas.
+                    </div>
+                `;
+
+                return;
+            }
+
+            contenedor.innerHTML =
+                incidencias.map(
+                    incidencia => {
+
+                        const fecha =
+                            String(
+                                incidencia.fecha || ""
+                            )
+                            .split("-")
+                            .reverse()
+                            .join("/");
+
+                        const estado =
+                            incidencia.activo
+                                ? `
+                                    <span style="
+                                        color:#15803d;
+                                        font-weight:bold;
+                                    ">
+                                        ● Activa
+                                    </span>
+                                  `
+                                : `
+                                    <span style="
+                                        color:#6b7280;
+                                        font-weight:bold;
+                                    ">
+                                        ● Inactiva
+                                    </span>
+                                  `;
+
+                        return `
+                            <div style="
+                                border:1px solid #d1d5db;
+                                border-radius:10px;
+                                padding:14px;
+                                margin-bottom:10px;
+                                background:#fff;
+                            ">
+
+                                <div style="
+                                    display:flex;
+                                    justify-content:space-between;
+                                    gap:10px;
+                                    flex-wrap:wrap;
+                                ">
+
+                                    <div>
+                                        <b>📅 ${fecha}</b>
+                                        <br>
+                                        <span style="
+                                            color:#444;
+                                        ">
+                                            📝 ${escapeHtmlIncidencia(
+                                                incidencia.motivo || ""
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        ${estado}
+                                    </div>
+
+                                </div>
+
+                                <div style="
+                                    margin-top:10px;
+                                    display:grid;
+                                    grid-template-columns:
+                                        repeat(2, minmax(0,1fr));
+                                    gap:7px;
+                                    font-size:13px;
+                                ">
+
+                                    <div>
+                                        🕐 Inicio:
+                                        <b>
+                                            ${incidencia.temprano_desde || "--:--"}
+                                        </b>
+                                    </div>
+
+                                    <div>
+                                        ✓ Temprano:
+                                        <b>
+                                            ${incidencia.temprano_desde || "--:--"}
+                                            –
+                                            ${incidencia.temprano_hasta || "--:--"}
+                                        </b>
+                                    </div>
+
+                                    <div>
+                                        🟡 Tardanza:
+                                        <b>
+                                            ${incidencia.tardanza_desde || "--:--"}
+                                            –
+                                            ${incidencia.tardanza_hasta || "--:--"}
+                                        </b>
+                                    </div>
+
+                                    <div>
+                                        🟠 Demasiado tarde:
+                                        <b>
+                                            ${incidencia.demasiado_tarde_desde || "--:--"}+
+                                        </b>
+                                    </div>
+
+                                    <div>
+                                        🔴 Falta:
+                                        <b>
+                                            ${incidencia.hora_falta || "--:--"}
+                                        </b>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        `;
+                    }
+                )
+                .join("");
+
+        }
+        catch (error) {
+
+            console.error(
+                "Error al cargar incidencias:",
+                error
+            );
+
+            contenedor.innerHTML = `
+                <div style="
+                    padding:15px;
+                    color:#b91c1c;
+                    background:#fee2e2;
+                    border-radius:8px;
+                ">
+                    ❌ No se pudieron cargar las incidencias.
+                    <br><br>
+                    ${escapeHtmlIncidencia(
+                        error.message || ""
+                    )}
+                </div>
+            `;
+        }
+    }
+
+    function escapeHtmlIncidencia(valor) {
+
+        return String(valor)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Cargar el historial cada vez que se abre el módulo.
+    cargarIncidenciasHorario();
+
+    // ==========================================================
+    // GUARDAR INCIDENCIA EN SUPABASE
+    // ==========================================================
+    document.getElementById("btnGuardarIncidencia")
+        .onclick = async () => {
+
+            const mensaje =
+                document.getElementById("incidenciaMensaje");
+
+            const fecha =
+                document.getElementById("incFecha").value;
+
+            const motivo =
+                document.getElementById("incMotivo").value.trim();
+
+            const ingresoDesde =
+                document.getElementById("incIngresoDesde").value;
+
+            const tempranoDesde =
+                document.getElementById("incTempranoDesde").value;
+
+            const tempranoHasta =
+                document.getElementById("incTempranoHasta").value;
+
+            const tardanzaDesde =
+                document.getElementById("incTardanzaDesde").value;
+
+            const tardanzaHasta =
+                document.getElementById("incTardanzaHasta").value;
+
+            const demasiadoDesde =
+                document.getElementById("incDemasiadoDesde").value;
+
+            const faltaDesde =
+                document.getElementById("incFaltaDesde").value;
+
+            if (
+                !fecha ||
+                !motivo ||
+                !ingresoDesde ||
+                !tempranoDesde ||
+                !tempranoHasta ||
+                !tardanzaDesde ||
+                !tardanzaHasta ||
+                !demasiadoDesde ||
+                !faltaDesde
+            ) {
+
+                mensaje.style.color = "#b91c1c";
+
+                mensaje.innerHTML =
+                    "⚠️ Completa todos los campos de la incidencia.";
+
+                return;
+            }
+
+            // Validar que los rangos tengan sentido.
+            if (tempranoDesde > tempranoHasta) {
+                mensaje.style.color = "#b91c1c";
+                mensaje.innerHTML =
+                    "⚠️ El horario de temprano no es válido.";
+                return;
+            }
+
+            if (tardanzaDesde > tardanzaHasta) {
+                mensaje.style.color = "#b91c1c";
+                mensaje.innerHTML =
+                    "⚠️ El horario de tardanza no es válido.";
+                return;
+            }
+
+            if (tempranoHasta >= tardanzaDesde) {
+                mensaje.style.color = "#b91c1c";
+                mensaje.innerHTML =
+                    "⚠️ El horario de temprano y tardanza se superpone.";
+                return;
+            }
+
+            if (tardanzaHasta >= demasiadoDesde) {
+                mensaje.style.color = "#b91c1c";
+                mensaje.innerHTML =
+                    "⚠️ El horario de tardanza y demasiado tarde se superpone.";
+                return;
+            }
+
+            mensaje.style.color = "#1d4ed8";
+            mensaje.innerHTML =
+                "⏳ Guardando incidencia...";
+
+            try {
+
+                const respuesta =
+                    await fetch(
+                        SUPABASE_URL +
+                        "/rest/v1/incidencias_horario",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Authorization":
+                                    "Bearer " + SUPABASE_KEY,
+                                "Content-Type":
+                                    "application/json",
+                                "Prefer":
+                                    "return=representation"
+                            },
+
+                            body: JSON.stringify({
+                                fecha: fecha,
+                                motivo: motivo,
+
+                                temprano_desde:
+                                    tempranoDesde,
+
+                                temprano_hasta:
+                                    tempranoHasta,
+
+                                tardanza_desde:
+                                    tardanzaDesde,
+
+                                tardanza_hasta:
+                                    tardanzaHasta,
+
+                                demasiado_tarde_desde:
+                                    demasiadoDesde,
+
+                                hora_falta:
+                                    faltaDesde,
+
+                                activo: true
+                            })
+                        }
+                    );
+
+                if (!respuesta.ok) {
+
+                    const detalle =
+                        await respuesta.text();
+
+                    throw new Error(
+                        detalle ||
+                        "No se pudo guardar la incidencia."
+                    );
+                }
+
+                mensaje.style.color = "#15803d";
+
+                mensaje.innerHTML =
+                    "✅ Incidencia guardada correctamente.";
+
+                // Actualizar el historial inmediatamente.
+                await cargarIncidenciasHorario();
+
+                // Desactivar temporalmente el botón para evitar
+                // dobles registros por doble clic.
+                const boton =
+                    document.getElementById(
+                        "btnGuardarIncidencia"
+                    );
+
+                boton.disabled = true;
+                boton.style.opacity = "0.6";
+
+                setTimeout(() => {
+                    fondo.remove();
+                }, 1200);
+
+            }
+            catch (error) {
+
+                console.error(
+                    "Error al guardar incidencia:",
+                    error
+                );
+
+                mensaje.style.color = "#b91c1c";
+
+                mensaje.innerHTML =
+                    "❌ No se pudo guardar la incidencia. " +
+                    error.message;
+            }
+        };
 };
 
 window.abrirDiasNoLectivos = function() {
