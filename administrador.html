@@ -711,6 +711,30 @@ function puedeContarseFaltaHoyFn() {
     return horaPeru >= 11;
 }
 
+// ==========================================================
+// FIN DE CLASES POR GRADO
+// Último día de clases de los grados que terminaron antes.
+// Después de esa fecha NO se cuenta temprano, tardanza,
+// demasiado tarde ni falta para ese grado.
+// ==========================================================
+const FIN_CLASES_POR_GRADO = {
+    "QUINTO": "2026-11-22"
+};
+
+function normalizarGradoFin(grado) {
+    const texto = String(grado || "").trim().toUpperCase();
+    const equivalencias = {
+        "5": "QUINTO", "5°": "QUINTO", "5TO": "QUINTO", "5TO.": "QUINTO"
+    };
+    return equivalencias[texto] || texto;
+}
+
+// true = la fecha cuenta para ese grado
+function fechaCuentaParaGrado(fecha, grado) {
+    const fin = FIN_CLASES_POR_GRADO[normalizarGradoFin(grado)];
+    return !fin || fecha <= fin;
+}
+
 function generarFechasLectivas(fechaInicio, fechaFin) {
 
     const FECHA_INICIO_ASISTENCIA = "2026-08-24";
@@ -987,6 +1011,9 @@ await cargarDiasNoLectivos();
                 String(e.dni || "").trim();
 
             fechasLectivas.forEach(fecha => {
+
+                // Grado que ya terminó clases: no se cuenta nada
+                if (!fechaCuentaParaGrado(fecha, e.grado || grado)) return;
 
                 const originalRegistro =
                     asistenciaMap.get(dni + "|" + fecha);
@@ -2094,6 +2121,9 @@ await cargarDiasNoLectivos();
                 String(estudiante.dni || "").trim();
 
             fechasLectivas.forEach(fecha => {
+
+                // Grado que ya terminó clases: no se cuenta nada
+                if (!fechaCuentaParaGrado(fecha, estudiante.grado)) return;
 
                 const clave = dni + "|" + fecha;
                 const registro = asistenciaPorClave.get(clave);
@@ -4054,11 +4084,16 @@ const clave =
                                 }
 
                                 // --------------------------------
-                                // FECHA FUTURA
+                                // FECHA FUTURA O GRADO QUE YA
+                                // TERMINÓ CLASES
                                 // --------------------------------
                                 if (
                                     esFechaFutura(
                                         fecha
+                                    ) ||
+                                    !fechaCuentaParaGrado(
+                                        fecha,
+                                        estudiante.grado
                                     )
                                 ) {
 

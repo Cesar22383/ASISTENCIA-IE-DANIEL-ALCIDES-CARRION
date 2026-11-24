@@ -394,6 +394,40 @@ dniInput.addEventListener("keydown", function(event) {
 
 
 /* =====================================================
+   FIN DE CLASES POR GRADO
+   Último día de clases de cada grado que terminó antes
+   que el resto del colegio. Desde el día siguiente,
+   el DNI de esos estudiantes ya no puede registrar.
+   ===================================================== */
+
+const FIN_CLASES_POR_GRADO = {
+    "QUINTO": "2026-11-22"
+};
+
+function normalizarGrado(grado) {
+    const texto = String(grado || "").trim().toUpperCase();
+    const equivalencias = {
+        "5": "QUINTO", "5°": "QUINTO", "5TO": "QUINTO", "5TO.": "QUINTO"
+    };
+    return equivalencias[texto] || texto;
+}
+
+function gradoFinalizoClases(grado, fecha) {
+    const fin = FIN_CLASES_POR_GRADO[normalizarGrado(grado)];
+    return Boolean(fin) && fecha > fin;
+}
+
+function obtenerFechaHoyPeruIndex() {
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Lima",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(new Date());
+}
+
+
+/* =====================================================
    BUSCAR ESTUDIANTE
    ===================================================== */
 
@@ -452,6 +486,25 @@ async function buscarEstudiante(dni) {
         if (!datos || datos.length === 0) {
 
             mostrarNoEncontrado();
+
+            return;
+
+        }
+
+
+        /*
+           GRADO QUE YA TERMINÓ CLASES:
+           NO SE REGISTRA NADA.
+        */
+
+        if (
+            gradoFinalizoClases(
+                datos[0].grado,
+                obtenerFechaHoyPeruIndex()
+            )
+        ) {
+
+            mostrarAccesoRestringido(datos[0]);
 
             return;
 
@@ -1149,6 +1202,32 @@ function mostrarEstudiante(
 /* =====================================================
    DNI NO ENCONTRADO
    ===================================================== */
+
+function mostrarAccesoRestringido(estudiante) {
+
+    inicio.style.display = "none";
+    resultado.style.display = "block";
+
+    nombre.innerText = estudiante.nombre || "";
+
+    grado.innerText = estudiante.grado ? "Grado: " + estudiante.grado : "";
+    seccion.innerText = estudiante.seccion ? "Sección: " + estudiante.seccion : "";
+
+    fechaElemento.innerText = "";
+    diaElemento.innerText = "";
+    horaElemento.innerText = "";
+    estadoElemento.innerText = "";
+
+    mensajeElemento.className = "mensaje error";
+
+    mensajeElemento.innerText =
+        "🎓 ACCESO RESTRINGIDO\n" +
+        "Tu grado ya culminó el año escolar. No es necesario registrar asistencia.";
+
+    setTimeout(regresarInicio, 3000);
+
+}
+
 
 function mostrarNoEncontrado() {
 
